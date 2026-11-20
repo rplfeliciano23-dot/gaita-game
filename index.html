@@ -79,7 +79,8 @@ nav button.act{color:var(--blow)}
    <div class="row"><button class="go" id="tCal">🎯 Calibrar com esta nota</button><button id="tReset">Zerar</button></div><div class="mut" id="tCalv"></div>
    <label class="mut" style="display:block;margin-top:8px"><input type="checkbox" id="oct"> aceitar nota de outra oitava (recomendado)</label>
    <div class="mut" style="margin-top:8px">Tolerância <input type="range" id="tol" min="25" max="70" value="50"> <span id="tolv"></span> cents</div>
-   <button class="go big" id="tMic" style="margin-top:10px">🎤 Ativar microfone</button></div>
+   <div class="mut" style="margin-top:8px">Sensibilidade do microfone <input type="range" id="gate" min="1" max="20" value="3"> <span id="gatev"></span></div><button class="go big" id="tMic" style="margin-top:10px">🎤 Ativar microfone</button></div>
+  <div class="card"><b>Mapa de notas da sua gaita</b><div id="chart" style="overflow-x:auto;margin-top:8px"></div></div>
  </section>
 
  <section class="scr" id="s-songs">
@@ -91,13 +92,14 @@ nav button.act{color:var(--blow)}
 
 <div id="play"><div class="in">
  <div class="row"><button id="back">✕</button><div class="bar"><i id="prog"></i></div><span class="pill" id="pst"></span></div>
- <div class="card now"><div class="b" id="big"></div><small id="sub"></small></div>
+ <div class="card now"><div class="b" id="big"></div><small id="sub"></small><div class="bar" style="margin-top:8px"><i id="hbar"></i></div></div>
  <div class="card"><div class="harp" id="harp"></div><div class="legend"><span><b style="background:var(--blow)"></b>Soprar ↑</span><span><b style="background:var(--draw)"></b>Aspirar ↓</span></div></div>
  <div class="card"><div class="strip" id="strip"></div></div>
  <div class="card">
-  <div class="row"><select id="mode"><option value="wait">Aprender (espera você)</option><option value="time">Ritmo (acompanhar)</option></select><label class="mut"><input type="checkbox" id="guide"> ouvir guia</label></div>
+  <div class="row"><select id="mode"><option value="wait">Aprender (espera você)</option><option value="time">Ritmo (acompanhar)</option></select><span id="opts"><label class="mut"><input type="checkbox" id="guide"> ouvir guia</label> <label class="mut"><input type="checkbox" id="metro"> metrônomo</label></span></div>
   <div class="row"><span class="mut">Andamento <input type="range" id="bpm" min="40" max="140" value="70"> <span id="bpmv">70</span></span></div>
   <button class="go big" id="start">▶ Começar</button>
+  <button class="big" id="demo" style="margin-top:8px">🔊 Ouvir como soa</button>
  </div>
 </div></div>
 <div id="mh"><div class="card"><h2 id="mt"></h2><p id="mb" style="text-align:left;font-size:14px"></p><button class="go big" id="mTab" style="margin-bottom:8px">↗ Abrir em nova aba</button><button class="big" id="mRetry" style="margin-bottom:8px">Tentar de novo</button><button class="big" id="mClose">Fechar</button></div></div>
@@ -150,7 +152,7 @@ function refresh(){
   $('pStreak').textContent='🔥 '+S.streak;$('pXp').textContent='⭐ '+S.xp;
   $('lvl').textContent='Nível '+lv;$('xpb').style.width=(S.xp%100)+'%';$('xpt').textContent=(S.xp%100)+'/100 XP';
   const nx=LES.findIndex(l=>!S.done[l.id]);$('cont').textContent=nx<0?'🏆 Refazer atividades':'▶ Continuar: '+LES[nx].t;
-  $('micCard').style.display=micOn?'none':'block';$('tMic').style.display=micOn?'none':'block';
+  $('micCard').style.display=micOn?'none':'block';$('tMic').style.display=micOn?'none':'block';renderChart();
   const mb=$('micTop');mb.classList.toggle('on',micOn);
   $('homeMsg').textContent=S.key==='C'?'Dica: escolha acima a tonalidade da sua gaita (está escrita na tampa).':'Gaita em '+S.key+' selecionada.';
   $('lessons').innerHTML='';
@@ -201,8 +203,8 @@ function beep(m){const o=actx.createOscillator(),g=actx.createGain();o.type='tri
 
 /* atividade */
 function openLesson(i){
-  const l=LES[i];ctx={type:'lesson',i};
-  notes=P(l.seq).map((x,k)=>({m:midiOf(x.h,x.dir,x.bd),t:k,d:1,h:x.h,dir:x.dir,bd:x.bd,s:'p',hit:false}));
+  const l=LES[i];ctx={type:'lesson',i};const LD=['l1','l2','l7','l8','l9'].includes(l.id)?2:1.5;
+  notes=P(l.seq).map((x,k)=>({m:midiOf(x.h,x.dir,x.bd),t:k*LD,d:LD,h:x.h,dir:x.dir,bd:x.bd,s:'p',hit:false}));
   begin(l.t,60,'wait');
 }
 function openSong(s){
@@ -218,7 +220,7 @@ function begin(title,bpm,md,skipped,shift){
   $('mode').style.display=ctx.type=='song'?'':'none';$('guide').parentNode.style.display=ctx.type=='song'?'':'none';
   $('play').style.display='block';$('res').style.display='none';
   const strip=$('strip');strip.innerHTML='';
-  notes.forEach((n,i)=>{const d=document.createElement('div');d.id='ch'+i;d.innerHTML=`${nm(n.m)}<br>${n.h}${n.dir=='b'?'↑':'↓'}${n.bd?'<br>bend '+n.bd:''}`;strip.appendChild(d)});
+  notes.forEach((n,i)=>{const d=document.createElement('div');d.id='ch'+i;d.style.minWidth=Math.max(46,Math.min(160,n.d*34))+'px';d.innerHTML=`${nm(n.m)}<br>${n.h}${n.dir=='b'?'↑':'↓'}${n.bd?'<br>bend '+n.bd:''}`;strip.appendChild(d)});
   $('sub').textContent=title+(shift?` · transposta ${shift>0?'+':''}${shift}`:'')+(skipped?` · ${skipped} notas ignoradas`:'');
   $('big').textContent='Aperte Começar';$('big').style.color='';
   update();
@@ -238,11 +240,11 @@ $('start').onclick=async()=>{
   if(running){running=false;$('start').textContent='▶ Começar';return}
   if(!(await ensureMic()))return;
   if(done||notes.some(n=>n.s!='p')){ctx.type=='lesson'?openLesson(ctx.i):openSong(ctx.s)}
-  mode=$('mode').value;running=true;t0=performance.now();hold=0;wrong=0;lastAct=-1;$('start').textContent='■ Parar';update();
+  mode=$('mode').value;running=true;t0=performance.now();stopDemo();hold=0;wrong=0;lastAct=-1;advT=performance.now();prevN=null;needRel=false;relT=0;lastBeat=-99;$('start').textContent='■ Parar';update();
 };
 $('mode').onchange=()=>{mode=$('mode').value;ctx.type=='lesson'?openLesson(ctx.i):openSong(ctx.s)};
 $('bpm').oninput=()=>$('bpmv').textContent=$('bpm').value;
-$('back').onclick=()=>{running=false;$('play').style.display='none';refresh()};
+$('back').onclick=()=>{stopDemo();running=false;$('play').style.display='none';refresh()};
 
 function finish(){
   running=false;done=true;$('start').textContent='↻ Repetir';
@@ -264,13 +266,13 @@ function finish(){
 
 function detectF(){
  an.getFloatTimeDomainData(buf);const sr=actx.sampleRate,W=2048;
- let e=0;for(let i=0;i<W;i++)e+=buf[i]*buf[i];if(Math.sqrt(e/W)<0.006)return null;
+ let e=0;for(let i=0;i<W;i++)e+=buf[i]*buf[i];if(Math.sqrt(e/W)<(S.gate||0.003))return null;
  const t0=Math.floor(sr/2500),t1=Math.floor(sr/190),d=new Float32Array(t1+2),c=new Float32Array(t1+2);
  for(let t=1;t<=t1+1;t++){let s=0;for(let j=0;j<W;j++){const x=buf[j]-buf[j+t];s+=x*x}d[t]=s}
  let run=0;c[0]=1;for(let t=1;t<=t1+1;t++){run+=d[t];c[t]=d[t]*t/(run||1)}
  let tau=-1;
- for(let t=t0;t<=t1;t++){if(c[t]<0.15){while(t+1<=t1&&c[t+1]<c[t])t++;tau=t;break}}
- if(tau<0){let m=1,mt=-1;for(let t=t0;t<=t1;t++)if(c[t]<m){m=c[t];mt=t}if(m<0.3)tau=mt;else return null}
+ for(let t=t0;t<=t1;t++){if(c[t]<0.25){while(t+1<=t1&&c[t+1]<c[t])t++;tau=t;break}}
+ if(tau<0){let m=1,mt=-1;for(let t=t0;t<=t1;t++)if(c[t]<m){m=c[t];mt=t}if(m<0.45)tau=mt;else return null}
  const a=c[tau-1],b=c[tau],g=c[tau+1],dn=a-2*b+g,f=sr/(tau+(dn?(a-g)/(2*dn):0));
  return 69+12*Math.log2(f/440)-(S.cal||0)/100;
 }
@@ -307,6 +309,31 @@ $('tol').value=S.tol||50;$('tolv').textContent=S.tol||50;$('tol').oninput=()=>{S
 $('tMic').onclick=ensureMic;updCal();
 $('tKey').onclick=()=>{const L=(performance.now()-tHeldT<4000)?tHeld:null;if(L==null){$('tKeyMsg').textContent='Não ouvi nada. Ative o microfone, sopre o furo 4 com firmeza e toque de novo logo em seguida.';return}
  const pc=((Math.round(L)%12)+12)%12,k=Object.keys(KEYS).find(n=>KEYS[n]==pc);S.key=k;save();$('key').value=k;refresh();$('tKeyMsg').textContent='Tom definido: '+k+'. Agora o furo 4 soprado é a nota '+k+'.'};
+let advT=0,prevN=null,needRel=false,relT=0,lastBeat=-99,demoO=[],demoTO=[];
+function waitStep(n,st,dt,now){
+ const m=matches(n,st),since=now-advT,need=Math.max(350,Math.min(2000,n.d*60000/$('bpm').value*0.6));
+ if(needRel){if(!m)relT+=dt;if(relT>=120){needRel=false;hold=0}else{$('hbar').style.width='0%';return}}
+ if(since<400){hold=0;$('hbar').style.width='0%';return}
+ if(m){hold+=dt;wrong=0}
+ else{hold=Math.max(0,hold-dt*0.6);if(st!=null&&since>700&&!(prevN&&matches(prevN,st))){wrong+=dt;if(wrong>=700&&n.s!='bad'){setBad(n);wrong=0;update('badf')}}else wrong=0}
+ $('hbar').style.width=Math.min(100,hold/need*100)+'%';
+ if(hold>=need){setHit(n);prevN=n;cur++;hold=0;wrong=0;advT=now;relT=0;const nx=notes[cur];needRel=!!(nx&&matches(nx,n.m));$('hbar').style.width='0%';update('okf');if(cur>=notes.length)setTimeout(finish,400)}
+}
+function tick(acc){if(!actx)return;const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=acc?1500:1000;g.gain.value=.12;o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+.04)}
+function stopDemo(){demoO.forEach(o=>{try{o.stop()}catch(e){}});demoTO.forEach(clearTimeout);demoO=[];demoTO=[]}
+function playDemo(){
+ if(running||!notes.length)return;if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();if(actx.state=='suspended')actx.resume();
+ stopDemo();const spb=60/$('bpm').value,t=actx.currentTime+.15;
+ notes.forEach((n,i)=>{const o=actx.createOscillator(),g=actx.createGain(),f=actx.createBiquadFilter(),s=t+n.t*spb,e=s+Math.max(.15,n.d*spb*.92);
+  o.type='sawtooth';o.frequency.value=440*Math.pow(2,(n.m-69)/12);f.type='lowpass';f.frequency.value=1800;
+  g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(.12,s+.03);g.gain.setValueAtTime(.12,e-.05);g.gain.linearRampToValueAtTime(0,e);
+  o.connect(f);f.connect(g);g.connect(actx.destination);o.start(s);o.stop(e+.02);demoO.push(o);
+  demoTO.push(setTimeout(()=>{cur=i;update();$('big').textContent=`${n.h} ${n.dir=='b'?'↑ sopra':'↓ aspira'}`;$('big').style.color=n.dir=='b'?'var(--blow)':'var(--draw)'},(s-actx.currentTime)*1000))});
+ const la=notes[notes.length-1];demoTO.push(setTimeout(()=>{cur=0;update();$('big').textContent='Aperte Começar';$('big').style.color=''},(t+(la.t+la.d)*spb-actx.currentTime)*1000+300));
+}
+$('demo').onclick=playDemo;
+function renderChart(){let h='<table style="width:100%;border-collapse:collapse;text-align:center;font-size:12px"><tr><td></td>';for(let i=1;i<=10;i++)h+=`<th>${i}</th>`;h+='</tr><tr><td style="color:var(--blow)">↑</td>';BLOW.forEach(m=>h+=`<td style="color:var(--blow);font-weight:800">${NN[(m+KEY())%12]}</td>`);h+='</tr><tr><td style="color:var(--draw)">↓</td>';DRAW.forEach(m=>h+=`<td style="color:var(--draw);font-weight:800">${NN[(m+KEY())%12]}</td>`);$('chart').innerHTML=h+'</tr></table>'}
+$('gate').value=Math.round((S.gate||0.003)*1000);$('gatev').textContent=$('gate').value;$('gate').oninput=()=>{S.gate=$('gate').value/1000;$('gatev').textContent=$('gate').value;save()};
 /* laço */
 let prevT=performance.now();
 function loop(now){
@@ -318,13 +345,13 @@ function loop(now){
     if(mode=='wait'){
       const n=notes[cur];
       if(n){
-        if(matches(n,st)){hold+=dt;wrong=0;if(hold>=150){setHit(n);cur++;hold=0;update('okf');if(cur>=notes.length)setTimeout(finish,400)}}
-        else{hold=Math.max(0,hold-dt*0.5);if(st!=null){wrong+=dt;if(wrong>=600&&n.s!='bad'){setBad(n);wrong=0;update('badf')}}else wrong=0}
+        waitStep(n,st,dt,now);if(0){}
+        else{}
       }
     }else{
-      const spb=60/$('bpm').value,clk=(now-t0)/1000/spb-2;let act=-1;
+      const spb=60/$('bpm').value,clk=(now-t0)/1000/spb-2;let act=-1;const bt=Math.floor(clk);if(bt!==lastBeat){lastBeat=bt;if($('metro').checked)tick(((bt%4)+4)%4==0)}
       notes.forEach((n,i)=>{
-        if(clk>=n.t&&clk<n.t+n.d){act=i;if(matches(n,st))n.hit=true}
+        if(clk>=n.t&&clk<n.t+n.d){act=i;if(matches(n,st)&&(clk-n.t)*spb>=0.15){n.acc=(n.acc||0)+dt;if(n.acc>=Math.min(450,n.d*spb*400))n.hit=true}}
         if(clk>=n.t+n.d&&n.s=='p'){n.hit?setHit(n):setBad(n)}
       });
       if(act>=0&&act!=lastAct){lastAct=act;if($('guide').checked)beep(notes[act].m)}
