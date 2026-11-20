@@ -74,6 +74,7 @@ nav button.act{color:var(--blow)}
   <div class="card" style="text-align:center"><div id="tNote" style="font-size:64px;font-weight:900">–</div><div id="tHz" class="mut">Toque uma nota na gaita</div>
    <div style="position:relative;height:36px;margin:14px 0;background:var(--bd);border-radius:18px"><div style="position:absolute;left:50%;top:0;bottom:0;width:3px;background:var(--ok)"></div><div id="tNeedle" style="position:absolute;top:2px;bottom:2px;width:12px;margin-left:-6px;border-radius:6px;background:var(--draw);left:50%"></div></div>
    <div id="tCents" style="font-size:20px;font-weight:800">&nbsp;</div><div id="tHole" class="mut"></div></div>
+  <div class="card"><b>Tom da sua gaita</b><p class="mut">Sopre o furo 4 com firmeza e toque no botão logo em seguida. O app descobre o tom (C, D, Eb…) sozinho.</p><button class="go" id="tKey">🔍 Descobrir o tom</button><div class="mut" id="tKeyMsg" style="margin-top:6px"></div></div>
   <div class="card"><b>Calibração</b><p class="mut">Se você toca a nota certa e o app marca errado, a sua gaita pode estar levemente desafinada. Toque uma nota firme e toque em Calibrar.</p>
    <div class="row"><button class="go" id="tCal">🎯 Calibrar com esta nota</button><button id="tReset">Zerar</button></div><div class="mut" id="tCalv"></div>
    <label class="mut" style="display:block;margin-top:8px"><input type="checkbox" id="oct"> aceitar nota de outra oitava (recomendado)</label>
@@ -107,7 +108,7 @@ nav button.act{color:var(--blow)}
 const $=id=>document.getElementById(id);
 const BLOW=[60,64,67,72,76,79,84,88,91,96],DRAW=[62,67,71,74,77,81,83,86,89,93];
 const NN=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],nm=m=>NN[m%12]+(Math.floor(m/12)-1);
-const KEYS={C:0,D:2,E:4,F:5,G:7,A:9,Bb:10};
+const KEYS={C:0,Db:1,D:2,Eb:3,E:4,F:5,'F#':6,G:7,Ab:8,A:9,Bb:10,B:11};
 let S={xp:0,streak:0,last:'',done:{},key:'C',imp:[]};
 try{Object.assign(S,JSON.parse(localStorage.getItem('gaita')||'{}'))}catch(e){}
 const save=()=>{try{localStorage.setItem('gaita',JSON.stringify(S))}catch(e){}};
@@ -262,6 +263,18 @@ function finish(){
 }
 
 function detectF(){
+ an.getFloatTimeDomainData(buf);const sr=actx.sampleRate,W=2048;
+ let e=0;for(let i=0;i<W;i++)e+=buf[i]*buf[i];if(Math.sqrt(e/W)<0.006)return null;
+ const t0=Math.floor(sr/2500),t1=Math.floor(sr/190),d=new Float32Array(t1+2),c=new Float32Array(t1+2);
+ for(let t=1;t<=t1+1;t++){let s=0;for(let j=0;j<W;j++){const x=buf[j]-buf[j+t];s+=x*x}d[t]=s}
+ let run=0;c[0]=1;for(let t=1;t<=t1+1;t++){run+=d[t];c[t]=d[t]*t/(run||1)}
+ let tau=-1;
+ for(let t=t0;t<=t1;t++){if(c[t]<0.15){while(t+1<=t1&&c[t+1]<c[t])t++;tau=t;break}}
+ if(tau<0){let m=1,mt=-1;for(let t=t0;t<=t1;t++)if(c[t]<m){m=c[t];mt=t}if(m<0.3)tau=mt;else return null}
+ const a=c[tau-1],b=c[tau],g=c[tau+1],dn=a-2*b+g,f=sr/(tau+(dn?(a-g)/(2*dn):0));
+ return 69+12*Math.log2(f/440)-(S.cal||0)/100;
+}
+function detectOld(){
  an.getFloatTimeDomainData(buf);const sr=actx.sampleRate,N=2048;
  let e=0;for(let i=0;i<N;i++)e+=buf[i]*buf[i];if(Math.sqrt(e/N)<0.008)return null;
  const lo=Math.floor(sr/2300),hi=Math.floor(sr/200),c=new Float32Array(hi+2);let mx=0;
@@ -275,10 +288,10 @@ function detectF(){
 let fbuf=[];
 function smooth(f){fbuf.push(f);if(fbuf.length>4)fbuf.shift();const v=fbuf.filter(x=>x!=null).sort((a,b)=>a-b);return v.length>=3?v[Math.floor(v.length/2)]:null}
 function matches(n,fr){if(fr==null)return false;let d=fr-n.m;if(S.oct!==false)d=((d%12)+18)%12-6;return Math.abs(d*100)<=(S.tol||50)}
-let tb=[],tLast=null;
+let tb=[],tLast=null,tHeld=null,tHeldT=0;
 function tunerTick(){
  tb.push(detectF());if(tb.length>4)tb.shift();
- const v=tb.filter(x=>x!=null).sort((a,b)=>a-b),fr=v.length>=3?v[Math.floor(v.length/2)]:null;tLast=fr;
+ const v=tb.filter(x=>x!=null).sort((a,b)=>a-b),fr=v.length>=3?v[Math.floor(v.length/2)]:null;tLast=fr;if(fr!=null){tHeld=fr;tHeldT=performance.now()}
  if(fr==null){$('tNote').textContent='–';$('tCents').innerHTML='&nbsp;';$('tHz').textContent='Toque uma nota na gaita';$('tHole').textContent='';$('tNeedle').style.left='50%';return}
  const r=Math.round(fr),ce=Math.round((fr-r)*100),hz=(440*Math.pow(2,(fr-69)/12)).toFixed(1);
  $('tNote').textContent=nm(r);$('tHz').textContent=hz+' Hz';
@@ -287,11 +300,13 @@ function tunerTick(){
  const h=mapNote(r);$('tHole').textContent=h?'Furo '+h.h+(h.dir=='b'?' soprando':' aspirando')+(h.bd?' (bend '+h.bd+')':''):'Nota fora da sua gaita';
 }
 function updCal(){$('tCalv').textContent='Calibração atual: '+((S.cal||0)>0?'+':'')+(S.cal||0)+' cents'}
-$('tCal').onclick=()=>{if(tLast==null){$('tCalv').textContent='Toque uma nota firme antes de calibrar.';return}const ce=(tLast-Math.round(tLast))*100;S.cal=Math.max(-50,Math.min(50,Math.round((S.cal||0)+ce)));save();updCal()};
+$('tCal').onclick=()=>{const L=(performance.now()-tHeldT<4000)?tHeld:null;if(L==null){$('tCalv').textContent='Toque uma nota firme e calibre logo em seguida.';return}const ce=(L-Math.round(L))*100;S.cal=Math.max(-50,Math.min(50,Math.round((S.cal||0)+ce)));save();updCal()};
 $('tReset').onclick=()=>{S.cal=0;save();updCal()};
 $('oct').checked=S.oct!==false;$('oct').onchange=()=>{S.oct=$('oct').checked;save()};
 $('tol').value=S.tol||50;$('tolv').textContent=S.tol||50;$('tol').oninput=()=>{S.tol=+$('tol').value;$('tolv').textContent=S.tol;save()};
 $('tMic').onclick=ensureMic;updCal();
+$('tKey').onclick=()=>{const L=(performance.now()-tHeldT<4000)?tHeld:null;if(L==null){$('tKeyMsg').textContent='Não ouvi nada. Ative o microfone, sopre o furo 4 com firmeza e toque de novo logo em seguida.';return}
+ const pc=((Math.round(L)%12)+12)%12,k=Object.keys(KEYS).find(n=>KEYS[n]==pc);S.key=k;save();$('key').value=k;refresh();$('tKeyMsg').textContent='Tom definido: '+k+'. Agora o furo 4 soprado é a nota '+k+'.'};
 /* laço */
 let prevT=performance.now();
 function loop(now){
