@@ -70,12 +70,23 @@ nav button.act{color:var(--blow)}
 
  <section class="scr" id="s-act"><h2 style="margin:4px 0 12px">Atividades</h2><div id="lessons"></div></section>
 
+ <section class="scr" id="s-tuner"><h2 style="margin:4px 0 12px">Afinador</h2>
+  <div class="card" style="text-align:center"><div id="tNote" style="font-size:64px;font-weight:900">–</div><div id="tHz" class="mut">Toque uma nota na gaita</div>
+   <div style="position:relative;height:36px;margin:14px 0;background:var(--bd);border-radius:18px"><div style="position:absolute;left:50%;top:0;bottom:0;width:3px;background:var(--ok)"></div><div id="tNeedle" style="position:absolute;top:2px;bottom:2px;width:12px;margin-left:-6px;border-radius:6px;background:var(--draw);left:50%"></div></div>
+   <div id="tCents" style="font-size:20px;font-weight:800">&nbsp;</div><div id="tHole" class="mut"></div></div>
+  <div class="card"><b>Calibração</b><p class="mut">Se você toca a nota certa e o app marca errado, a sua gaita pode estar levemente desafinada. Toque uma nota firme e toque em Calibrar.</p>
+   <div class="row"><button class="go" id="tCal">🎯 Calibrar com esta nota</button><button id="tReset">Zerar</button></div><div class="mut" id="tCalv"></div>
+   <label class="mut" style="display:block;margin-top:8px"><input type="checkbox" id="oct"> aceitar nota de outra oitava (recomendado)</label>
+   <div class="mut" style="margin-top:8px">Tolerância <input type="range" id="tol" min="25" max="70" value="50"> <span id="tolv"></span> cents</div>
+   <button class="go big" id="tMic" style="margin-top:10px">🎤 Ativar microfone</button></div>
+ </section>
+
  <section class="scr" id="s-songs">
   <h2 style="margin:4px 0 12px">Músicas</h2><div id="songs"></div>
   <div class="card"><label class="btn" style="display:block;text-align:center">🎵 Importar MIDI ou MP3<input type="file" id="file" accept=".mid,.midi,.mp3,.wav,.m4a,.ogg,audio/*" hidden></label><p class="mut" id="impMsg">O app converte as notas para furos da sua gaita e transpõe para caber nela. MP3 só funciona bem com melodia solo (uma voz ou instrumento).</p></div>
  </section>
 </div>
-<nav><button id="n-home" class="act">🏠<br>Início</button><button id="n-act">🎯<br>Atividades</button><button id="n-songs">🎵<br>Músicas</button></nav>
+<nav><button id="n-home" class="act">🏠<br>Início</button><button id="n-act">🎯<br>Atividades</button><button id="n-songs">🎵<br>Músicas</button><button id="n-tuner">🎚️<br>Afinador</button></nav>
 
 <div id="play"><div class="in">
  <div class="row"><button id="back">✕</button><div class="bar"><i id="prog"></i></div><span class="pill" id="pst"></span></div>
@@ -130,15 +141,15 @@ const BD={d:{1:[1],2:[1,2],3:[1,2,3],4:[1],6:[1]},b:{8:[1],9:[1],10:[1,2]}};
 function bendCands(m,k,c){[['b',BLOW],['d',DRAW]].forEach(([dr,T])=>{const o=BD[dr];for(const h in o)o[h].forEach(b=>{if(T[h-1]+k-b==m)c.push({h:+h,dir:dr,bd:b})})})}
 
 /* telas */
-function show(t){['home','act','songs'].forEach(x=>{$('s-'+x).classList.toggle('act',x==t);$('n-'+x).classList.toggle('act',x==t)});refresh()}
-['home','act','songs'].forEach(x=>$('n-'+x).onclick=()=>show(x));
+function show(t){['home','act','songs','tuner'].forEach(x=>{$('s-'+x).classList.toggle('act',x==t);$('n-'+x).classList.toggle('act',x==t)});refresh()}
+['home','act','songs','tuner'].forEach(x=>$('n-'+x).onclick=()=>show(x));
 const unlocked=i=>i==0||S.done[LES[i-1].id];
 function refresh(){
   const lv=Math.floor(S.xp/100)+1;
   $('pStreak').textContent='🔥 '+S.streak;$('pXp').textContent='⭐ '+S.xp;
   $('lvl').textContent='Nível '+lv;$('xpb').style.width=(S.xp%100)+'%';$('xpt').textContent=(S.xp%100)+'/100 XP';
   const nx=LES.findIndex(l=>!S.done[l.id]);$('cont').textContent=nx<0?'🏆 Refazer atividades':'▶ Continuar: '+LES[nx].t;
-  $('micCard').style.display=micOn?'none':'block';
+  $('micCard').style.display=micOn?'none':'block';$('tMic').style.display=micOn?'none':'block';
   const mb=$('micTop');mb.classList.toggle('on',micOn);
   $('homeMsg').textContent=S.key==='C'?'Dica: escolha acima a tonalidade da sua gaita (está escrita na tampa).':'Gaita em '+S.key+' selecionada.';
   $('lessons').innerHTML='';
@@ -159,7 +170,7 @@ async function ensureMic(){
   try{
     actx=actx||new (window.AudioContext||window.webkitAudioContext)();
     const st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
-    an=actx.createAnalyser();an.fftSize=2048;buf=new Float32Array(2048);actx.createMediaStreamSource(st).connect(an);
+    an=actx.createAnalyser();an.fftSize=4096;buf=new Float32Array(4096);actx.createMediaStreamSource(st).connect(an);
     micOn=true;refresh();return true;
   }catch(e){micHelp(e);return false}
 }
@@ -250,23 +261,55 @@ function finish(){
   $('res').style.display='flex';
 }
 
+function detectF(){
+ an.getFloatTimeDomainData(buf);const sr=actx.sampleRate,N=2048;
+ let e=0;for(let i=0;i<N;i++)e+=buf[i]*buf[i];if(Math.sqrt(e/N)<0.008)return null;
+ const lo=Math.floor(sr/2300),hi=Math.floor(sr/200),c=new Float32Array(hi+2);let mx=0;
+ for(let l=lo;l<=hi;l++){let a=0,b=0;for(let i=0;i<N;i++){a+=buf[i]*buf[i+l];b+=buf[i]*buf[i]+buf[i+l]*buf[i+l]}c[l]=2*a/(b||1);if(c[l]>mx)mx=c[l]}
+ if(mx<0.55)return null;
+ for(let l=lo+1;l<hi;l++)if(c[l]>=0.9*mx&&c[l]>=c[l-1]&&c[l]>=c[l+1]){
+  const dn=2*c[l]-c[l-1]-c[l+1],f=sr/(l+(dn?(c[l+1]-c[l-1])/(2*dn):0));
+  return 69+12*Math.log2(f/440)-(S.cal||0)/100}
+ return null;
+}
+let fbuf=[];
+function smooth(f){fbuf.push(f);if(fbuf.length>4)fbuf.shift();const v=fbuf.filter(x=>x!=null).sort((a,b)=>a-b);return v.length>=3?v[Math.floor(v.length/2)]:null}
+function matches(n,fr){if(fr==null)return false;let d=fr-n.m;if(S.oct!==false)d=((d%12)+18)%12-6;return Math.abs(d*100)<=(S.tol||50)}
+let tb=[],tLast=null;
+function tunerTick(){
+ tb.push(detectF());if(tb.length>4)tb.shift();
+ const v=tb.filter(x=>x!=null).sort((a,b)=>a-b),fr=v.length>=3?v[Math.floor(v.length/2)]:null;tLast=fr;
+ if(fr==null){$('tNote').textContent='–';$('tCents').innerHTML='&nbsp;';$('tHz').textContent='Toque uma nota na gaita';$('tHole').textContent='';$('tNeedle').style.left='50%';return}
+ const r=Math.round(fr),ce=Math.round((fr-r)*100),hz=(440*Math.pow(2,(fr-69)/12)).toFixed(1);
+ $('tNote').textContent=nm(r);$('tHz').textContent=hz+' Hz';
+ $('tCents').textContent=(ce>0?'+':'')+ce+' cents '+(Math.abs(ce)<=10?'✔ afinado':ce>0?'(alto)':'(baixo)');
+ $('tNeedle').style.left=(50+Math.max(-50,Math.min(50,ce))*0.9)+'%';
+ const h=mapNote(r);$('tHole').textContent=h?'Furo '+h.h+(h.dir=='b'?' soprando':' aspirando')+(h.bd?' (bend '+h.bd+')':''):'Nota fora da sua gaita';
+}
+function updCal(){$('tCalv').textContent='Calibração atual: '+((S.cal||0)>0?'+':'')+(S.cal||0)+' cents'}
+$('tCal').onclick=()=>{if(tLast==null){$('tCalv').textContent='Toque uma nota firme antes de calibrar.';return}const ce=(tLast-Math.round(tLast))*100;S.cal=Math.max(-50,Math.min(50,Math.round((S.cal||0)+ce)));save();updCal()};
+$('tReset').onclick=()=>{S.cal=0;save();updCal()};
+$('oct').checked=S.oct!==false;$('oct').onchange=()=>{S.oct=$('oct').checked;save()};
+$('tol').value=S.tol||50;$('tolv').textContent=S.tol||50;$('tol').oninput=()=>{S.tol=+$('tol').value;$('tolv').textContent=S.tol;save()};
+$('tMic').onclick=ensureMic;updCal();
 /* laço */
 let prevT=performance.now();
 function loop(now){
   const dt=now-prevT;prevT=now;
+  if(micOn&&!running&&$('s-tuner').classList.contains('act'))tunerTick();
   if(micOn&&running){
-    const m=detect();if(m===last)cnt++;else{last=m;cnt=1}
-    const st=cnt>=3?last:null;if(st!=null)$('sub').textContent='Você toca: '+nm(st);
+    const fr=smooth(detectF());
+    const st=fr;if(st!=null){const r=Math.round(st),ce=Math.round((st-r)*100);$('sub').textContent='Você toca: '+nm(r)+' ('+(ce>0?'+':'')+ce+' cents)'}
     if(mode=='wait'){
       const n=notes[cur];
       if(n){
-        if(st===n.m){hold+=dt;wrong=0;if(hold>=180){setHit(n);cur++;hold=0;update('okf');if(cur>=notes.length)setTimeout(finish,400)}}
-        else{hold=0;if(st!=null){wrong+=dt;if(wrong>=350&&n.s!='bad'){setBad(n);wrong=0;update('badf')}}else wrong=0}
+        if(matches(n,st)){hold+=dt;wrong=0;if(hold>=150){setHit(n);cur++;hold=0;update('okf');if(cur>=notes.length)setTimeout(finish,400)}}
+        else{hold=Math.max(0,hold-dt*0.5);if(st!=null){wrong+=dt;if(wrong>=600&&n.s!='bad'){setBad(n);wrong=0;update('badf')}}else wrong=0}
       }
     }else{
       const spb=60/$('bpm').value,clk=(now-t0)/1000/spb-2;let act=-1;
       notes.forEach((n,i)=>{
-        if(clk>=n.t&&clk<n.t+n.d){act=i;if(st===n.m)n.hit=true}
+        if(clk>=n.t&&clk<n.t+n.d){act=i;if(matches(n,st))n.hit=true}
         if(clk>=n.t+n.d&&n.s=='p'){n.hit?setHit(n):setBad(n)}
       });
       if(act>=0&&act!=lastAct){lastAct=act;if($('guide').checked)beep(notes[act].m)}
