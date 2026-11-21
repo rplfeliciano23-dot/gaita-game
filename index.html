@@ -96,10 +96,62 @@ nav button.act{color:var(--blow)}nav button.act .ni{animation:bounce .5s}
 @keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 @keyframes fall{to{transform:translateY(108vh) rotate(720deg)}}
 .chip.out{opacity:.3}#sFilter button{padding:6px 12px}
+#navInd{width:calc((100% - 8px)/5)}
+nav button{font-size:11px}
+.mic::after{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad);margin-left:6px}
+.mic.on::after{background:var(--ok)}
+#toast{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:8px 16px;border-radius:20px;font-weight:800;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1}
+#splash{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 38%,#2c4452,#131f24 70%);color:#fff;transition:opacity .5s}
+#splash.out{opacity:0;pointer-events:none}
+#splash .st{font-size:34px;font-weight:900;margin-top:4px}
+#splash .ss{color:#8fa3ad;margin-top:8px;animation:pulse 1.4s ease-in-out infinite}
+.bob{animation:bob 1s ease-in-out infinite;transform-origin:150px 340px}
+.harm{animation:harm .55s ease-in-out infinite alternate}
+.nt{opacity:0;font-weight:900;font-size:30px;transform-box:fill-box;transform-origin:center;animation:noteUp 2.4s ease-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-5px) rotate(1deg)}}
+@keyframes harm{from{transform:translateX(-7px)}to{transform:translateX(7px)}}
+@keyframes noteUp{0%{opacity:0;transform:translate(0,0) scale(.5)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),-190px) rotate(var(--rot)) scale(1.35)}}
+#thPlay{position:fixed;inset:0;background:var(--bg);overflow:auto;display:none;z-index:6;padding:calc(12px + env(safe-area-inset-top,0px)) 12px 24px;animation:slideUp .35s ease}
+#thPlay .in{max-width:640px;margin:auto}
+#thPlay h3{margin:6px 0 8px;font-size:20px}#thPlay p{line-height:1.5;margin:0}
+.opt{display:block;width:100%;margin-bottom:8px;text-align:left;font-size:16px}
+.opt.ok{background:var(--ok);color:#fff;border-color:#46a302}.opt.bad{background:var(--bad);color:#fff;border-color:#d33}
+.ban{padding:12px;border-radius:12px;margin:10px 0;font-weight:700}
+.ban.ok{background:rgba(88,204,2,.18);color:var(--ok)}.ban.bad{background:rgba(255,75,75,.18);color:var(--bad)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
+<div id="splash"><svg viewBox="0 0 300 340" style="width:min(74vw,330px);overflow:visible">
+ <g class="bob">
+  <path d="M60 340 L60 262 Q60 232 100 224 L200 224 Q240 232 240 262 L240 340 Z" fill="#0d0d0d"/>
+  <path d="M132 224 L150 300 L168 224 Z" fill="#fff"/>
+  <path d="M132 224 L150 300 L108 246 Z M168 224 L150 300 L192 246 Z" fill="#1d1d1d"/>
+  <path d="M150 236 L128 226 L128 246 Z M150 236 L172 226 L172 246 Z" fill="#d62828"/><circle cx="150" cy="236" r="5" fill="#a61e1e"/>
+  <rect x="139" y="196" width="22" height="32" fill="#e0ac69"/>
+  <ellipse cx="150" cy="168" rx="38" ry="44" fill="#f1c27d"/>
+  <circle cx="112" cy="172" r="8" fill="#e0ac69"/><circle cx="188" cy="172" r="8" fill="#e0ac69"/>
+  <path d="M126 166 Q134 158 142 166 M158 166 Q166 158 174 166" stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle cx="124" cy="182" r="6" fill="#ff9aa2" opacity=".6"/><circle cx="176" cy="182" r="6" fill="#ff9aa2" opacity=".6"/>
+  <ellipse cx="150" cy="138" rx="66" ry="13" fill="#0d0d0d"/>
+  <path d="M106 136 Q104 84 150 84 Q196 84 194 136 Z" fill="#0d0d0d"/><rect x="107" y="120" width="86" height="10" fill="#4a4a4a"/>
+  <path d="M78 272 Q62 222 104 206" stroke="#0d0d0d" stroke-width="26" fill="none" stroke-linecap="round"/>
+  <path d="M222 272 Q238 222 196 206" stroke="#0d0d0d" stroke-width="26" fill="none" stroke-linecap="round"/>
+  <g class="harm">
+   <rect x="104" y="190" width="92" height="26" rx="5" fill="#c9ced3"/><rect x="104" y="190" width="92" height="7" rx="3" fill="#8e969e"/><rect x="104" y="209" width="92" height="7" rx="3" fill="#8e969e"/>
+   <g fill="#2f3a42"><rect x="108" y="199" width="5" height="9"/><rect x="117" y="199" width="5" height="9"/><rect x="126" y="199" width="5" height="9"/><rect x="135" y="199" width="5" height="9"/><rect x="144" y="199" width="5" height="9"/><rect x="153" y="199" width="5" height="9"/><rect x="162" y="199" width="5" height="9"/><rect x="171" y="199" width="5" height="9"/><rect x="180" y="199" width="5" height="9"/><rect x="189" y="199" width="4" height="9"/></g>
+   <circle cx="102" cy="206" r="12" fill="#f1c27d"/><circle cx="198" cy="206" r="12" fill="#f1c27d"/>
+  </g>
+ </g>
+ <text class="nt" x="190" y="180" fill="#1cb0f6" style="--dx:60px;--rot:20deg;animation-delay:0s">♪</text>
+ <text class="nt" x="110" y="180" fill="#ff9600" style="--dx:-60px;--rot:-25deg;animation-delay:.35s">♫</text>
+ <text class="nt" x="170" y="175" fill="#58cc02" style="--dx:20px;--rot:10deg;animation-delay:.7s">♩</text>
+ <text class="nt" x="130" y="175" fill="#ff4b4b" style="--dx:-25px;--rot:-12deg;animation-delay:1.05s">♬</text>
+ <text class="nt" x="200" y="185" fill="#ffc800" style="--dx:90px;--rot:30deg;animation-delay:1.4s">♪</text>
+ <text class="nt" x="100" y="185" fill="#ce82ff" style="--dx:-90px;--rot:-30deg;animation-delay:1.75s">♫</text>
+</svg><div class="st">Gaita Game</div><div class="ss">toque para começar</div></div>
+<div id="toast"></div>
 <div class="app">
  <div class="top"><h1>🎶 Gaita Game</h1><span class="pill" id="pStreak"></span><span class="pill" id="pXp"></span><button id="sfxBtn" title="Sons" style="padding:8px 10px">🔊</button><button class="mic" id="micTop" title="Microfone">🎤</button></div>
 
@@ -114,12 +166,14 @@ nav button.act{color:var(--blow)}nav button.act .ni{animation:bounce .5s}
   <div class="card"><b>Meta diária</b><select id="goal" style="float:right;padding:4px 8px"><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option></select><div class="xp"><i id="goalb"></i></div><span class="mut" id="goalt"></span></div>
   <div class="card" id="wkCard"><b>🏆 Desafio da semana</b><div id="wkT" style="font-size:18px;font-weight:800;margin:4px 0"></div><div class="mut" id="wkD"></div><button class="go big" id="wkGo" style="margin-top:8px">Jogar desafio</button></div>
   <div class="card" id="instCard" style="display:none"><b>📲 Instalar o app</b><p class="mut">Use como um app de verdade, direto da tela inicial.</p><button class="go big" id="instBtn">Instalar</button></div>
-  <div class="card" id="micCard"><b>Microfone desligado</b><p class="mut">O app precisa ouvir sua gaita. É só tocar no botão abaixo e permitir o acesso.</p><button class="go big" id="micBig">🎤 Ativar microfone</button></div>
+  
   <div class="card mut" id="homeMsg"></div>
   <div class="card"><div class="mut">Backup do progresso (para trocar de aparelho)</div><textarea id="bk" rows="3" style="width:100%;margin:6px 0;border-radius:10px;border:2px solid var(--bd);background:var(--card);color:var(--tx)" placeholder="O código aparece aqui. Para restaurar, cole um código e toque em Restaurar."></textarea><div class="row"><button id="bkOut">📋 Gerar código</button><button id="bkIn">📥 Restaurar</button></div></div>
  </section>
 
  <section class="scr" id="s-act"><h2 style="margin:4px 0 12px">Trilha de aprendizado</h2><div id="lessons"></div><h2 style="margin:18px 0 12px">Treinos técnicos</h2><div id="works"></div></section>
+
+ <section class="scr" id="s-theory"><h2 style="margin:4px 0 12px">Teoria</h2><div class="card mut">Aprenda o básico antes de tocar: como segurar, a boca, a respiração e muito mais. Responda as perguntas para ganhar XP.</div><div id="theoryList"></div></section>
 
  <section class="scr" id="s-tuner"><h2 style="margin:4px 0 12px">Afinador</h2>
   <div class="card" style="text-align:center"><div id="tNote" style="font-size:64px;font-weight:900">–</div><div id="tHz" class="mut">Toque uma nota na gaita</div>
@@ -130,7 +184,7 @@ nav button.act{color:var(--blow)}nav button.act .ni{animation:bounce .5s}
    <div class="row"><button class="go" id="tCal">🎯 Calibrar com esta nota</button><button id="tReset1">Zerar esta nota</button><button id="tReset">Zerar todas</button></div><div class="mut" id="tCalv"></div>
    <label class="mut" style="display:block;margin-top:8px"><input type="checkbox" id="oct"> aceitar nota de outra oitava (recomendado)</label>
    <div class="mut" style="margin-top:8px">Tolerância <input type="range" id="tol" min="25" max="70" value="50"> <span id="tolv"></span> cents</div>
-   <div class="mut" style="margin-top:8px">Sensibilidade do microfone <input type="range" id="gate" min="1" max="20" value="3"> <span id="gatev"></span></div><button class="go big" id="tMic" style="margin-top:10px">🎤 Ativar microfone</button></div>
+   <div class="mut" style="margin-top:8px">Sensibilidade do microfone <input type="range" id="gate" min="1" max="20" value="3"> <span id="gatev"></span></div><div class="mut" id="tMic" style="margin-top:10px;text-align:center">🎤 Ligue o microfone no botão do topo</div></div>
   <div class="card"><b>Mapa de notas da sua gaita</b><div id="chart" style="overflow-x:auto;margin-top:8px"></div></div>
  </section>
 
@@ -139,7 +193,7 @@ nav button.act{color:var(--blow)}nav button.act .ni{animation:bounce .5s}
   <div class="card"><label class="btn" style="display:block;text-align:center">🎵 Importar MIDI ou MP3<input type="file" id="file" accept=".mid,.midi,.mp3,.wav,.m4a,.ogg,audio/*" hidden></label><p class="mut" id="impMsg">O app converte as notas para furos da sua gaita e transpõe para caber nela. MP3 só funciona bem com melodia solo (uma voz ou instrumento).</p></div>
  </section>
 </div>
-<nav><i id="navInd"></i><button id="n-home" class="act"><span class="ni">🏠</span><span>Início</span></button><button id="n-act"><span class="ni">🎯</span><span>Atividades</span></button><button id="n-songs"><span class="ni">🎵</span><span>Músicas</span></button><button id="n-tuner"><span class="ni">🎚️</span><span>Afinador</span></button></nav>
+<nav><i id="navInd"></i><button id="n-home" class="act"><span class="ni">🏠</span><span>Início</span></button><button id="n-theory"><span class="ni">📖</span><span>Teoria</span></button><button id="n-act"><span class="ni">🎯</span><span>Prática</span></button><button id="n-songs"><span class="ni">🎵</span><span>Músicas</span></button><button id="n-tuner"><span class="ni">🎚️</span><span>Afinador</span></button></nav>
 
 <div id="play"><div class="in">
  <div class="row"><button id="back">✕</button><div class="bar"><i id="prog"></i></div><span class="pill" id="pst"></span></div>
@@ -154,6 +208,10 @@ nav button.act{color:var(--blow)}nav button.act .ni{animation:bounce .5s}
   <button class="go big" id="start">▶ Começar</button>
   <button class="big" id="demo" style="margin-top:8px">🔊 Ouvir como soa</button>
  </div>
+</div></div>
+<div id="thPlay"><div class="in">
+ <div class="row"><button id="thClose">✕</button><div class="bar"><i id="thProg"></i></div></div>
+ <div id="thBody"></div><div id="thBanner"></div><button class="go big" id="thBtn">Continuar</button>
 </div></div>
 <div id="mh"><div class="card"><h2 id="mt"></h2><p id="mb" style="text-align:left;font-size:14px"></p><button class="go big" id="mTab" style="margin-bottom:8px">↗ Abrir em nova aba</button><button class="big" id="mRetry" style="margin-bottom:8px">Tentar de novo</button><button class="big" id="mClose">Fechar</button></div></div>
 <div id="res"><div class="card"><h2 id="rt"></h2><div id="rs" style="font-size:34px"></div><p id="rd"></p>
@@ -210,19 +268,19 @@ const BD={d:{1:[1],2:[1,2],3:[1,2,3],4:[1],6:[1]},b:{8:[1],9:[1],10:[1,2]}};
 function bendCands(m,k,c){[['b',BLOW],['d',DRAW]].forEach(([dr,T])=>{const o=BD[dr];for(const h in o)o[h].forEach(b=>{if(T[h-1]+k-b==m)c.push({h:+h,dir:dr,bd:b})})})}
 
 /* telas */
-const TABS=['home','act','songs','tuner'];let curTab='home';
+const TABS=['home','theory','act','songs','tuner'];let curTab='home';
 function show(t){const di=TABS.indexOf(t)-TABS.indexOf(curTab);
  TABS.forEach(x=>{const e=$('s-'+x);e.classList.remove('inR','inL');e.classList.toggle('act',x==t);$('n-'+x).classList.toggle('act',x==t)});
  if(t!==curTab){$('s-'+t).classList.add(di>0?'inR':'inL');sfx('nav')}
  curTab=t;$('navInd').style.transform='translateX('+(TABS.indexOf(t)*100)+'%)';window.scrollTo(0,0);refresh()}
-['home','act','songs','tuner'].forEach(x=>$('n-'+x).onclick=()=>show(x));
+TABS.forEach(x=>$('n-'+x).onclick=()=>show(x));
 const unlocked=i=>i==0||i<=(S.unl||0)||S.done[LES[i-1].id];
 function refresh(){
   const lv=Math.floor(S.xp/100)+1;
   $('pStreak').textContent='🔥 '+S.streak;$('pXp').textContent='⭐ '+S.xp;if(window._lx!==undefined&&window._lx!==S.xp)bump($('pXp'));window._lx=S.xp;
   $('lvl').textContent='Nível '+lv;$('xpb').style.width=(S.xp%100)+'%';$('xpt').textContent=(S.xp%100)+'/100 XP';
   const nx=LES.findIndex(l=>!S.done[l.id]);$('cont').textContent=nx<0?'🏆 Refazer atividades':'▶ Continuar: '+LES[nx].t;
-  $('micCard').style.display=micOn?'none':'block';$('tMic').style.display=micOn?'none':'block';renderChart();refreshHome();
+  $('tMic').style.display=micOn?'none':'block';renderChart();refreshHome();
   const mb=$('micTop');mb.classList.toggle('on',micOn);
   $('homeMsg').textContent=S.key==='C'?'Dica: escolha acima a tonalidade da sua gaita (está escrita na tampa).':'Gaita em '+S.key+' selecionada.';
   $('lessons').innerHTML='';
@@ -246,8 +304,8 @@ async function ensureMic(){
   try{
     actx=actx||new (window.AudioContext||window.webkitAudioContext)();
     const st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
-    an=actx.createAnalyser();an.fftSize=4096;buf=new Float32Array(4096);actx.createMediaStreamSource(st).connect(an);
-    micOn=true;refresh();return true;
+    an=actx.createAnalyser();an.fftSize=4096;buf=new Float32Array(4096);micStream=st;micSrc=actx.createMediaStreamSource(st);micSrc.connect(an);
+    micOn=true;refresh();toast('Microfone ligado 🎤');return true;
   }catch(e){micHelp(e);return false}
 }
 function micHelp(e){
@@ -261,7 +319,7 @@ function micHelp(e){
 $('mTab').onclick=()=>{const w=window.open(location.href,'_blank');if(!w){try{navigator.clipboard.writeText(location.href)}catch(x){}$('mb').innerHTML+='<br><br>Não consegui abrir. Cole este endereço numa aba do navegador: '+location.href}};
 $('mRetry').onclick=()=>{$('mh').style.display='none';ensureMic()};
 $('mClose').onclick=()=>{$('mh').style.display='none'};
-$('micTop').onclick=ensureMic;$('micBig').onclick=ensureMic;
+$('micTop').onclick=()=>micOn?stopMic():ensureMic();
 function detect(){
   an.getFloatTimeDomainData(buf);const sr=actx.sampleRate,N=1024;
   let e=0;for(let i=0;i<N;i++)e+=buf[i]*buf[i];if(Math.sqrt(e/N)<0.01)return null;
@@ -417,6 +475,7 @@ function ac(){if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)
 function sfx(k){if(S.sfx===false||running)return;try{const a=ac(),t=a.currentTime;
  const tone=(f,s0,d,ty,v)=>{const o=a.createOscillator(),g=a.createGain();o.type=ty||'sine';o.frequency.setValueAtTime(f,t+s0);g.gain.setValueAtTime(0,t+s0);g.gain.linearRampToValueAtTime(v||.08,t+s0+.01);g.gain.exponentialRampToValueAtTime(.0001,t+s0+d);o.connect(g);g.connect(a.destination);o.start(t+s0);o.stop(t+s0+d+.02)};
  if(k=='click')tone(660,0,.07,'triangle');
+ else if(k=='ok')[523,784].forEach((f,i)=>tone(f,i*.08,.16));
  else if(k=='nav'){tone(440,0,.09);tone(660,.06,.11)}
  else if(k=='win')[523,659,784,1047,1319].forEach((f,i)=>tone(f,i*.1,.28,'triangle',.1));
  else if(k=='bad'){tone(220,0,.18,'sawtooth',.06);tone(165,.1,.24,'sawtooth',.06)}
@@ -460,7 +519,7 @@ function refreshHome(){
  const g=+(S.goal||10),m=(S.todaySecs||0)/60;$('goal').value=g;$('goalb').style.width=Math.min(100,m/g*100)+'%';
  $('goalt').textContent=m>=g?'Meta cumprida hoje! 🎉':Math.floor(m)+' de '+g+' minutos hoje';
  const k=wkSong();$('wkT').textContent=k.s.t;$('wkD').textContent=S.wkDone===k.w?'Desafio concluído! ✔ +100 XP':'Tire 3 estrelas (90%) no modo valendo estrelas e ganhe +100 XP';
- $('lvCard').style.display=S.lv?'none':'block';renderWorks()}
+ $('lvCard').style.display=S.lv?'none':'block';renderWorks();renderTheory()}
 $('goal').onchange=()=>{S.goal=+$('goal').value;save();refreshHome()};
 $('wkGo').onclick=()=>{$('pmode').value='play';openSong(wkSong().s)};
 document.querySelectorAll('.lvb').forEach(b=>b.onclick=()=>{S.lv=1;S.unl=+b.dataset.lv;save();refresh()});
@@ -469,6 +528,119 @@ let dip=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault(
 $('instBtn').onclick=async()=>{if(!dip)return;dip.prompt();try{await dip.userChoice}catch(e){}dip=null;$('instCard').style.display='none'};
 window.addEventListener('appinstalled',()=>{$('instCard').style.display='none'});
 try{if('serviceWorker' in navigator&&location.protocol==='https:'&&window.self===window.top)navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{})}catch(e){}
+var micStream=null,micSrc=null;
+function stopMic(){try{micStream&&micStream.getTracks().forEach(t=>t.stop())}catch(e){}try{micSrc&&micSrc.disconnect()}catch(e){}micStream=null;micSrc=null;micOn=false;if(running){running=false;$('start').textContent='▶ Começar'}refresh();toast('Microfone desligado')}
+let toastT=0;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1800)}
+function closeSplash(){const sp=$('splash');if(!sp||sp.classList.contains('out'))return;sp.classList.add('out');setTimeout(()=>sp.remove(),600)}
+$('splash').onclick=closeSplash;setTimeout(closeSplash,3600);
+
+/* ===== Teoria ===== */
+const SKc='#f1c27d',GRc='#b9c0c7',DKc='#5b6670';
+const hl=(x,y,w,h)=>{let s='';const c=w/10;for(let i=0;i<10;i++)s+=`<rect x="${x+i*c+2}" y="${y}" width="${c-4}" height="${h}" rx="2" fill="#2f3a42"/>`;return s};
+const nu=(x,y,w)=>{let s='';const c=w/10;for(let i=0;i<10;i++)s+=`<text x="${x+i*c+c/2}" y="${y}" font-size="11" font-weight="700" text-anchor="middle" fill="currentColor">${i+1}</text>`;return s};
+const sv=(c,h)=>`<svg viewBox="0 0 300 ${h||170}" style="width:100%;max-width:420px;display:block;margin:0 auto 10px;color:var(--tx)">${c}</svg>`;
+const tx=(x,y,t,a,sz,col)=>`<text x="${x}" y="${y}" font-size="${sz||11}" text-anchor="${a||'middle'}" font-weight="700" fill="${col||'currentColor'}">${t}</text>`;
+const harp=(x,y,w,h)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="${GRc}"/><rect x="${x}" y="${y}" width="${w}" height="${h*.28}" rx="3" fill="${DKc}"/><rect x="${x}" y="${y+h*.72}" width="${w}" height="${h*.28}" rx="3" fill="${DKc}"/>${hl(x,y+h*.3,w,h*.4)}`;
+const ART={
+ parts:()=>sv(nu(30,40,240)+harp(30,48,240,56)+tx(30,126,'← graves',"start")+tx(270,126,'agudos →',"end")+tx(150,24,'Furos numerados de 1 a 10')+tx(150,152,'Placas de cobertura (cima e baixo) e pente (meio, com os furos)')),
+ hold:()=>sv(nu(70,36,170)+harp(70,42,170,52)+`<rect x="20" y="40" width="86" height="14" rx="7" fill="${SKc}" stroke="#c9975a"/><rect x="20" y="82" width="86" height="14" rx="7" fill="${SKc}" stroke="#c9975a"/><rect x="6" y="38" width="36" height="62" rx="16" fill="${SKc}" stroke="#c9975a"/><path d="M240 36 Q292 40 290 70 Q288 104 240 98 Q258 68 240 36 Z" fill="${SKc}" stroke="#c9975a"/>`+tx(60,122,'Mão esquerda segura')+tx(60,136,'(polegar + indicador)')+tx(250,122,'Mão direita')+tx(250,136,'em concha')+tx(150,158,'Números para cima · graves à esquerda')),
+ mouth:()=>sv(harp(10,44,130,44)+`<ellipse cx="75" cy="66" rx="54" ry="24" fill="#e88f9a" opacity=".85" stroke="#b85c6a" stroke-width="2"/><ellipse cx="75" cy="66" rx="30" ry="8" fill="#7a2f3b"/>`+tx(75,110,'Boca larga')+tx(75,124,'vários furos = acorde')+harp(160,44,130,44)+`<ellipse cx="205" cy="66" rx="15" ry="22" fill="#e88f9a" opacity=".9" stroke="#b85c6a" stroke-width="2"/><ellipse cx="205" cy="66" rx="5" ry="7" fill="#7a2f3b"/>`+tx(225,110,'Boca em bico')+tx(225,124,'um furo = nota limpa ✔',"middle",11,'#58cc02'),140),
+ breath:()=>sv(harp(90,70,120,34)+`<path d="M60 76 V24 M48 38 L60 22 L72 38" stroke="#1cb0f6" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M240 98 V150 M228 136 L240 152 L252 136" stroke="#ff9600" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`+tx(60,14,'SOPRAR (expirar)',"middle",11,'#1cb0f6')+tx(240,168,'ASPIRAR (inspirar)',"middle",11,'#ff9600'),176),
+ tab:()=>sv(`<g stroke-width="3" fill="none"><rect x="30" y="34" width="60" height="50" rx="12" stroke="#1cb0f6"/><rect x="120" y="34" width="60" height="50" rx="12" stroke="#1cb0f6"/><rect x="210" y="34" width="60" height="50" rx="12" stroke="#ff9600"/></g>`+tx(60,67,'4 ↑',"middle",20,'#1cb0f6')+tx(150,67,'5 ↑',"middle",20,'#1cb0f6')+tx(240,67,'6 ↓',"middle",20,'#ff9600')+tx(60,106,'sopra no furo 4')+tx(150,106,'sopra no furo 5')+tx(240,106,'aspira no furo 6'),130),
+ bend:()=>sv(`<path d="M20 50 H110 Q140 50 160 82 T272 112" stroke="#ff9600" stroke-width="5" fill="none" stroke-linecap="round"/>`+tx(65,38,'nota normal')+tx(214,138,'nota dobrada (mais grave)'),150)
+};
+const I=(h,p,art)=>({k:'i',h,p,art}),Q=(q,o,a,art)=>({k:'q',q,o,a,art});
+const TH=[
+ {id:'t1',t:'Conheça a gaita',ic:'🎼',steps:[
+  I('A gaita diatônica','A gaita mais comum para começar tem 10 furos. Cada furo toca uma nota quando você sopra e outra quando aspira. Por dentro, cada furo tem uma palheta de metal que vibra com o ar.','parts'),
+  I('Graves e agudos','Os furos são numerados de 1 a 10, da esquerda para a direita. O furo 1 é o mais grave e o 10 é o mais agudo.','parts'),
+  I('O tom da gaita','Toda gaita tem o tom marcado nela, como C (Dó) ou G (Sol). A gaita em Dó é a mais indicada para começar e é a que o app usa como padrão.'),
+  Q('Quantos furos tem a gaita diatônica mais comum?',['8','10','12'],1),
+  Q('Qual furo é o mais grave?',['Furo 1','Furo 5','Furo 10'],0),
+  Q('O que vibra dentro de cada furo e faz o som?',['Uma corda','Uma palheta de metal','Um tubo de madeira'],1),
+  Q('Qual tom é o mais indicado para começar?',['Dó (C)','Fá sustenido (F#)','Si bemol (Bb)'],0)]},
+ {id:'t2',t:'Como segurar',ic:'🤲',steps:[
+  I('Mão esquerda segura','Segure a gaita com a mão esquerda, entre o polegar e o indicador. Os números ficam para cima e os graves (furo 1) à esquerda. Segure firme, mas sem apertar demais.','hold'),
+  I('Mão direita em concha','A mão direita fica atrás da gaita, formando uma concha. Ela ajuda a segurar e, mais tarde, a abrir e fechar para dar efeitos ao som. No começo, só encoste. Se você é canhoto, pode inverter as mãos.','hold'),
+  I('Postura','Costas retas, ombros soltos e cotovelos relaxados. Leve a gaita até a boca, sem inclinar o pescoço para frente.'),
+  Q('Como a gaita é segurada na posição clássica?',['Com a mão esquerda, entre polegar e indicador','Apoiada só nos lábios','Com a mão direita, bem apertada'],0,'hold'),
+  Q('Para que lado ficam os furos graves?',['Para a direita','Para a esquerda','Tanto faz'],1),
+  Q('Para que serve a mão direita em concha?',['Apertar a gaita com força','Ajudar a segurar e depois dar efeitos ao som','Tapar os ouvidos'],1),
+  Q('Como deve ficar a postura?',['Costas retas e ombros soltos','Pescoço bem inclinado','Ombros levantados'],0)]},
+ {id:'t3',t:'Embocadura (a boca)',ic:'👄',steps:[
+  I('O que é embocadura','É a forma da boca ao tocar. Para começar, cubra de 3 a 4 furos com a boca bem aberta e relaxada. Sai uma mistura de notas, que é um acorde.','mouth'),
+  I('Uma nota só','Para uma nota limpa, faça um bico com os lábios, como quem assobia ou bebe com um canudo, e aponte para um único furo. Os lábios ficam úmidos e relaxados.','mouth'),
+  I('Gaita bem dentro da boca','Coloque a gaita um pouco para dentro da boca, de modo que os lábios cubram a gaita até as placas e não só a ponta. A língua fica baixa e relaxada.'),
+  I('Som sujo?','Se saírem duas notas juntas, feche um pouco mais os lábios e ajuste a posição da gaita. Vá devagar: a pontaria melhora com a prática.'),
+  Q('Para tocar uma nota limpa, a boca deve cobrir...',['3 ou 4 furos','um furo só','todos os furos'],1,'mouth'),
+  Q('Qual é a forma dos lábios para uma nota só?',['Em bico, como quem assobia','Esticados num sorriso','Fechados com força'],0),
+  Q('O som saiu sujo, com duas notas juntas. O que fazer?',['Soprar mais forte','Fechar um pouco mais os lábios e ajustar a gaita','Apertar a gaita com os dentes'],1),
+  Q('Cobrir 3 ou 4 furos de uma vez produz...',['Uma nota limpa','Várias notas juntas (acorde)','Nenhum som'],1)]},
+ {id:'t4',t:'Respiração',ic:'🌬️',steps:[
+  I('Soprar e aspirar','Cada furo toca uma nota quando você sopra (expira) e outra quando aspira (inspira). No app, soprar é azul ↑ e aspirar é laranja ↓.','breath'),
+  I('Respire pela barriga','Use o ar da barriga (diafragma), de forma suave. Tocar não é soprar com força: o ar sai e entra como um suspiro. Força demais deixa o som estridente e cansa você.'),
+  I('Exercício rápido','No furo 4, sopre devagar contando 4 tempos e aspire contando 4 tempos, sempre suave. Se ficar tonto, pare e respire normalmente.'),
+  Q('No app, qual cor indica SOPRAR?',['Laranja','Azul','Verde'],1,'breath'),
+  Q('Qual é o jeito certo de respirar ao tocar?',['Suave, usando o ar da barriga','O mais forte possível','Prendendo a respiração'],0),
+  Q('Aspirar é o mesmo que...',['Expirar','Inspirar','Prender o ar'],1),
+  Q('Se ficar tonto durante o treino, o que fazer?',['Continuar mais rápido','Parar e respirar normalmente','Soprar mais forte'],1)]},
+ {id:'t5',t:'Lendo a tablatura',ic:'🔢',steps:[
+  I('Número + seta','A tablatura de gaita usa o número do furo e uma seta. 4↑ é soprar no furo 4. 6↓ é aspirar no furo 6.','tab'),
+  I('Cores do app','Azul é soprar e laranja é aspirar. O furo que acende mostra onde tocar. A barra verde mostra por quanto tempo segurar a nota.'),
+  I('Duração','Na fita de notas, as notas mais largas duram mais. Segure o som até a barra encher.'),
+  Q('O que significa 5↓ ?',['Soprar no furo 5','Aspirar no furo 5','Furos 5 e 4 juntos'],1,'tab'),
+  Q('O que significa 3↑ ?',['Soprar no furo 3','Aspirar no furo 3','Pular o furo 3'],0),
+  Q('O que a barra verde mostra?',['O volume do som','Por quanto tempo segurar a nota','A sua pontuação final'],1),
+  Q('Qual cor indica aspirar?',['Azul','Laranja','Vermelho'],1)]},
+ {id:'t6',t:'Bends: dobrar a nota',ic:'🌀',steps:[
+  I('O que é um bend','É uma técnica que deixa a nota mais grave mudando a forma da boca e da garganta, sem trocar de furo. É a parte mais difícil, então deixe para depois do básico.','bend'),
+  I('Onde dá para dobrar','Aspirando, nos furos graves (principalmente 1 a 4) e no 6. Soprando, nos furos agudos (7 a 10). No app, o bend aparece como "2↓ bend 1".'),
+  I('Como treinar','Comece pelo furo 2 aspirando. Aspire uma nota limpa e vá abaixando a língua e a garganta, como se dissesse "iou". Leva semanas, e isso é normal.'),
+  Q('O bend deixa a nota...',['Mais aguda','Mais grave','Mais alta em volume'],1,'bend'),
+  Q('Qual é um bom primeiro furo para treinar o bend aspirado?',['Furo 2','Furo 9','Furo 10'],0),
+  Q('Em quais furos o bend é feito soprando?',['1 a 4','7 a 10','Em todos'],1),
+  Q('Quando começar a treinar bends?',['Depois de dominar o básico','No primeiro dia','Nunca'],0)]},
+ {id:'t7',t:'Cuidados com a gaita',ic:'🧼',steps:[
+  I('Antes de tocar','Lave as mãos e enxágue a boca, principalmente depois de comer. Restos de comida entram nos furos e travam as palhetas.'),
+  I('Depois de tocar','Bata de leve a gaita na palma da mão, com os furos para baixo, para tirar a umidade. Seque com um pano e guarde na caixinha.'),
+  I('Sem forçar','Nunca sopre ou aspire com muita força, pois isso pode desafinar as palhetas. Pentes de madeira incham com água, então evite molhar a gaita.'),
+  Q('O que fazer antes de tocar?',['Comer e tocar em seguida','Enxaguar a boca e lavar as mãos','Molhar a gaita'],1),
+  Q('Como tirar a umidade depois de tocar?',['Batendo de leve na palma da mão e secando','Colocando no congelador','Soprando com muita força'],0),
+  Q('Soprar ou aspirar com muita força pode...',['Desafinar as palhetas','Deixar a gaita mais afinada','Não faz diferença'],0)]}
+];
+let TQ=null;
+function renderTheory(){const l=$('theoryList');if(!l)return;l.innerHTML='';
+ TH.forEach((t,i)=>{const u=i==0||(S.th&&S.th[TH[i-1].id]),st=(S.th||{})[t.id]||0,b=document.createElement('button');b.className='item'+(u?'':' lock');
+  b.innerHTML=`<span class="ic" style="background:var(--blow)">${u?t.ic:'🔒'}</span><span>${t.t}<small>${st?'★'.repeat(st)+'☆'.repeat(3-st):u?'Novo':'Complete a anterior'}</small></span>`;b.onclick=()=>{if(u)openTheory(i)};l.appendChild(b)});
+ const rv=document.createElement('button');rv.className='item';rv.innerHTML='<span class="ic" style="background:var(--draw)">🔁</span><span>Revisão rápida<small>6 perguntas das lições que você já fez</small></span>';rv.onclick=openReview;l.appendChild(rv)}
+function openTheory(i){const t=TH[i];TQ={kind:'lesson',id:t.id,steps:t.steps.slice(),i:0,wrong:0};$('thPlay').style.display='block';thRender()}
+function openReview(){const pool=[];TH.forEach(t=>{if(S.th&&S.th[t.id])t.steps.forEach(x=>{if(x.k=='q')pool.push(x)})});
+ if(pool.length<3){toast('Complete uma lição primeiro');return}
+ pool.sort(()=>Math.random()-.5);TQ={kind:'review',steps:pool.slice(0,6),i:0,wrong:0};$('thPlay').style.display='block';thRender()}
+function thRender(){
+ const st=TQ.steps[TQ.i],b=$('thBody'),btn=$('thBtn'),bn=$('thBanner');bn.className='';bn.innerHTML='';
+ $('thProg').style.width=Math.min(100,TQ.i/TQ.steps.length*100)+'%';
+ if(!st){thFinish();return}
+ if(st.k=='i'){b.innerHTML=`<div class="card">${st.art?ART[st.art]():''}<h3>${st.h}</h3><p>${st.p}</p></div>`;btn.style.display='';btn.textContent='Continuar';btn.onclick=()=>{TQ.i++;thRender()}}
+ else{
+  b.innerHTML=`<div class="card"><h3>${st.q}</h3>${st.art?ART[st.art]():''}<div id="thOpts"></div></div>`;btn.style.display='none';let done=false;
+  st.o.forEach((o,k)=>{const x=document.createElement('button');x.className='opt';x.textContent=o;
+   x.onclick=()=>{if(done)return;done=true;const ok=k==st.a;x.classList.add(ok?'ok':'bad');
+    if(!ok){[...$('thOpts').children][st.a].classList.add('ok');TQ.wrong++;if(!st.r)TQ.steps.push(Object.assign({},st,{r:1}))}
+    bn.className='ban '+(ok?'ok':'bad');bn.textContent=ok?'✔ Correto!':'✖ Não foi dessa vez. A resposta certa está em verde.';
+    sfx(ok?'ok':'bad');vib(ok?15:[30,30,30]);btn.style.display='';btn.textContent='Continuar';btn.onclick=()=>{TQ.i++;thRender()}};
+   $('thOpts').appendChild(x)})}
+}
+function thFinish(){
+ const w=TQ.wrong,stars=w==0?3:w<=1?2:1,isL=TQ.kind=='lesson',first=isL&&!(S.th&&S.th[TQ.id]);
+ const gain=isL?(first?30:10)+stars*5:10;S.xp+=gain;if(isL){S.th=S.th||{};S.th[TQ.id]=Math.max(S.th[TQ.id]||0,stars)}
+ const td=dayKey();if(S.last!=td){S.streak=S.last==new Date(Date.now()-864e5).toISOString().slice(0,10)?S.streak+1:1;S.last=td}
+ save();$('thProg').style.width='100%';
+ $('thBody').innerHTML=`<div class="card" style="text-align:center"><h2>${w==0?'Perfeito! 🎉':'Concluído!'}</h2>${isL?`<div style="font-size:38px;color:#ffc800">${'★'.repeat(stars)}<span style="color:var(--bd)">${'★'.repeat(3-stars)}</span></div>`:''}<p>${w} erro(s) · +${gain} XP</p></div>`;
+ $('thBanner').innerHTML='';$('thBtn').style.display='';$('thBtn').textContent='Voltar';$('thBtn').onclick=()=>{$('thPlay').style.display='none';refresh()};
+ sfx('win');if(w<=1)confetti();
+}
+$('thClose').onclick=()=>{$('thPlay').style.display='none';refresh()};
 /* laço */
 let prevT=performance.now();
 function loop(now){
