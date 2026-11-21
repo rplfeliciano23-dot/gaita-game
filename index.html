@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Gaita Game</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#58cc02">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root{--bg:#f7f7f7;--card:#fff;--tx:#3c3c3c;--mut:#777;--bd:#e5e5e5;--blow:#1cb0f6;--draw:#ff9600;--ok:#58cc02;--bad:#ff4b4b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#131f24;--card:#1f2c33;--tx:#e8eef1;--mut:#8fa3ad;--bd:#37464f}}
@@ -108,6 +113,7 @@ nav button.act{color:var(--blow)}nav button.act .ni{animation:bounce .5s}
   <div class="card" id="lvCard"><b>Qual é o seu nível?</b><p class="mut">Assim eu libero as atividades certas para você começar.</p><button class="big lvb" data-lv="0" style="margin-bottom:6px">🌱 Nunca toquei gaita</button><button class="big lvb" data-lv="3" style="margin-bottom:6px">🎶 Já sei o básico</button><button class="big lvb" data-lv="5">🔥 Já toco algumas músicas</button></div>
   <div class="card"><b>Meta diária</b><select id="goal" style="float:right;padding:4px 8px"><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option></select><div class="xp"><i id="goalb"></i></div><span class="mut" id="goalt"></span></div>
   <div class="card" id="wkCard"><b>🏆 Desafio da semana</b><div id="wkT" style="font-size:18px;font-weight:800;margin:4px 0"></div><div class="mut" id="wkD"></div><button class="go big" id="wkGo" style="margin-top:8px">Jogar desafio</button></div>
+  <div class="card" id="instCard" style="display:none"><b>📲 Instalar o app</b><p class="mut">Use como um app de verdade, direto da tela inicial.</p><button class="go big" id="instBtn">Instalar</button></div>
   <div class="card" id="micCard"><b>Microfone desligado</b><p class="mut">O app precisa ouvir sua gaita. É só tocar no botão abaixo e permitir o acesso.</p><button class="go big" id="micBig">🎤 Ativar microfone</button></div>
   <div class="card mut" id="homeMsg"></div>
   <div class="card"><div class="mut">Backup do progresso (para trocar de aparelho)</div><textarea id="bk" rows="3" style="width:100%;margin:6px 0;border-radius:10px;border:2px solid var(--bd);background:var(--card);color:var(--tx)" placeholder="O código aparece aqui. Para restaurar, cole um código e toque em Restaurar."></textarea><div class="row"><button id="bkOut">📋 Gerar código</button><button id="bkIn">📥 Restaurar</button></div></div>
@@ -459,6 +465,10 @@ $('goal').onchange=()=>{S.goal=+$('goal').value;save();refreshHome()};
 $('wkGo').onclick=()=>{$('pmode').value='play';openSong(wkSong().s)};
 document.querySelectorAll('.lvb').forEach(b=>b.onclick=()=>{S.lv=1;S.unl=+b.dataset.lv;save();refresh()});
 document.querySelectorAll('#sFilter button').forEach(b=>b.onclick=()=>{sf=b.dataset.f;refresh()});
+let dip=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;$('instCard').style.display='block'});
+$('instBtn').onclick=async()=>{if(!dip)return;dip.prompt();try{await dip.userChoice}catch(e){}dip=null;$('instCard').style.display='none'};
+window.addEventListener('appinstalled',()=>{$('instCard').style.display='none'});
+try{if('serviceWorker' in navigator&&location.protocol==='https:'&&window.self===window.top)navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{})}catch(e){}
 /* laço */
 let prevT=performance.now();
 function loop(now){
