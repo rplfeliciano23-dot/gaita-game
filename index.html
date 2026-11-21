@@ -90,6 +90,7 @@ nav button.act{color:var(--blow)}nav button.act .ni{animation:bounce .5s}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
 @keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 @keyframes fall{to{transform:translateY(108vh) rotate(720deg)}}
+.chip.out{opacity:.3}#sFilter button{padding:6px 12px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -104,20 +105,23 @@ nav button.act{color:var(--blow)}nav button.act .ni{animation:bounce .5s}
    <select id="key" style="width:100%;margin:6px 0 8px"></select><label class="mut" style="display:block;margin-bottom:12px"><input type="checkbox" id="bends"> usar bends nas músicas</label>
    <button class="go big" id="cont">▶ Continuar</button>
   </div>
+  <div class="card" id="lvCard"><b>Qual é o seu nível?</b><p class="mut">Assim eu libero as atividades certas para você começar.</p><button class="big lvb" data-lv="0" style="margin-bottom:6px">🌱 Nunca toquei gaita</button><button class="big lvb" data-lv="3" style="margin-bottom:6px">🎶 Já sei o básico</button><button class="big lvb" data-lv="5">🔥 Já toco algumas músicas</button></div>
+  <div class="card"><b>Meta diária</b><select id="goal" style="float:right;padding:4px 8px"><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option></select><div class="xp"><i id="goalb"></i></div><span class="mut" id="goalt"></span></div>
+  <div class="card" id="wkCard"><b>🏆 Desafio da semana</b><div id="wkT" style="font-size:18px;font-weight:800;margin:4px 0"></div><div class="mut" id="wkD"></div><button class="go big" id="wkGo" style="margin-top:8px">Jogar desafio</button></div>
   <div class="card" id="micCard"><b>Microfone desligado</b><p class="mut">O app precisa ouvir sua gaita. É só tocar no botão abaixo e permitir o acesso.</p><button class="go big" id="micBig">🎤 Ativar microfone</button></div>
   <div class="card mut" id="homeMsg"></div>
   <div class="card"><div class="mut">Backup do progresso (para trocar de aparelho)</div><textarea id="bk" rows="3" style="width:100%;margin:6px 0;border-radius:10px;border:2px solid var(--bd);background:var(--card);color:var(--tx)" placeholder="O código aparece aqui. Para restaurar, cole um código e toque em Restaurar."></textarea><div class="row"><button id="bkOut">📋 Gerar código</button><button id="bkIn">📥 Restaurar</button></div></div>
  </section>
 
- <section class="scr" id="s-act"><h2 style="margin:4px 0 12px">Atividades</h2><div id="lessons"></div></section>
+ <section class="scr" id="s-act"><h2 style="margin:4px 0 12px">Trilha de aprendizado</h2><div id="lessons"></div><h2 style="margin:18px 0 12px">Treinos técnicos</h2><div id="works"></div></section>
 
  <section class="scr" id="s-tuner"><h2 style="margin:4px 0 12px">Afinador</h2>
   <div class="card" style="text-align:center"><div id="tNote" style="font-size:64px;font-weight:900">–</div><div id="tHz" class="mut">Toque uma nota na gaita</div>
    <div style="position:relative;height:36px;margin:14px 0;background:var(--bd);border-radius:18px"><div style="position:absolute;left:50%;top:0;bottom:0;width:3px;background:var(--ok)"></div><div id="tNeedle" style="position:absolute;top:2px;bottom:2px;width:12px;margin-left:-6px;border-radius:6px;background:var(--draw);left:50%"></div></div>
    <div id="tCents" style="font-size:20px;font-weight:800">&nbsp;</div><div id="tHole" class="mut"></div></div>
   <div class="card"><b>Tom da sua gaita</b><p class="mut">Sopre o furo 4 com firmeza e toque no botão logo em seguida. O app descobre o tom (C, D, Eb…) sozinho.</p><button class="go" id="tKey">🔍 Descobrir o tom</button><div class="mut" id="tKeyMsg" style="margin-top:6px"></div></div>
-  <div class="card"><b>Calibração</b><p class="mut">Se você toca a nota certa e o app marca errado, a sua gaita pode estar levemente desafinada. Toque uma nota firme e toque em Calibrar.</p>
-   <div class="row"><button class="go" id="tCal">🎯 Calibrar com esta nota</button><button id="tReset">Zerar</button></div><div class="mut" id="tCalv"></div>
+  <div class="card"><b>Calibração</b><p class="mut">Se você toca a nota certa e o app marca errado, a sua gaita pode estar levemente desafinada. Toque uma nota firme e toque em Calibrar. Cada nota guarda a própria calibração, então calibrar uma não mexe nas outras.</p>
+   <div class="row"><button class="go" id="tCal">🎯 Calibrar com esta nota</button><button id="tReset1">Zerar esta nota</button><button id="tReset">Zerar todas</button></div><div class="mut" id="tCalv"></div>
    <label class="mut" style="display:block;margin-top:8px"><input type="checkbox" id="oct"> aceitar nota de outra oitava (recomendado)</label>
    <div class="mut" style="margin-top:8px">Tolerância <input type="range" id="tol" min="25" max="70" value="50"> <span id="tolv"></span> cents</div>
    <div class="mut" style="margin-top:8px">Sensibilidade do microfone <input type="range" id="gate" min="1" max="20" value="3"> <span id="gatev"></span></div><button class="go big" id="tMic" style="margin-top:10px">🎤 Ativar microfone</button></div>
@@ -125,7 +129,7 @@ nav button.act{color:var(--blow)}nav button.act .ni{animation:bounce .5s}
  </section>
 
  <section class="scr" id="s-songs">
-  <h2 style="margin:4px 0 12px">Músicas</h2><div id="songs"></div>
+  <h2 style="margin:4px 0 12px">Músicas</h2><div class="row" id="sFilter"><button data-f="all">Todas</button><button data-f="easy">Fácil</button><button data-f="mid">Médio</button><button data-f="imp">Importadas</button></div><div id="songs"></div>
   <div class="card"><label class="btn" style="display:block;text-align:center">🎵 Importar MIDI ou MP3<input type="file" id="file" accept=".mid,.midi,.mp3,.wav,.m4a,.ogg,audio/*" hidden></label><p class="mut" id="impMsg">O app converte as notas para furos da sua gaita e transpõe para caber nela. MP3 só funciona bem com melodia solo (uma voz ou instrumento).</p></div>
  </section>
 </div>
@@ -138,6 +142,8 @@ nav button.act{color:var(--blow)}nav button.act .ni{animation:bounce .5s}
  <div class="card"><div class="strip" id="strip"></div></div>
  <div class="card">
   <div class="row"><select id="mode"><option value="wait">Aprender (espera você)</option><option value="time">Ritmo (acompanhar)</option></select><span id="opts"><label class="mut"><input type="checkbox" id="guide"> ouvir guia</label> <label class="mut"><input type="checkbox" id="metro"> metrônomo</label></span></div>
+  <div class="row"><select id="pmode"><option value="play">Valendo estrelas</option><option value="practice">Prática (sem pontuar)</option></select><select id="view"><option value="both">Furo + nota</option><option value="tab">Só furo</option><option value="note">Só nota</option></select></div>
+  <div id="practiceBox" style="display:none;margin-bottom:8px"><div class="mut" id="loopLbl"></div><div class="row"><input type="range" id="loopA" min="0" max="0" value="0" style="flex:1"><input type="range" id="loopB" min="0" max="0" value="0" style="flex:1"></div><label class="mut"><input type="checkbox" id="auto"> tempo automático (acelera quando você acerta)</label></div>
   <div class="row"><span class="mut">Andamento <input type="range" id="bpm" min="40" max="140" value="70"> <span id="bpmv">70</span></span></div>
   <button class="go big" id="start">▶ Começar</button>
   <button class="big" id="demo" style="margin-top:8px">🔊 Ouvir como soa</button>
@@ -176,6 +182,19 @@ const SONGS=[
  {t:'Jingle Bells (refrão)',bpm:90,raw:R([[76,1],[76,1],[76,2],[76,1],[76,1],[76,2],[76,1],[79,1],[72,1.5],[74,.5],[76,4]])}
 ];
 
+SONGS.push(
+ {t:'Twinkle Twinkle Little Star',bpm:80,raw:(()=>{const a=[[72,1],[72,1],[79,1],[79,1],[81,1],[81,1],[79,2],[77,1],[77,1],[76,1],[76,1],[74,1],[74,1],[72,2]],b=[[79,1],[79,1],[77,1],[77,1],[76,1],[76,1],[74,2]];return R([].concat(a,b,b,a))})()},
+ {t:'Frère Jacques',bpm:90,raw:R([[72,1],[74,1],[76,1],[72,1],[72,1],[74,1],[76,1],[72,1],[76,1],[77,1],[79,2],[76,1],[77,1],[79,2],[79,.5],[81,.5],[79,.5],[77,.5],[76,1],[72,1],[79,.5],[81,.5],[79,.5],[77,.5],[76,1],[72,1],[72,1],[67,1],[72,2],[72,1],[67,1],[72,2]])},
+ {t:'Parabéns pra Você',bpm:80,raw:R([[67,.75],[67,.25],[69,1],[67,1],[72,1],[71,2],[67,.75],[67,.25],[69,1],[67,1],[74,1],[72,2],[67,.75],[67,.25],[79,1],[76,1],[72,1],[71,1],[69,2],[77,.75],[77,.25],[76,1],[72,1],[74,1],[72,2]])}
+);
+SONGS.forEach(x=>x.lv=({'Mary Had a Little Lamb':'easy','Twinkle Twinkle Little Star':'easy','Frère Jacques':'easy'})[x.t]||'mid');
+const WORK=[
+ {id:'w1',t:'Respiração: sopra e aspira',desc:'Alterne no mesmo furo, sem pressa',seq:'4b 4d 4b 4d 4b 4d',d:2,bpm:50},
+ {id:'w2',t:'Notas limpas',desc:'Uma nota só, sem vazar para os furos vizinhos',seq:'3b 4b 5b 6b 5b 4b 3b',d:2,bpm:50},
+ {id:'w3',t:'Troca rápida 4 ↔ 5',desc:'Treine a velocidade da troca',seq:'4b 5b 4b 5b 4d 5d 4d 5d',d:1,bpm:80},
+ {id:'w4',t:'Saltos entre furos',desc:'Mire o furo certo sem olhar',seq:'2b 5b 3b 6b 4b 7d',d:1.5,bpm:60},
+ {id:'w5',t:'Bends: furos 2 e 3',desc:'Dobre a nota aspirando',seq:'2d 2d1 2d 3d 3d1 3d 3d2 3d',d:2,bpm:50}
+];
 let notes=[],cur=0,hold=0,wrong=0,hits=0,errs=0,mode='wait',running=false,t0=0,lastAct=-1,ctx=null,done=false;
 let actx,an,buf,micOn=false,last=null,cnt=0;
 
@@ -191,26 +210,29 @@ function show(t){const di=TABS.indexOf(t)-TABS.indexOf(curTab);
  if(t!==curTab){$('s-'+t).classList.add(di>0?'inR':'inL');sfx('nav')}
  curTab=t;$('navInd').style.transform='translateX('+(TABS.indexOf(t)*100)+'%)';window.scrollTo(0,0);refresh()}
 ['home','act','songs','tuner'].forEach(x=>$('n-'+x).onclick=()=>show(x));
-const unlocked=i=>i==0||S.done[LES[i-1].id];
+const unlocked=i=>i==0||i<=(S.unl||0)||S.done[LES[i-1].id];
 function refresh(){
   const lv=Math.floor(S.xp/100)+1;
   $('pStreak').textContent='🔥 '+S.streak;$('pXp').textContent='⭐ '+S.xp;if(window._lx!==undefined&&window._lx!==S.xp)bump($('pXp'));window._lx=S.xp;
   $('lvl').textContent='Nível '+lv;$('xpb').style.width=(S.xp%100)+'%';$('xpt').textContent=(S.xp%100)+'/100 XP';
   const nx=LES.findIndex(l=>!S.done[l.id]);$('cont').textContent=nx<0?'🏆 Refazer atividades':'▶ Continuar: '+LES[nx].t;
-  $('micCard').style.display=micOn?'none':'block';$('tMic').style.display=micOn?'none':'block';renderChart();
+  $('micCard').style.display=micOn?'none':'block';$('tMic').style.display=micOn?'none':'block';renderChart();refreshHome();
   const mb=$('micTop');mb.classList.toggle('on',micOn);
   $('homeMsg').textContent=S.key==='C'?'Dica: escolha acima a tonalidade da sua gaita (está escrita na tampa).':'Gaita em '+S.key+' selecionada.';
   $('lessons').innerHTML='';
   LES.forEach((l,i)=>{const b=document.createElement('button'),u=unlocked(i),st=S.done[l.id]||0;
     b.className='item'+(u?'':' lock');b.innerHTML=`<span class="ic">${u?(i+1):'🔒'}</span><span>${l.t}<small>${st?'★'.repeat(st)+'☆'.repeat(3-st):u?'Novo':'Complete a anterior'}</small></span>`;
-    b.onclick=()=>u&&openLesson(i);$('lessons').appendChild(b)});
+    b.onclick=()=>{if(u){$('pmode').value='play';openLesson(i)}};$('lessons').appendChild(b)});
   $('songs').innerHTML='';
-  SONGS.concat(S.imp).forEach(s=>{const b=document.createElement('button');b.className='item';b.innerHTML=`<span class="ic" style="background:var(--blow)">♪</span><span>${s.t}<small>${s.raw.length} notas</small></span>`;b.onclick=()=>openSong(s);$('songs').appendChild(b)});
+  SONGS.concat(S.imp.map(x=>Object.assign({lv:'imp'},x))).filter(x=>sf=='all'||x.lv==sf).forEach(x=>{const bs=(S.best||{})['s:'+x.t],b=document.createElement('button');b.className='item';
+   b.innerHTML=`<span class="ic" style="background:var(--blow)">♪</span><span>${x.t}<small>${({easy:'Fácil',mid:'Médio',imp:'Importada'})[x.lv]||''} · ${x.raw.length} notas${bs?' · '+'★'.repeat(bs.st)+'☆'.repeat(3-bs.st)+' '+Math.round(bs.acc*100)+'%':''}</small></span>`;
+   b.onclick=()=>{$('pmode').value='play';openSong(x)};$('songs').appendChild(b)});
+  document.querySelectorAll('#sFilter button').forEach(b=>b.classList.toggle('go',b.dataset.f==sf));
 }
 $('key').innerHTML=Object.keys(KEYS).map(k=>`<option>${k}</option>`).join('');$('key').value=S.key;
 $('key').onchange=()=>{S.key=$('key').value;save();refresh()};
 $('bends').checked=S.bends!==false;$('bends').onchange=()=>{S.bends=$('bends').checked;save()};
-$('cont').onclick=()=>{const nx=LES.findIndex(l=>!S.done[l.id]);openLesson(nx<0?0:nx)};
+$('cont').onclick=()=>{const nx=LES.findIndex(l=>!S.done[l.id]);$('pmode').value='play';openLesson(nx<0?0:nx)};
 
 /* mic */
 async function ensureMic(){
@@ -252,6 +274,8 @@ function openLesson(i){
   notes=P(l.seq).map((x,k)=>({m:midiOf(x.h,x.dir,x.bd),t:k*LD,d:LD,h:x.h,dir:x.dir,bd:x.bd,s:'p',hit:false}));
   begin(l.t,60,'wait');
 }
+function openWork(i){const l=WORK[i];ctx={type:'work',i};notes=P(l.seq).map((x,k)=>({m:midiOf(x.h,x.dir,x.bd),t:k*l.d,d:l.d,h:x.h,dir:x.dir,bd:x.bd,s:'p',hit:false}));begin(l.t,l.bpm,'wait')}
+function reopen(){if(ctx.type=='lesson')openLesson(ctx.i);else if(ctx.type=='work')openWork(ctx.i);else openSong(ctx.s)}
 function openSong(s){
   ctx={type:'song',s};let best=0,bc=-1;
   for(let sh=-24;sh<=24;sh++){const c=s.raw.reduce((a,n)=>{const r=mapNote(n.m+sh);return a+(r?(r.bd?.6:1):0)},0);if(c>bc||(c==bc&&Math.abs(sh)<Math.abs(best))){bc=c;best=sh}}
@@ -265,9 +289,9 @@ function begin(title,bpm,md,skipped,shift){
   $('mode').style.display=ctx.type=='song'?'':'none';$('guide').parentNode.style.display=ctx.type=='song'?'':'none';
   $('play').style.display='block';$('res').style.display='none';
   const strip=$('strip');strip.innerHTML='';
-  notes.forEach((n,i)=>{const d=document.createElement('div');d.id='ch'+i;d.style.minWidth=Math.max(46,Math.min(160,n.d*34))+'px';d.innerHTML=`${nm(n.m)}<br>${n.h}${n.dir=='b'?'↑':'↓'}${n.bd?'<br>bend '+n.bd:''}`;strip.appendChild(d)});
+  notes.forEach((n,i)=>{const d=document.createElement('div');d.id='ch'+i;d.style.minWidth=Math.max(46,Math.min(160,n.d*34))+'px';d.innerHTML=chipHtml(n);strip.appendChild(d)});
   $('sub').textContent=title+(shift?` · transposta ${shift>0?'+':''}${shift}`:'')+(skipped?` · ${skipped} notas ignoradas`:'');
-  $('big').textContent='Aperte Começar';$('big').style.color='';
+  $('big').textContent='Aperte Começar';$('big').style.color='';loopInit();
   update();
 }
 function update(flash){
@@ -276,7 +300,7 @@ function update(flash){
   if(n&&running){$('big').textContent=`${n.h} ${n.dir=='b'?'SOPRE ↑':'ASPIRE ↓'}${n.bd?' (bend '+n.bd+')':''}`;$('big').style.color=n.dir=='b'?'var(--blow)':'var(--draw)'}
   document.querySelectorAll('.c').forEach(c=>{c.classList.remove('on','okf','badf');c.textContent=c.classList.contains('b')?'↑':'↓'});
   if(n&&(running||mode=='wait')){const el=$(n.dir+n.h);el.classList.add('on');if(n.bd)el.textContent='↘'+n.bd;if(flash)el.classList.add(flash)}
-  notes.forEach((x,i)=>{const c=$('ch'+i);c.className='chip '+x.dir+(x.s=='ok'?' ok':x.s=='bad'?' bad':'')+(i==cur?' cur':'')});
+  notes.forEach((x,i)=>{const c=$('ch'+i);c.className='chip '+x.dir+(x.s=='ok'?' ok':x.s=='bad'?' bad':'')+(i==cur?' cur':'')+(inR(i)?'':' out')});
   const c=$('ch'+cur);if(c)c.scrollIntoView({inline:'center',block:'nearest'});
 }
 const setHit=n=>{if(n.s!='bad'){n.s='ok';hits++;vib(20)}},setBad=n=>{if(n.s!='bad'){n.s='bad';errs++;vib([40,40,40])}};
@@ -284,17 +308,20 @@ const setHit=n=>{if(n.s!='bad'){n.s='ok';hits++;vib(20)}},setBad=n=>{if(n.s!='ba
 $('start').onclick=async()=>{
   if(running){running=false;$('start').textContent='▶ Começar';return}
   if(!(await ensureMic()))return;
-  if(done||notes.some(n=>n.s!='p')){ctx.type=='lesson'?openLesson(ctx.i):openSong(ctx.s)}
-  mode=$('mode').value;running=true;t0=performance.now();stopDemo();hold=0;wrong=0;lastAct=-1;advT=performance.now();prevN=null;needRel=false;relT=0;lastBeat=-99;$('start').textContent='■ Parar';update();
+  if(done||notes.some(n=>n.s!='p')){reopen()}
+  mode=$('mode').value;running=true;t0=performance.now()-(isPractice()?notes[loopA()].t*60000/$('bpm').value:0);stopDemo();if(isPractice())cur=loopA();hold=0;wrong=0;lastAct=-1;advT=performance.now();prevN=null;needRel=false;relT=0;lastBeat=-99;$('start').textContent='■ Parar';update();
 };
-$('mode').onchange=()=>{mode=$('mode').value;ctx.type=='lesson'?openLesson(ctx.i):openSong(ctx.s)};
+$('mode').onchange=()=>{mode=$('mode').value;reopen()};
 $('bpm').oninput=()=>$('bpmv').textContent=$('bpm').value;
 $('back').onclick=()=>{stopDemo();running=false;$('play').style.display='none';refresh()};
 
 function finish(){
   running=false;done=true;$('start').textContent='↻ Repetir';
-  const tot=hits+errs,acc=tot?hits/tot:0,st=acc>=.95?3:acc>=.85?2:acc>=.7?1:0;
+  const tot=hits+errs,acc=tot?hits/tot:0,st=acc>=.9?3:acc>=.75?2:acc>=.6?1:0;
   const gain=hits*10+(st?20:0);S.xp+=gain;
+  const bk=ctx.type=='lesson'?'l:'+LES[ctx.i].id:ctx.type=='work'?'w:'+WORK[ctx.i].id:'s:'+ctx.s.t;S.best=S.best||{};const pb=S.best[bk];let rec=false;
+  if(!pb||acc>pb.acc){S.best[bk]={acc,st:Math.max(st,pb?pb.st:0)};rec=!!pb}else if(st>pb.st)pb.st=st;
+  let bonus=0;if(ctx.type=='song'){const k=wkSong();if(st==3&&S.wkDone!==k.w&&ctx.s.t==k.s.t){S.wkDone=k.w;bonus=100;S.xp+=100}}
   const today=new Date().toISOString().slice(0,10);
   if(S.last!=today){S.streak=S.last==new Date(Date.now()-864e5).toISOString().slice(0,10)?S.streak+1:1;S.last=today}
   let nxt=-1;
@@ -302,9 +329,9 @@ function finish(){
   save();refresh();
   $('rt').textContent=st?'Muito bem! 🎉':'Quase lá!';
   $('rs').innerHTML=[0,1,2].map(i=>`<span style="display:inline-block;animation:starIn .5s ${i*.25}s both;color:${i<st?'#ffc800':'var(--bd)'}">★</span>`).join('');
-  $('rd').textContent=`Precisão ${Math.round(acc*100)}% · +${gain} XP`+(ctx.type=='lesson'&&!st?' · Precisa de 70% para passar.':'');
+  $('rd').textContent=`Precisão ${Math.round(acc*100)}% · +${gain+bonus} XP`+(rec?' · Novo recorde! 🏅':'')+(bonus?' · Desafio da semana +100 XP! 🏆':'')+(acc==1&&hits>0?' · Perfeito! 🥇':'')+(ctx.type=='lesson'&&!st?' · Precisa de 60% para passar.':'');
   $('rNext').style.display=nxt>=0?'':'none';$('rNext').onclick=()=>{$('res').style.display='none';openLesson(nxt)};
-  $('rAgain').onclick=()=>{$('res').style.display='none';ctx.type=='lesson'?openLesson(ctx.i):openSong(ctx.s)};
+  $('rAgain').onclick=()=>{$('res').style.display='none';reopen()};
   $('rExit').onclick=()=>{$('res').style.display='none';$('back').onclick()};
   $('res').style.display='flex';if(st){sfx('win');confetti()}else sfx('bad');
 }
@@ -319,7 +346,7 @@ function detectF(){
  for(let t=t0;t<=t1;t++){if(c[t]<0.25){while(t+1<=t1&&c[t+1]<c[t])t++;tau=t;break}}
  if(tau<0){let m=1,mt=-1;for(let t=t0;t<=t1;t++)if(c[t]<m){m=c[t];mt=t}if(m<0.45)tau=mt;else return null}
  const a=c[tau-1],b=c[tau],g=c[tau+1],dn=a-2*b+g,f=sr/(tau+(dn?(a-g)/(2*dn):0));
- return 69+12*Math.log2(f/440)-(S.cal||0)/100;
+ const raw=69+12*Math.log2(f/440);return raw-((S.cals&&S.cals[Math.round(raw)])||0)/100;
 }
 function detectOld(){
  an.getFloatTimeDomainData(buf);const sr=actx.sampleRate,N=2048;
@@ -346,9 +373,10 @@ function tunerTick(){
  $('tNeedle').style.left=(50+Math.max(-50,Math.min(50,ce))*0.9)+'%';
  const h=mapNote(r);$('tHole').textContent=h?'Furo '+h.h+(h.dir=='b'?' soprando':' aspirando')+(h.bd?' (bend '+h.bd+')':''):'Nota fora da sua gaita';
 }
-function updCal(){$('tCalv').textContent='Calibração atual: '+((S.cal||0)>0?'+':'')+(S.cal||0)+' cents'}
-$('tCal').onclick=()=>{const L=(performance.now()-tHeldT<4000)?tHeld:null;if(L==null){$('tCalv').textContent='Toque uma nota firme e calibre logo em seguida.';return}const ce=(L-Math.round(L))*100;S.cal=Math.max(-50,Math.min(50,Math.round((S.cal||0)+ce)));save();updCal()};
-$('tReset').onclick=()=>{S.cal=0;save();updCal()};
+function updCal(k,just){const c=S.cals||{},ks=Object.keys(c).sort((a,b)=>a-b);$('tCalv').textContent=(just&&k!=null?'Nota '+nm(k)+' calibrada ('+(c[k]>0?'+':'')+c[k]+' cents). ':'')+(ks.length?ks.length+' nota(s) calibrada(s): '+ks.map(x=>nm(+x)).join(', '):'Nenhuma nota calibrada ainda.')}
+$('tCal').onclick=()=>{const L=(performance.now()-tHeldT<4000)?tHeld:null;if(L==null){$('tCalv').textContent='Toque uma nota firme e calibre logo em seguida.';return}const k=Math.round(L),ce=(L-k)*100;S.cals=S.cals||{};S.cals[k]=Math.max(-50,Math.min(50,Math.round((S.cals[k]||0)+ce)));save();updCal(k,true)};
+$('tReset').onclick=()=>{S.cals={};S.cal=0;save();updCal()};
+$('tReset1').onclick=()=>{const L=(performance.now()-tHeldT<4000)?tHeld:null;if(L==null){$('tCalv').textContent='Toque a nota que quer zerar e toque no botão logo em seguida.';return}const k=Math.round(L);if(S.cals)delete S.cals[k];save();updCal()};
 $('oct').checked=S.oct!==false;$('oct').onchange=()=>{S.oct=$('oct').checked;save()};
 $('tol').value=S.tol||50;$('tolv').textContent=S.tol||50;$('tol').oninput=()=>{S.tol=+$('tol').value;$('tolv').textContent=S.tol;save()};
 $('tMic').onclick=ensureMic;updCal();
@@ -362,7 +390,7 @@ function waitStep(n,st,dt,now){
  if(m){hold+=dt;wrong=0}
  else{hold=Math.max(0,hold-dt*0.6);if(st!=null&&since>700&&!(prevN&&matches(prevN,st))){wrong+=dt;if(wrong>=700&&n.s!='bad'){setBad(n);wrong=0;update('badf')}}else wrong=0}
  $('hbar').style.width=Math.min(100,hold/need*100)+'%';
- if(hold>=need){setHit(n);prevN=n;cur++;hold=0;wrong=0;advT=now;relT=0;const nx=notes[cur];needRel=!!(nx&&matches(nx,n.m));$('hbar').style.width='0%';update('okf');if(cur>=notes.length)setTimeout(finish,400)}
+ if(hold>=need){setHit(n);prevN=n;cur++;hold=0;wrong=0;advT=now;relT=0;const nx=notes[cur];needRel=!!(nx&&matches(nx,n.m));$('hbar').style.width='0%';update('okf');if(cur>endIdx()){if(isPractice())loopReset();else setTimeout(finish,400)}}
 }
 function tick(acc){if(!actx)return;const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=acc?1500:1000;g.gain.value=.12;o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+.04)}
 function stopDemo(){demoO.forEach(o=>{try{o.stop()}catch(e){}});demoTO.forEach(clearTimeout);demoO=[];demoTO=[]}
@@ -395,13 +423,49 @@ function confetti(){const w=document.createElement('div'),cols=['#58cc02','#1cb0
 document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('button,label.btn');if(b&&!b.closest('nav')&&!b.disabled)sfx('click')});
 $('sfxBtn').textContent=S.sfx===false?'🔇':'🔊';
 $('sfxBtn').onclick=()=>{S.sfx=(S.sfx===false);save();$('sfxBtn').textContent=S.sfx===false?'🔇':'🔊';sfx('click')};
+var sf='all';
+const isPractice=()=>$('pmode').value=='practice',loopA=()=>+$('loopA').value,loopB=()=>+$('loopB').value;
+const endIdx=()=>isPractice()?loopB():notes.length-1;
+function inR(i){return !isPractice()||(i>=loopA()&&i<=loopB())}
+function chipHtml(n){const v=$('view').value,a=nm(n.m),b=n.h+(n.dir=='b'?'↑':'↓')+(n.bd?'<br>bend '+n.bd:'');return v=='note'?a:v=='tab'?b:a+'<br>'+b}
+function pmUI(){$('practiceBox').style.display=isPractice()?'block':'none'}
+function loopLabel(){$('loopLbl').textContent='Trecho: notas '+(loopA()+1)+' a '+(loopB()+1)+' de '+notes.length}
+function loopInit(){const mx=Math.max(0,notes.length-1);$('loopA').max=mx;$('loopB').max=mx;$('loopA').value=0;$('loopB').value=mx;pmUI();loopLabel()}
+function loopReset(){
+ const A=loopA(),B=loopB();let er=0;for(let i=A;i<=B;i++)if(notes[i].s=='bad')er++;
+ if($('auto').checked){let b=+$('bpm').value;b=er==0?Math.min(140,b+5):er>=3?Math.max(40,b-5):b;$('bpm').value=b;$('bpmv').textContent=b}
+ for(let i=A;i<=B;i++){const n=notes[i];n.s='p';n.hit=false;n.acc=0}
+ cur=A;hold=0;wrong=0;advT=performance.now();prevN=null;needRel=false;relT=0;lastAct=-1;
+ if(mode=='time')t0=performance.now()-notes[A].t*60000/$('bpm').value;
+ update()}
+function loopChanged(){notes.forEach(n=>{n.s='p';n.hit=false;n.acc=0});if(running)loopReset();else cur=loopA();loopLabel();update()}
+$('loopA').oninput=()=>{if(loopA()>loopB())$('loopB').value=loopA();loopChanged()};
+$('loopB').oninput=()=>{if(loopB()<loopA())$('loopA').value=loopB();loopChanged()};
+$('pmode').onchange=()=>{reopen()};
+$('view').value=S.view||'both';$('view').onchange=()=>{S.view=$('view').value;save();notes.forEach((n,i)=>{const c=$('ch'+i);if(c)c.innerHTML=chipHtml(n)})};
+function dayKey(){return new Date().toISOString().slice(0,10)}
+function wkSong(){const w=Math.floor(Date.now()/6048e5);return{w,s:SONGS[w%SONGS.length]}}
+let tAcc=0;function addTime(dt){const td=dayKey();if(S.day!==td){S.day=td;S.todaySecs=0}S.todaySecs=(S.todaySecs||0)+dt/1000;tAcc+=dt;if(tAcc>5000){tAcc=0;save()}}
+function renderWorks(){const w=$('works');w.innerHTML='';WORK.forEach((l,i)=>{const bs=(S.best||{})['w:'+l.id],b=document.createElement('button');b.className='item';
+ b.innerHTML=`<span class="ic" style="background:var(--draw)">${i+1}</span><span>${l.t}<small>${l.desc}${bs?' · '+'★'.repeat(bs.st)+'☆'.repeat(3-bs.st):''}</small></span>`;
+ b.onclick=()=>{$('pmode').value='play';openWork(i)};w.appendChild(b)})}
+function refreshHome(){
+ const td=dayKey();if(S.day!==td){S.day=td;S.todaySecs=0}
+ const g=+(S.goal||10),m=(S.todaySecs||0)/60;$('goal').value=g;$('goalb').style.width=Math.min(100,m/g*100)+'%';
+ $('goalt').textContent=m>=g?'Meta cumprida hoje! 🎉':Math.floor(m)+' de '+g+' minutos hoje';
+ const k=wkSong();$('wkT').textContent=k.s.t;$('wkD').textContent=S.wkDone===k.w?'Desafio concluído! ✔ +100 XP':'Tire 3 estrelas (90%) no modo valendo estrelas e ganhe +100 XP';
+ $('lvCard').style.display=S.lv?'none':'block';renderWorks()}
+$('goal').onchange=()=>{S.goal=+$('goal').value;save();refreshHome()};
+$('wkGo').onclick=()=>{$('pmode').value='play';openSong(wkSong().s)};
+document.querySelectorAll('.lvb').forEach(b=>b.onclick=()=>{S.lv=1;S.unl=+b.dataset.lv;save();refresh()});
+document.querySelectorAll('#sFilter button').forEach(b=>b.onclick=()=>{sf=b.dataset.f;refresh()});
 /* laço */
 let prevT=performance.now();
 function loop(now){
   const dt=now-prevT;prevT=now;
   if(micOn&&!running&&$('s-tuner').classList.contains('act'))tunerTick();
   if(micOn&&running){
-    const fr=smooth(detectF());
+    addTime(dt);const fr=smooth(detectF());
     const st=fr;if(st!=null){const r=Math.round(st),ce=Math.round((st-r)*100);$('sub').textContent='Você toca: '+nm(r)+' ('+(ce>0?'+':'')+ce+' cents)'}
     if(mode=='wait'){
       const n=notes[cur];
@@ -412,18 +476,18 @@ function loop(now){
     }else{
       const spb=60/$('bpm').value,clk=(now-t0)/1000/spb-2;let act=-1;const bt=Math.floor(clk);if(bt!==lastBeat){lastBeat=bt;if($('metro').checked)tick(((bt%4)+4)%4==0)}
       notes.forEach((n,i)=>{
-        if(clk>=n.t&&clk<n.t+n.d){act=i;if(matches(n,st)&&(clk-n.t)*spb>=0.15){n.acc=(n.acc||0)+dt;if(n.acc>=Math.min(450,n.d*spb*400))n.hit=true}}
+        if(!inR(i))return;if(clk>=n.t&&clk<n.t+n.d){act=i;if(matches(n,st)&&(clk-n.t)*spb>=0.15){n.acc=(n.acc||0)+dt;if(n.acc>=Math.min(450,n.d*spb*400))n.hit=true}}
         if(clk>=n.t+n.d&&n.s=='p'){n.hit?setHit(n):setBad(n)}
       });
       if(act>=0&&act!=lastAct){lastAct=act;if($('guide').checked)beep(notes[act].m)}
-      cur=act>=0?act:(clk<0?0:cur);update(act>=0&&notes[act].hit?'okf':null);
-      const e=notes[notes.length-1];if(clk>e.t+e.d){cur=notes.length;update();finish()}
+      cur=act>=0?act:(clk<0?(isPractice()?loopA():0):cur);update(act>=0&&notes[act].hit?'okf':null);
+      const e=notes[isPractice()?loopB():notes.length-1];if(clk>e.t+e.d){if(isPractice())loopReset();else{cur=notes.length;update();finish()}}
     }
   }
   requestAnimationFrame(loop);
 }
 
-$('bkOut').onclick=()=>{const o={xp:S.xp,streak:S.streak,last:S.last,done:S.done,key:S.key,bends:S.bends};const c=btoa(unescape(encodeURIComponent(JSON.stringify(o))));$('bk').value=c;$('bk').select();try{navigator.clipboard.writeText(c)}catch(e){}};
+$('bkOut').onclick=()=>{const o={xp:S.xp,streak:S.streak,last:S.last,done:S.done,key:S.key,bends:S.bends,cals:S.cals};const c=btoa(unescape(encodeURIComponent(JSON.stringify(o))));$('bk').value=c;$('bk').select();try{navigator.clipboard.writeText(c)}catch(e){}};
 $('bkIn').onclick=()=>{try{const o=JSON.parse(decodeURIComponent(escape(atob($('bk').value.trim()))));Object.assign(S,o);save();$('key').value=S.key;$('bends').checked=S.bends!==false;refresh();$('bk').value='';$('homeMsg').textContent='Progresso restaurado!'}catch(e){$('homeMsg').textContent='Código inválido.'}};
 async function parseAudio(ab){
  const c=new (window.AudioContext||window.webkitAudioContext)();const au=await c.decodeAudioData(ab);try{c.close()}catch(e){}
