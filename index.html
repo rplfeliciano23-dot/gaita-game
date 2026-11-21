@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Gaita Game</title>
+<title>Gaita Bem-te-vi</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#58cc02">
 <meta name="mobile-web-app-capable" content="yes">
@@ -119,6 +119,16 @@ nav button{font-size:11px}
 .opt.ok{background:var(--ok);color:#fff;border-color:#46a302}.opt.bad{background:var(--bad);color:#fff;border-color:#d33}
 .ban{padding:12px;border-radius:12px;margin:10px 0;font-weight:700}
 .ban.ok{background:rgba(88,204,2,.18);color:var(--ok)}.ban.bad{background:rgba(255,75,75,.18);color:var(--bad)}
+.top h1{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sg{font-size:12px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin:18px 4px 8px}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd)}
+.srow:last-child{border-bottom:0}
+.srow input[type=checkbox]{width:22px;height:22px}
+.srow input[type=range]{width:110px}
+.srow select{max-width:55%}
+#tunerPlay{position:fixed;inset:0;background:var(--bg);overflow:auto;display:none;z-index:6;padding:calc(12px + env(safe-area-inset-top,0px)) 12px 24px;animation:slideUp .35s ease}
+#tunerPlay .in{max-width:640px;margin:auto}
+details>summary{list-style:none}details>summary::-webkit-details-marker{display:none}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -150,42 +160,48 @@ nav button{font-size:11px}
  <text class="nt" x="130" y="175" fill="#ff4b4b" style="--dx:-25px;--rot:-12deg;animation-delay:1.05s">♬</text>
  <text class="nt" x="200" y="185" fill="#ffc800" style="--dx:90px;--rot:30deg;animation-delay:1.4s">♪</text>
  <text class="nt" x="100" y="185" fill="#ce82ff" style="--dx:-90px;--rot:-30deg;animation-delay:1.75s">♫</text>
-</svg><div class="st">Gaita Game</div><div class="ss">toque para começar</div></div>
+</svg><div class="st">Gaita Bem-te-vi</div><div class="ss">toque para começar</div></div>
 <div id="toast"></div>
 <div class="app">
- <div class="top"><h1>🎶 Gaita Game</h1><span class="pill" id="pStreak"></span><span class="pill" id="pXp"></span><button id="sfxBtn" title="Sons" style="padding:8px 10px">🔊</button><button class="mic" id="micTop" title="Microfone">🎤</button></div>
+ <div class="top"><h1>🎶 Gaita Bem-te-vi</h1><span class="pill" id="pStreak"></span><span class="pill" id="pXp"></span><button class="mic" id="micTop" title="Microfone">🎤</button></div>
 
  <section class="scr act" id="s-home">
   <div class="card"><b id="lvl"></b><div class="xp"><i id="xpb"></i></div><span class="mut" id="xpt"></span></div>
-  <div class="card">
-   <div class="mut">Minha gaita</div>
-   <select id="key" style="width:100%;margin:6px 0 8px"></select><label class="mut" style="display:block;margin-bottom:12px"><input type="checkbox" id="bends"> usar bends nas músicas</label>
-   <button class="go big" id="cont">▶ Continuar</button>
-  </div>
   <div class="card" id="lvCard"><b>Qual é o seu nível?</b><p class="mut">Assim eu libero as atividades certas para você começar.</p><button class="big lvb" data-lv="0" style="margin-bottom:6px">🌱 Nunca toquei gaita</button><button class="big lvb" data-lv="3" style="margin-bottom:6px">🎶 Já sei o básico</button><button class="big lvb" data-lv="5">🔥 Já toco algumas músicas</button></div>
-  <div class="card"><b>Meta diária</b><select id="goal" style="float:right;padding:4px 8px"><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option></select><div class="xp"><i id="goalb"></i></div><span class="mut" id="goalt"></span></div>
+  <button class="go big" id="cont" style="padding:18px;font-size:18px;margin-bottom:12px">▶ Continuar</button>
+  <div class="card"><b>Meta de hoje</b><div class="xp"><i id="goalb"></i></div><span class="mut" id="goalt"></span></div>
   <div class="card" id="wkCard"><b>🏆 Desafio da semana</b><div id="wkT" style="font-size:18px;font-weight:800;margin:4px 0"></div><div class="mut" id="wkD"></div><button class="go big" id="wkGo" style="margin-top:8px">Jogar desafio</button></div>
-  <div class="card" id="instCard" style="display:none"><b>📲 Instalar o app</b><p class="mut">Use como um app de verdade, direto da tela inicial.</p><button class="go big" id="instBtn">Instalar</button></div>
-  
-  <div class="card mut" id="homeMsg"></div>
-  <div class="card"><div class="mut">Backup do progresso (para trocar de aparelho)</div><textarea id="bk" rows="3" style="width:100%;margin:6px 0;border-radius:10px;border:2px solid var(--bd);background:var(--card);color:var(--tx)" placeholder="O código aparece aqui. Para restaurar, cole um código e toque em Restaurar."></textarea><div class="row"><button id="bkOut">📋 Gerar código</button><button id="bkIn">📥 Restaurar</button></div></div>
  </section>
 
  <section class="scr" id="s-act"><h2 style="margin:4px 0 12px">Trilha de aprendizado</h2><div id="lessons"></div><h2 style="margin:18px 0 12px">Treinos técnicos</h2><div id="works"></div></section>
 
  <section class="scr" id="s-theory"><h2 style="margin:4px 0 12px">Teoria</h2><div class="card mut">Aprenda o básico antes de tocar: como segurar, a boca, a respiração e muito mais. Responda as perguntas para ganhar XP.</div><div id="theoryList"></div></section>
 
- <section class="scr" id="s-tuner"><h2 style="margin:4px 0 12px">Afinador</h2>
-  <div class="card" style="text-align:center"><div id="tNote" style="font-size:64px;font-weight:900">–</div><div id="tHz" class="mut">Toque uma nota na gaita</div>
-   <div style="position:relative;height:36px;margin:14px 0;background:var(--bd);border-radius:18px"><div style="position:absolute;left:50%;top:0;bottom:0;width:3px;background:var(--ok)"></div><div id="tNeedle" style="position:absolute;top:2px;bottom:2px;width:12px;margin-left:-6px;border-radius:6px;background:var(--draw);left:50%"></div></div>
-   <div id="tCents" style="font-size:20px;font-weight:800">&nbsp;</div><div id="tHole" class="mut"></div></div>
-  <div class="card"><b>Tom da sua gaita</b><p class="mut">Sopre o furo 4 com firmeza e toque no botão logo em seguida. O app descobre o tom (C, D, Eb…) sozinho.</p><button class="go" id="tKey">🔍 Descobrir o tom</button><div class="mut" id="tKeyMsg" style="margin-top:6px"></div></div>
-  <div class="card"><b>Calibração</b><p class="mut">Se você toca a nota certa e o app marca errado, a sua gaita pode estar levemente desafinada. Toque uma nota firme e toque em Calibrar. Cada nota guarda a própria calibração, então calibrar uma não mexe nas outras.</p>
-   <div class="row"><button class="go" id="tCal">🎯 Calibrar com esta nota</button><button id="tReset1">Zerar esta nota</button><button id="tReset">Zerar todas</button></div><div class="mut" id="tCalv"></div>
-   <label class="mut" style="display:block;margin-top:8px"><input type="checkbox" id="oct"> aceitar nota de outra oitava (recomendado)</label>
-   <div class="mut" style="margin-top:8px">Tolerância <input type="range" id="tol" min="25" max="70" value="50"> <span id="tolv"></span> cents</div>
-   <div class="mut" style="margin-top:8px">Sensibilidade do microfone <input type="range" id="gate" min="1" max="20" value="3"> <span id="gatev"></span></div><div class="mut" id="tMic" style="margin-top:10px;text-align:center">🎤 Ligue o microfone no botão do topo</div></div>
-  <div class="card"><b>Mapa de notas da sua gaita</b><div id="chart" style="overflow-x:auto;margin-top:8px"></div></div>
+ <section class="scr" id="s-settings"><h2 style="margin:4px 0 4px">Ajustes</h2>
+  <div class="card" id="instCard" style="display:none;margin-top:12px"><b>📲 Instalar o app</b><p class="mut">Use como um app de verdade, direto da tela inicial.</p><button class="go big" id="instBtn">Instalar</button></div>
+  <div class="sg">Minha gaita</div>
+  <div class="card">
+   <div class="srow"><span>Tom da gaita</span><select id="key"></select></div>
+   <div class="srow"><span>Usar bends nas músicas</span><input type="checkbox" id="bends"></div>
+   <div class="srow"><span>Mostrar nas notas</span><select id="view"><option value="both">Furo + nota</option><option value="tab">Só furo</option><option value="note">Só nota</option></select></div>
+  </div>
+  <div class="sg">Microfone e afinação</div>
+  <div class="card">
+   <button class="item" id="openTuner" style="margin-bottom:6px"><span class="ic" style="background:var(--blow)">🎚️</span><span>Afinador e calibração<small>Descobrir o tom, calibrar notas e mapa de notas</small></span></button>
+   <div class="srow"><span>Sensibilidade do microfone</span><span><input type="range" id="gate" min="1" max="20" value="3"> <b id="gatev"></b></span></div>
+   <div class="srow"><span>Tolerância (cents)</span><span><input type="range" id="tol" min="25" max="70" value="50"> <b id="tolv"></b></span></div>
+   <div class="srow"><span>Aceitar nota de outra oitava</span><input type="checkbox" id="oct"></div>
+  </div>
+  <div class="sg">Treino</div>
+  <div class="card">
+   <div class="srow"><span>Meta diária</span><select id="goal"><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option></select></div>
+   <div class="srow"><span>Sons e efeitos</span><input type="checkbox" id="sfxChk"></div>
+   <div class="srow"><span>Refazer o teste de nível</span><button id="relv" style="padding:6px 12px">Refazer</button></div>
+  </div>
+  <div class="sg">Dados</div>
+  <div class="card"><div class="mut">Backup do progresso (para trocar de aparelho)</div><textarea id="bk" rows="3" style="width:100%;margin:6px 0;border-radius:10px;border:2px solid var(--bd);background:var(--card);color:var(--tx)" placeholder="O código aparece aqui. Para restaurar, cole um código e toque em Restaurar."></textarea><div class="row"><button id="bkOut">📋 Gerar código</button><button id="bkIn">📥 Restaurar</button></div>
+   <div class="srow" style="margin-top:6px"><span>Apagar todo o progresso</span><button id="wipe" style="padding:6px 12px;color:var(--bad);border-color:var(--bad)">Apagar</button></div></div>
+  <p class="mut" style="text-align:center;margin-top:16px">Gaita Bem-te-vi 🎶</p>
  </section>
 
  <section class="scr" id="s-songs">
@@ -193,7 +209,7 @@ nav button{font-size:11px}
   <div class="card"><label class="btn" style="display:block;text-align:center">🎵 Importar MIDI ou MP3<input type="file" id="file" accept=".mid,.midi,.mp3,.wav,.m4a,.ogg,audio/*" hidden></label><p class="mut" id="impMsg">O app converte as notas para furos da sua gaita e transpõe para caber nela. MP3 só funciona bem com melodia solo (uma voz ou instrumento).</p></div>
  </section>
 </div>
-<nav><i id="navInd"></i><button id="n-home" class="act"><span class="ni">🏠</span><span>Início</span></button><button id="n-theory"><span class="ni">📖</span><span>Teoria</span></button><button id="n-act"><span class="ni">🎯</span><span>Prática</span></button><button id="n-songs"><span class="ni">🎵</span><span>Músicas</span></button><button id="n-tuner"><span class="ni">🎚️</span><span>Afinador</span></button></nav>
+<nav><i id="navInd"></i><button id="n-home" class="act"><span class="ni">🏠</span><span>Início</span></button><button id="n-theory"><span class="ni">📖</span><span>Teoria</span></button><button id="n-act"><span class="ni">🎯</span><span>Prática</span></button><button id="n-songs"><span class="ni">🎵</span><span>Músicas</span></button><button id="n-settings"><span class="ni">⚙️</span><span>Ajustes</span></button></nav>
 
 <div id="play"><div class="in">
  <div class="row"><button id="back">✕</button><div class="bar"><i id="prog"></i></div><span class="pill" id="pst"></span></div>
@@ -201,13 +217,25 @@ nav button{font-size:11px}
  <div class="card"><div class="harp" id="harp"></div><div class="legend"><span><b style="background:var(--blow)"></b>Soprar ↑</span><span><b style="background:var(--draw)"></b>Aspirar ↓</span></div></div>
  <div class="card"><div class="strip" id="strip"></div></div>
  <div class="card">
-  <div class="row"><select id="mode"><option value="wait">Aprender (espera você)</option><option value="time">Ritmo (acompanhar)</option></select><span id="opts"><label class="mut"><input type="checkbox" id="guide"> ouvir guia</label> <label class="mut"><input type="checkbox" id="metro"> metrônomo</label></span></div>
-  <div class="row"><select id="pmode"><option value="play">Valendo estrelas</option><option value="practice">Prática (sem pontuar)</option></select><select id="view"><option value="both">Furo + nota</option><option value="tab">Só furo</option><option value="note">Só nota</option></select></div>
-  <div id="practiceBox" style="display:none;margin-bottom:8px"><div class="mut" id="loopLbl"></div><div class="row"><input type="range" id="loopA" min="0" max="0" value="0" style="flex:1"><input type="range" id="loopB" min="0" max="0" value="0" style="flex:1"></div><label class="mut"><input type="checkbox" id="auto"> tempo automático (acelera quando você acerta)</label></div>
-  <div class="row"><span class="mut">Andamento <input type="range" id="bpm" min="40" max="140" value="70"> <span id="bpmv">70</span></span></div>
-  <button class="go big" id="start">▶ Começar</button>
+  <select id="pmode"><option value="play">⭐ Valendo estrelas</option><option value="practice">🔁 Prática (sem pontuar)</option></select>
+  <button class="go big" id="start" style="margin-top:10px">▶ Começar</button>
   <button class="big" id="demo" style="margin-top:8px">🔊 Ouvir como soa</button>
+  <details id="adv" style="margin-top:10px"><summary class="mut" style="cursor:pointer;font-weight:800">⚙️ Opções</summary>
+   <div class="row" style="margin-top:8px"><select id="mode"><option value="wait">Aprender (espera você)</option><option value="time">Ritmo (acompanhar)</option></select><span id="opts"><label class="mut"><input type="checkbox" id="guide"> ouvir guia</label> <label class="mut"><input type="checkbox" id="metro"> metrônomo</label></span></div>
+   <div id="practiceBox" style="display:none;margin-bottom:8px"><div class="mut" id="loopLbl"></div><div class="row"><input type="range" id="loopA" min="0" max="0" value="0" style="flex:1"><input type="range" id="loopB" min="0" max="0" value="0" style="flex:1"></div><label class="mut"><input type="checkbox" id="auto"> tempo automático (acelera quando você acerta)</label></div>
+   <div class="row"><span class="mut">Andamento <input type="range" id="bpm" min="40" max="140" value="70"> <span id="bpmv">70</span></span></div>
+  </details>
  </div>
+</div></div>
+<div id="tunerPlay"><div class="in">
+ <div class="row" style="margin-bottom:12px"><button id="tunerClose">✕</button><h2 style="margin:0">Afinador</h2></div>
+ <div class="card" style="text-align:center"><div id="tNote" style="font-size:64px;font-weight:900">–</div><div id="tHz" class="mut">Toque uma nota na gaita</div>
+  <div style="position:relative;height:36px;margin:14px 0;background:var(--bd);border-radius:18px"><div style="position:absolute;left:50%;top:0;bottom:0;width:3px;background:var(--ok)"></div><div id="tNeedle" style="position:absolute;top:2px;bottom:2px;width:12px;margin-left:-6px;border-radius:6px;background:var(--draw);left:50%"></div></div>
+  <div id="tCents" style="font-size:20px;font-weight:800">&nbsp;</div><div id="tHole" class="mut"></div><div class="mut" id="tMic" style="margin-top:10px">🎤 Ligue o microfone no botão do topo</div></div>
+ <div class="card"><b>Descobrir o tom</b><p class="mut">Sopre o furo 4 com firmeza e toque no botão logo em seguida.</p><button class="go" id="tKey">🔍 Descobrir o tom</button><div class="mut" id="tKeyMsg" style="margin-top:6px"></div></div>
+ <div class="card"><b>Calibrar notas</b><p class="mut">Se você toca a nota certa e o app marca errado, toque uma nota firme e toque em Calibrar. Cada nota guarda a própria calibração.</p>
+  <div class="row"><button class="go" id="tCal">🎯 Calibrar</button><button id="tReset1">Zerar esta nota</button><button id="tReset">Zerar todas</button></div><div class="mut" id="tCalv"></div></div>
+ <div class="card"><b>Mapa de notas da sua gaita</b><div id="chart" style="overflow-x:auto;margin-top:8px"></div></div>
 </div></div>
 <div id="thPlay"><div class="in">
  <div class="row"><button id="thClose">✕</button><div class="bar"><i id="thProg"></i></div></div>
@@ -257,7 +285,9 @@ const WORK=[
  {id:'w2',t:'Notas limpas',desc:'Uma nota só, sem vazar para os furos vizinhos',seq:'3b 4b 5b 6b 5b 4b 3b',d:2,bpm:50},
  {id:'w3',t:'Troca rápida 4 ↔ 5',desc:'Treine a velocidade da troca',seq:'4b 5b 4b 5b 4d 5d 4d 5d',d:1,bpm:80},
  {id:'w4',t:'Saltos entre furos',desc:'Mire o furo certo sem olhar',seq:'2b 5b 3b 6b 4b 7d',d:1.5,bpm:60},
- {id:'w5',t:'Bends: furos 2 e 3',desc:'Dobre a nota aspirando',seq:'2d 2d1 2d 3d 3d1 3d 3d2 3d',d:2,bpm:50}
+ {id:'w5',t:'Bends: furos 2 e 3',desc:'Dobre a nota aspirando',seq:'2d 2d1 2d 3d 3d1 3d 3d2 3d',d:2,bpm:50},
+ {id:'w6',t:'Bend no furo 4',desc:'O primeiro bend, meio tom para baixo',seq:'4d 4d1 4d 4d1 4d',d:2,bpm:50},
+ {id:'w7',t:'Escala de blues (2ª posição)',desc:'Sol, Si bemol, Dó, Ré bemol, Ré, Fá',seq:'2d 3d1 4b 4d1 4d 5d',d:1.5,bpm:60}
 ];
 let notes=[],cur=0,hold=0,wrong=0,hits=0,errs=0,mode='wait',running=false,t0=0,lastAct=-1,ctx=null,done=false;
 let actx,an,buf,micOn=false,last=null,cnt=0;
@@ -268,7 +298,7 @@ const BD={d:{1:[1],2:[1,2],3:[1,2,3],4:[1],6:[1]},b:{8:[1],9:[1],10:[1,2]}};
 function bendCands(m,k,c){[['b',BLOW],['d',DRAW]].forEach(([dr,T])=>{const o=BD[dr];for(const h in o)o[h].forEach(b=>{if(T[h-1]+k-b==m)c.push({h:+h,dir:dr,bd:b})})})}
 
 /* telas */
-const TABS=['home','theory','act','songs','tuner'];let curTab='home';
+const TABS=['home','theory','act','songs','settings'];let curTab='home';
 function show(t){const di=TABS.indexOf(t)-TABS.indexOf(curTab);
  TABS.forEach(x=>{const e=$('s-'+x);e.classList.remove('inR','inL');e.classList.toggle('act',x==t);$('n-'+x).classList.toggle('act',x==t)});
  if(t!==curTab){$('s-'+t).classList.add(di>0?'inR':'inL');sfx('nav')}
@@ -282,7 +312,6 @@ function refresh(){
   const nx=LES.findIndex(l=>!S.done[l.id]);$('cont').textContent=nx<0?'🏆 Refazer atividades':'▶ Continuar: '+LES[nx].t;
   $('tMic').style.display=micOn?'none':'block';renderChart();refreshHome();
   const mb=$('micTop');mb.classList.toggle('on',micOn);
-  $('homeMsg').textContent=S.key==='C'?'Dica: escolha acima a tonalidade da sua gaita (está escrita na tampa).':'Gaita em '+S.key+' selecionada.';
   $('lessons').innerHTML='';
   LES.forEach((l,i)=>{const b=document.createElement('button'),u=unlocked(i),st=S.done[l.id]||0;
     b.className='item'+(u?'':' lock');b.innerHTML=`<span class="ic">${u?(i+1):'🔒'}</span><span>${l.t}<small>${st?'★'.repeat(st)+'☆'.repeat(3-st):u?'Novo':'Complete a anterior'}</small></span>`;
@@ -486,8 +515,7 @@ function confetti(){const w=document.createElement('div'),cols=['#58cc02','#1cb0
  for(let i=0;i<46;i++){const c=document.createElement('i');c.className='confetti';c.style.left=Math.random()*100+'%';c.style.background=cols[i%6];c.style.animationDuration=(1.6+Math.random()*1.6)+'s';c.style.animationDelay=Math.random()*.4+'s';w.appendChild(c)}
  document.body.appendChild(w);setTimeout(()=>w.remove(),3800)}
 document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('button,label.btn');if(b&&!b.closest('nav')&&!b.disabled)sfx('click')});
-$('sfxBtn').textContent=S.sfx===false?'🔇':'🔊';
-$('sfxBtn').onclick=()=>{S.sfx=(S.sfx===false);save();$('sfxBtn').textContent=S.sfx===false?'🔇':'🔊';sfx('click')};
+$('sfxChk').checked=S.sfx!==false;$('sfxChk').onchange=()=>{S.sfx=$('sfxChk').checked;save();sfx('click')};
 var sf='all';
 const isPractice=()=>$('pmode').value=='practice',loopA=()=>+$('loopA').value,loopB=()=>+$('loopB').value;
 const endIdx=()=>isPractice()?loopB():notes.length-1;
@@ -549,9 +577,16 @@ const ART={
  tab:()=>sv(`<g stroke-width="3" fill="none"><rect x="30" y="34" width="60" height="50" rx="12" stroke="#1cb0f6"/><rect x="120" y="34" width="60" height="50" rx="12" stroke="#1cb0f6"/><rect x="210" y="34" width="60" height="50" rx="12" stroke="#ff9600"/></g>`+tx(60,67,'4 ↑',"middle",20,'#1cb0f6')+tx(150,67,'5 ↑',"middle",20,'#1cb0f6')+tx(240,67,'6 ↓',"middle",20,'#ff9600')+tx(60,106,'sopra no furo 4')+tx(150,106,'sopra no furo 5')+tx(240,106,'aspira no furo 6'),130),
  bend:()=>sv(`<path d="M20 50 H110 Q140 50 160 82 T272 112" stroke="#ff9600" stroke-width="5" fill="none" stroke-linecap="round"/>`+tx(65,38,'nota normal')+tx(214,138,'nota dobrada (mais grave)'),150)
 };
+Object.assign(ART,{
+ tongue:()=>sv(harp(10,40,130,40)+`<ellipse cx="36" cy="60" rx="34" ry="24" fill="#e88f9a" opacity=".55" stroke="#b85c6a" stroke-width="2"/><rect x="10" y="48" width="39" height="24" rx="6" fill="#c0392b" opacity=".85"/><path d="M55 90 V104" stroke="#58cc02" stroke-width="4"/>`+harp(160,40,130,40)+`<ellipse cx="186" cy="60" rx="34" ry="24" fill="#e88f9a" opacity=".55" stroke="#b85c6a" stroke-width="2"/><rect x="173" y="48" width="26" height="24" rx="6" fill="#c0392b" opacity=".85"/><path d="M166 90 V104 M205 90 V104" stroke="#58cc02" stroke-width="4"/>`+tx(75,122,'Nota única: língua tampa 1–3')+tx(75,136,'e o furo 4 fica aberto')+tx(225,122,'Oitava: língua tampa 2–3,')+tx(225,136,'furos 1 e 4 abertos'),150),
+ wah:()=>sv(harp(70,50,130,40)+`<rect x="40" y="46" width="52" height="12" rx="6" fill="${SKc}" stroke="#c9975a"/><rect x="40" y="82" width="52" height="12" rx="6" fill="${SKc}" stroke="#c9975a"/><path d="M200 44 Q262 46 260 70 Q258 98 200 94 Q226 70 200 44 Z" fill="${SKc}" stroke="#c9975a"/><path d="M270 56 H292 M270 84 H292 M280 50 V90" stroke="#ff9600" stroke-width="3" fill="none"/>`+tx(70,120,'Esquerda: segura')+tx(235,120,'Direita: abre e fecha')+tx(150,148,'o som muda: "uó-uá"'),160),
+ scale:()=>{const n=[['4↑','C','b'],['4↓','D','d'],['5↑','E','b'],['5↓','F','d'],['6↑','G','b'],['6↓','A','d'],['7↓','B','d'],['7↑','C','b']];let o='';n.forEach((x,i)=>{const c=x[2]=='b'?'#1cb0f6':'#ff9600',X=10+i*35;o+=`<rect x="${X}" y="40" width="30" height="52" rx="8" fill="none" stroke="${c}" stroke-width="3"/>`+tx(X+15,62,x[0],'middle',12,c)+tx(X+15,82,x[1],'middle',15,c)});return sv(tx(150,22,'Escala de Dó maior (furos 4 a 7)')+o+tx(150,116,'Dó  Ré  Mi  Fá  Sol  Lá  Si  Dó'),130)},
+ rhythm:()=>sv(`<rect x="20" y="20" width="240" height="18" rx="6" fill="#1cb0f6"/><rect x="20" y="52" width="120" height="18" rx="6" fill="#58cc02"/><rect x="20" y="84" width="60" height="18" rx="6" fill="#ff9600"/><rect x="20" y="116" width="30" height="18" rx="6" fill="#ce82ff"/>`+tx(268,34,'4 tempos','start')+tx(148,66,'2 tempos','start')+tx(88,98,'1 tempo','start')+tx(58,130,'½ tempo','start')+tx(20,156,'Semibreve · Mínima · Semínima · Colcheia','start'),170),
+ posit:()=>sv(tx(150,22,'Gaita C: tom em que você toca')+`<rect x="14" y="34" width="272" height="30" rx="8" fill="none" stroke="#58cc02" stroke-width="2"/><rect x="14" y="72" width="272" height="30" rx="8" fill="none" stroke="#1cb0f6" stroke-width="2"/><rect x="14" y="110" width="272" height="30" rx="8" fill="none" stroke="#ff9600" stroke-width="2"/>`+tx(26,54,'1ª posição: C (o mesmo tom)','start',12)+tx(26,92,'2ª posição (cross): G, uma quinta acima','start',12)+tx(26,130,'3ª posição: D, um tom acima','start',12),150)
+});
 const I=(h,p,art)=>({k:'i',h,p,art}),Q=(q,o,a,art)=>({k:'q',q,o,a,art});
 const TH=[
- {id:'t1',t:'Conheça a gaita',ic:'🎼',steps:[
+ {id:'t1',u:'Unidade 1 · Fundamentos',t:'Conheça a gaita',ic:'🎼',steps:[
   I('A gaita diatônica','A gaita mais comum para começar tem 10 furos. Cada furo toca uma nota quando você sopra e outra quando aspira. Por dentro, cada furo tem uma palheta de metal que vibra com o ar.','parts'),
   I('Graves e agudos','Os furos são numerados de 1 a 10, da esquerda para a direita. O furo 1 é o mais grave e o 10 é o mais agudo.','parts'),
   I('O tom da gaita','Toda gaita tem o tom marcado nela, como C (Dó) ou G (Sol). A gaita em Dó é a mais indicada para começar e é a que o app usa como padrão.'),
@@ -592,27 +627,149 @@ const TH=[
   Q('O que significa 3↑ ?',['Soprar no furo 3','Aspirar no furo 3','Pular o furo 3'],0),
   Q('O que a barra verde mostra?',['O volume do som','Por quanto tempo segurar a nota','A sua pontuação final'],1),
   Q('Qual cor indica aspirar?',['Azul','Laranja','Vermelho'],1)]},
- {id:'t6',t:'Bends: dobrar a nota',ic:'🌀',steps:[
-  I('O que é um bend','É uma técnica que deixa a nota mais grave mudando a forma da boca e da garganta, sem trocar de furo. É a parte mais difícil, então deixe para depois do básico.','bend'),
-  I('Onde dá para dobrar','Aspirando, nos furos graves (principalmente 1 a 4) e no 6. Soprando, nos furos agudos (7 a 10). No app, o bend aparece como "2↓ bend 1".'),
-  I('Como treinar','Comece pelo furo 2 aspirando. Aspire uma nota limpa e vá abaixando a língua e a garganta, como se dissesse "iou". Leva semanas, e isso é normal.'),
-  Q('O bend deixa a nota...',['Mais aguda','Mais grave','Mais alta em volume'],1,'bend'),
-  Q('Qual é um bom primeiro furo para treinar o bend aspirado?',['Furo 2','Furo 9','Furo 10'],0),
-  Q('Em quais furos o bend é feito soprando?',['1 a 4','7 a 10','Em todos'],1),
-  Q('Quando começar a treinar bends?',['Depois de dominar o básico','No primeiro dia','Nunca'],0)]},
- {id:'t7',t:'Cuidados com a gaita',ic:'🧼',steps:[
+ {id:'t8',t:'Pontaria: achar o furo',ic:'🎯',steps:[
+  I('Contar os furos','Para achar um furo sem olhar, conte a partir do furo 1 (o mais grave) ou use o furo 4 como referência, porque ele marca o início do "meio" da gaita. Com a prática, a boca decora as distâncias.'),
+  I('Deslizar','Encoste a gaita nos lábios e deslize devagar de lado, tocando a cada furo sem tirar a boca. Depois repita de olhos fechados e confira com o Afinador do app.'),
+  I('Treino de saltos','Escolha dois furos, como 2 e 5, e vá de um ao outro devagar, conferindo se o som saiu limpo. Aumente o ritmo só quando acertar. O app tem o treino "Saltos entre furos".'),
+  Q('Qual furo é uma boa referência para se localizar?',['Furo 4, no meio','Só o furo 10','Não existe referência'],0),
+  Q('Para treinar a pontaria, o melhor é...',['Ir bem rápido desde o início','Ir devagar e conferir se a nota saiu limpa','Nunca treinar sem olhar'],1),
+  Q('Que ferramenta do app ajuda a conferir a nota?',['O Afinador','O botão de som','O modo escuro'],0),
+  Q('Quando aumentar a velocidade nos saltos?',['Quando acertar devagar','Logo na primeira tentativa','Nunca'],0)]},
+ {id:'t7',t:'Cuidados e tipos de gaita',ic:'🧼',steps:[
   I('Antes de tocar','Lave as mãos e enxágue a boca, principalmente depois de comer. Restos de comida entram nos furos e travam as palhetas.'),
   I('Depois de tocar','Bata de leve a gaita na palma da mão, com os furos para baixo, para tirar a umidade. Seque com um pano e guarde na caixinha.'),
   I('Sem forçar','Nunca sopre ou aspire com muita força, pois isso pode desafinar as palhetas. Pentes de madeira incham com água, então evite molhar a gaita.'),
+  I('Tipos de gaita','A diatônica de 10 furos (a do app) é a mais usada em blues, folk e country. A cromática tem um botão e toca todas as notas. A tremolo tem duas palhetas por nota e soa "ondulada". Para começar, escolha uma diatônica em Dó.'),
   Q('O que fazer antes de tocar?',['Comer e tocar em seguida','Enxaguar a boca e lavar as mãos','Molhar a gaita'],1),
   Q('Como tirar a umidade depois de tocar?',['Batendo de leve na palma da mão e secando','Colocando no congelador','Soprando com muita força'],0),
-  Q('Soprar ou aspirar com muita força pode...',['Desafinar as palhetas','Deixar a gaita mais afinada','Não faz diferença'],0)]}
+  Q('Soprar ou aspirar com muita força pode...',['Desafinar as palhetas','Deixar a gaita mais afinada','Não faz diferença'],0),
+  Q('Qual gaita tem um botão e toca todas as notas?',['Diatônica','Cromática','Tremolo'],1)]},
+ {id:'t9',u:'Unidade 2 · Música',t:'Ritmo e tempo',ic:'🥁',steps:[
+  I('O pulso','Toda música tem um pulso, como as batidas do coração. Cada batida é um tempo. O andamento (BPM) diz quantas batidas por minuto: 60 BPM é uma batida por segundo.','rhythm'),
+  I('Duração das notas','Semibreve = 4 tempos, mínima = 2, semínima = 1 e colcheia = meio tempo. Uma pausa é um silêncio com a mesma duração. No app, a barra verde mostra quanto segurar.','rhythm'),
+  I('Contar em voz alta','Conte "1, 2, 3, 4" em voz alta enquanto toca, ou use o metrônomo do app no modo ritmo. Começar devagar e acelerar aos poucos é o caminho mais rápido.'),
+  Q('Quantos tempos dura uma mínima?',['1','2','4'],1,'rhythm'),
+  Q('O que significa 60 BPM?',['60 batidas por minuto','60 notas por segundo','60 furos'],0),
+  Q('Quantos tempos dura uma semibreve?',['4','2','Meio'],0),
+  Q('Uma pausa é...',['Um silêncio com duração','Uma nota mais aguda','Um tipo de bend'],0),
+  Q('Qual recurso do app ajuda a manter o tempo?',['O metrônomo','O mapa de notas','O backup'],0)]},
+ {id:'t18',t:'Notas e a escala de Dó',ic:'🎹',steps:[
+  I('Nomes das notas','As notas são Dó, Ré, Mi, Fá, Sol, Lá, Si, que também se escrevem C, D, E, F, G, A, B. O app mostra as letras. Entre algumas notas há um meio tom (a menor distância). As notas intermediárias são sustenidas (#) ou bemóis (b).'),
+  I('Escala de Dó maior','Na gaita em Dó, o meio da gaita (furos 4 a 7) toca a escala de Dó maior: 4↑ 4↓ 5↑ 5↓ 6↑ 6↓ 7↓ 7↑, que dá Dó Ré Mi Fá Sol Lá Si Dó. Treine subindo e descendo devagar.','scale'),
+  I('Notas faltando no grave','Nos furos 1 a 3 faltam algumas notas da escala (como o Fá e o Lá). Elas saem com bends, e por isso muitas músicas pedem essa técnica.'),
+  Q('Como se escreve a nota Mi?',['E','G','B'],0),
+  Q('Que escala os furos 4 a 7 tocam numa gaita em Dó?',['Dó maior','Blues','Cromática'],0,'scale'),
+  Q('Quantas notas diferentes tem a escala de Dó maior?',['5','7','12'],1),
+  Q('Qual é a nota de 6↑ numa gaita em Dó?',['Sol','Fá','Dó'],0),
+  Q('Por que no grave faltam notas?',['A gaita é diatônica e algumas notas saem só com bends','Porque a gaita está quebrada','Porque só se toca de 4 a 7'],0)]},
+ {id:'t10',u:'Unidade 3 · Técnicas',t:'Tongue blocking e oitavas',ic:'👅',steps:[
+  I('O que é','É uma embocadura em que você cobre 4 furos com a boca e tampa os da esquerda com a língua. O ar passa só pelo furo à direita e sai uma nota limpa. Em vez de fazer bico, você usa a língua.','tongue'),
+  I('Para que serve','Tampando só os furos do meio com a língua e deixando abertos o primeiro e o quarto, saem duas notas juntas com uma oitava de intervalo (por exemplo, Dó grave e Dó agudo soprando). Também permite ritmos e efeitos.','tongue'),
+  I('Como treinar','Comece só com o bico. Depois, em ritmo lento, pratique tampar 3 furos com a língua e tocar o quarto. Use pouca força e relaxe a língua. A mudança leva semanas, e dá para alternar com o bico.'),
+  Q('No tongue blocking, o que tampa os furos da esquerda?',['A língua','O dedo','O lábio superior'],0,'tongue'),
+  Q('Para fazer uma oitava, quais furos ficam abertos?',['Os das pontas (por exemplo o 1 e o 4)','Só o do meio','Nenhum'],0),
+  Q('Qual é uma vantagem do tongue blocking?',['Dá para fazer oitavas e efeitos de ritmo','Deixa a gaita mais barata','Dispensa respirar'],0),
+  Q('É preciso dominar o tongue blocking para tocar as primeiras músicas?',['Não, dá para tocar bastante só com o bico','Sim, sem ele não se toca','Só com autorização'],0)]},
+ {id:'t11',t:'Acordes e ritmo (chug)',ic:'🚂',steps:[
+  I('Acordes','Quando a boca cobre vários furos, sai um acorde. Soprando os furos 4, 5 e 6 numa gaita em Dó, sai o acorde de Dó (C, E, G). Acordes dão base para acompanhar um canto ou outra pessoa.'),
+  I('O chug','É o ritmo básico da gaita: alternar sopro e aspiração em vários furos, num ritmo marcado. Uma dica é dizer "tá-ká": sopra no "tá" e aspira no "ká", em ritmo constante.'),
+  I('Treino','Cubra 3 furos com a boca e alterne sopro e aspiração em 4 tempos, depois em colcheias, com o metrônomo. Mantenha o ritmo estável e o som limpo. Aumente a velocidade pouco a pouco.'),
+  Q('O que sai quando a boca cobre vários furos soprando?',['Um acorde','Uma nota só','Silêncio'],0),
+  Q('Soprar os furos 4, 5 e 6 numa gaita em Dó produz...',['O acorde de Dó (C, E, G)','Uma escala','Um bend'],0),
+  Q('O que é o chug?',['Um ritmo alternando sopro e aspiração em vários furos','Um tipo de bend','Uma gaita elétrica'],0),
+  Q('O que ajuda a manter o chug firme?',['Metrônomo e começar devagar','Tocar o mais rápido possível','Tapar o nariz'],0)]},
+ {id:'t12',t:'Wah e efeitos com as mãos',ic:'👐',steps:[
+  I('O efeito wah','Com a mão direita em concha atrás da gaita, abra e feche a mão enquanto a nota soa. O som muda como se dissesse "uó-uá", e isso dá muita expressão.','wah'),
+  I('Como fazer','Segure a gaita com a mão esquerda. Encoste a base da mão direita na esquerda, formando uma câmara fechada atrás da gaita. Aos poucos, abra os dedos e feche de novo, no ritmo da música. Use uma nota longa para treinar.','wah'),
+  I('Dicas','Feche bem a mão para o som ficar abafado e abra bastante para ele ficar aberto. Comece devagar, com um abrir e fechar por tempo. Não aperte a gaita com a mão esquerda, pois o aperto muda o som.'),
+  Q('Para que serve o wah?',['Dar expressão abrindo e fechando a mão','Afinar a gaita','Aumentar o número de furos'],0,'wah'),
+  Q('Qual mão faz o movimento?',['A direita, em concha','Os dentes','A esquerda, soltando a gaita'],0),
+  Q('Qual nota é boa para treinar o wah?',['Uma nota longa e estável','Notas muito rápidas','Uma nota que você ainda não alcança'],0),
+  Q('O que muda quando a mão fecha?',['O som fica abafado','A nota fica mais aguda','Sai um acorde'],0)]},
+ {id:'t13',t:'Vibrato e trinado',ic:'〰️',steps:[
+  I('Vibrato com a mão','É a variação rápida do volume da nota. Com a mão em concha, abra e feche rapidamente, de 4 a 6 vezes por segundo, sem mudar a nota.'),
+  I('Vibrato com a garganta ou a barriga','O vibrato de garganta é feito por pequenos pulsos de ar, como se dissesse "ha-ha-ha" bem rápido. O de diafragma usa a barriga. Comece devagar, numa nota longa, e deixe o ritmo ficar parelho.'),
+  I('Trinado (trill)','É alternar rapidamente entre dois furos vizinhos, balançando a gaita ou a cabeça de um lado para o outro. Funciona bem entre os furos 4 e 5 soprados, por exemplo. É muito usado em blues e folk.'),
+  Q('Vibrato é...',['Variação rápida do volume da nota','Trocar de música','Mudar de furo uma vez'],0),
+  Q('Quantas vezes por segundo, mais ou menos, é um vibrato de mão?',['De 4 a 6','1','50'],0),
+  Q('Como se faz o trinado?',['Alternando rápido entre dois furos vizinhos','Segurando uma nota sem respirar','Soprando bem forte'],0),
+  Q('O vibrato de mão muda principalmente...',['O volume da nota','O furo','O tom da gaita'],0)]},
+ {id:'t6',u:'Unidade 4 · Bends',t:'Bends: o que são',ic:'🌀',steps:[
+  I('O que é um bend','É uma técnica que deixa a nota mais grave mudando a forma da boca e da garganta, sem trocar de furo. É a parte mais difícil, mas dá as notas que faltam na gaita e o som típico do blues.','bend'),
+  I('Onde dá para dobrar','Aspirando, nos furos graves (principalmente 1 a 4) e no 6. Soprando, nos furos agudos (7 a 10). Um furo pode ter mais de um bend: o 3 aspirado desce até três meios tons. No app, aparece como "2↓ bend 1".'),
+  I('Quanto a nota desce','O primeiro bend desce meio tom, o segundo um tom inteiro e o terceiro um tom e meio. Use o Afinador do app para ver a nota caindo em cents.'),
+  Q('O bend deixa a nota...',['Mais aguda','Mais grave','Mais alta em volume'],1,'bend'),
+  Q('Em quais furos o bend é feito soprando?',['1 a 4','7 a 10','Em todos'],1),
+  Q('Quanto desce o primeiro bend?',['Meio tom','Uma oitava','Nada'],0),
+  Q('Qual ferramenta do app ajuda a ver a nota caindo?',['O Afinador','O metrônomo','O modo escuro'],0),
+  Q('Quando começar a treinar bends?',['Depois de dominar o básico','No primeiro dia','Nunca'],0)]},
+ {id:'t15',t:'Bend passo a passo',ic:'🔧',steps:[
+  I('Prepare a base','Antes de dobrar, toque a nota aspirada do furo 4 de forma limpa e estável, num furo só. Use pouca força: o bend vem da posição da boca e da garganta, e não do ar forte.'),
+  I('Passo a passo','1) Aspire o furo 4 com uma nota limpa e estável. 2) Mantenha o ar constante e comece a dizer "iou", deslizando do "i" para o "ou", com a língua descendo e indo para trás. 3) Abaixe levemente o queixo. 4) Sinta a nota "cair" meio tom e estabilizar. 5) Volte à nota normal devagar. Muitos professores começam pelo furo 4, e outros pelo 2: use o que sair melhor.','bend'),
+  I('Como saber se deu certo','A nota fica mais grave, com um som mais "apertado", e o Afinador do app mostra cerca de 100 cents a menos. Treine em sessões curtas de 5 minutos, sem forçar a garganta. O progresso leva semanas, e isso é normal.'),
+  Q('Qual é um bom primeiro furo para treinar o bend aspirado?',['Furo 4 (ou o 2)','Furo 10','Furo 9'],0),
+  Q('De onde vem o bend?',['Da posição da boca e da garganta','De soprar o mais forte possível','De apertar a gaita'],0),
+  Q('Como saber que o bend funcionou?',['A nota fica mais grave, cerca de meio tom','A nota fica mais alta','Nada muda'],0),
+  Q('Qual é o melhor jeito de treinar?',['Sessões curtas, sem forçar a garganta','Uma hora seguida com força','Só quando estiver com pressa'],0),
+  Q('A nota fica presa e não desce. O que fazer?',['Aliviar o ar, voltar à nota limpa e tentar de novo','Soprar com mais força','Desistir para sempre'],0)]},
+ {id:'t16',t:'Bends em outros furos',ic:'🔩',steps:[
+  I('Furos 3 e 2','O furo 3 aspirado tem três bends e é muito usado no blues. O furo 2 tem dois. Aprenda primeiro o de meio tom de cada um, usando o mesmo "iou" do furo 4.'),
+  I('Furos 1 e 6','O furo 1 aspirado tem um bend de meio tom, e o furo 6 também. Eles são mais difíceis de ouvir no começo, então use o Afinador para conferir.'),
+  I('Bends soprados (7 a 10)','Nos furos agudos, o bend sai soprando. A ideia é a mesma, mudar o espaço dentro da boca, mas a sensação é diferente. É mais difícil, e fica para depois dos aspirados.'),
+  Q('Quantos bends tem o furo 3 aspirado?',['3','1','Nenhum'],0),
+  Q('Em qual direção se dobram os furos 7 a 10?',['Soprando','Aspirando','Nenhuma'],0),
+  Q('Em qual ordem é melhor aprender?',['Primeiro os aspirados, depois os soprados','Primeiro os soprados do furo 10','Os dois no primeiro dia'],0),
+  Q('O que o furo 6 aspirado permite?',['Um bend de meio tom','Um acorde','Nada'],0)]},
+ {id:'t17',t:'Overblow e overdraw (avançado)',ic:'🚀',steps:[
+  I('O que são','São técnicas avançadas que sobem a nota (em vez de baixar, como no bend) e dão as notas que faltam na escala. O overblow se faz soprando nos furos de 1 a 6 e o overdraw aspirando nos furos de 7 a 10.'),
+  I('Cuidados','Exigem uma gaita bem ajustada e muita prática. Se você forçar, pode estragar as palhetas. Domine primeiro os bends comuns.'),
+  I('Quando partir para elas','Se você já faz bends limpos, com controle de afinação, e quer tocar escalas completas e jazz, vale estudar com um professor ou com material específico.'),
+  Q('Overblow e overdraw fazem a nota ficar...',['Mais aguda','Mais grave','Sem som'],0),
+  Q('Quando estudar essas técnicas?',['Só depois de dominar os bends','No primeiro dia','Antes de aprender a segurar a gaita'],0),
+  Q('Forçar essas técnicas numa gaita sem ajuste pode...',['Estragar as palhetas','Melhorar a gaita','Não faz diferença'],0)]},
+ {id:'t19',u:'Unidade 5 · Estilo',t:'Posições e tons',ic:'🧭',steps:[
+  I('Qual gaita usar?','Cada música tem um tom. Em vez de comprar 12 gaitas, gaitistas usam "posições": tocar a mesma gaita com outra nota como tônica (a "nota de casa").','posit'),
+  I('1ª e 2ª posição','Na 1ª posição, a música está no mesmo tom da gaita (gaita C, música em C), com a tônica no sopro do furo 4. Na 2ª posição, ou "cross harp", a música está uma quinta acima: com a gaita C você toca em G. É a mais usada no blues, com a tônica no aspirado do furo 2 e também no sopro do furo 3.','posit'),
+  I('3ª posição','Na 3ª posição, a música está um tom acima da gaita (gaita C, música em D), com clima de tom menor.'),
+  I('Como escolher a gaita','Para a 2ª posição, some uma quinta ao tom da gaita. Para tocar em G, use gaita C. Para tocar em A, use gaita D. Para tocar em E, use gaita A.'),
+  Q('Numa gaita C, em que tom se toca na 2ª posição?',['G','C','D'],0,'posit'),
+  Q('Qual gaita usar para tocar blues em A (2ª posição)?',['Gaita D','Gaita C','Gaita G'],0),
+  Q('Qual é a tônica na 1ª posição de uma gaita C?',['O sopro do furo 4 (nota Dó)','O aspirado do furo 10','Qualquer uma'],0),
+  Q('Em que furo está a tônica da 2ª posição numa gaita C?',['Aspirado do furo 2 (nota Sol)','Soprado do furo 1','Aspirado do furo 10'],0),
+  Q('Para que serve a 3ª posição?',['Músicas com clima de tom menor','Só para iniciantes','Nada'],0)]},
+ {id:'t22',t:'Blues na 2ª posição',ic:'🎷',steps:[
+  I('A escala de blues','Numa gaita C, a escala de blues em G (2ª posição) usa: 2↓ (Sol), 3↓ bend 1 (Si bemol), 4↑ (Dó), 4↓ bend 1 (Ré bemol), 4↓ (Ré) e 5↓ (Fá). Treine subindo e descendo devagar. O app tem o treino "Escala de blues".'),
+  I('Frases e pausas','Improvisar é repetir ideias curtas e fazer silêncio entre elas. Comece com 2 ou 3 notas e repita, mudando o ritmo. Ouça blues e imite as frases de que gosta.'),
+  I('Tocando junto','Toque sobre uma base de blues em G. Se sentir que se perdeu, volte à nota de casa (2↓ ou 3↑). O Afinador do app ajuda a conferir os bends.'),
+  Q('Em que tom a gaita C toca na 2ª posição?',['G','C','A'],0),
+  Q('A escala de blues usa notas normais e...',['Bends','Só notas sopradas','Só acordes'],0),
+  Q('Uma boa dica para improvisar é...',['Repetir frases curtas e deixar pausas','Tocar o mais rápido possível sem parar','Não ouvir ninguém'],0),
+  Q('Qual é o ponto de descanso (nota de casa) na 2ª posição de uma gaita C?',['Sol (G)','Fá','Si'],0)]},
+ {id:'t20',u:'Unidade 6 · Prática',t:'Rotina de estudo',ic:'📅',steps:[
+  I('Pouco, mas todo dia','Quinze minutos por dia rendem mais que duas horas uma vez por semana. O app tem uma meta diária para ajudar a manter o hábito.'),
+  I('Um treino de 15 minutos','3 min de aquecimento com respiração e notas longas; 4 min de técnica (pontaria, bends ou ritmo); 6 min de música no modo prática, repetindo um trecho; 2 min tocando a música inteira só por diversão.'),
+  I('Como estudar melhor','Toque devagar até sair sem erros e só então acelere. Use o metrônomo, grave a sua tocada para ouvir depois e faça pausas se sentir tontura ou tensão. Pare se sentir dor.'),
+  Q('O que rende mais?',['15 minutos todo dia','2 horas uma vez por semana','Treinar só antes de uma apresentação'],0),
+  Q('Como aprender uma música difícil?',['Devagar, em trechos, no modo prática','Direto na velocidade final','Sem olhar a tablatura nunca'],0),
+  Q('O que fazer se sentir tontura?',['Parar e respirar normalmente','Continuar até passar','Soprar mais forte'],0),
+  Q('Para que serve gravar a sua tocada?',['Ouvir os erros e acompanhar a evolução','Para enfeitar','Para ficar mais rápido'],0)]},
+ {id:'t21',t:'Solução de problemas',ic:'🛠️',steps:[
+  I('Não sai som ou sai fraco','Confira se a boca está bem encaixada, sem vazar ar pelos cantos, e se o furo não está sujo. Tente com menos força, de forma suave. Mude levemente o ângulo da gaita.'),
+  I('Saem várias notas','A boca está cobrindo furos demais. Feche mais os lábios, aproxime a gaita da boca e confira se está no furo certo.'),
+  I('Nota desafinada ou chiada','Pode ser muita força, umidade ou sujeira. Bata a gaita na mão para tirar a água, aspire com calma e confira o tom no Afinador. Se uma palheta soa torta mesmo assim, a gaita pode precisar de conserto.'),
+  I('O app não reconhece','Toque perto do microfone, num lugar silencioso, e aumente a sensibilidade do microfone no Afinador. Se o app marca errado uma nota que você acha certa, calibre essa nota (Afinador › Calibrar).'),
+  Q('Saem várias notas ao mesmo tempo. O que fazer?',['Fechar os lábios e conferir o furo','Soprar mais forte','Trocar de gaita'],0),
+  Q('A nota sai fraca. O que conferir?',['Se está vazando ar e se a boca está bem encaixada','Se a gaita é azul','O horário'],0),
+  Q('O app marca errado uma nota que está certa. O que fazer?',['Calibrar a nota no Afinador','Desinstalar o app','Mudar de aparelho'],0),
+  Q('Uma palheta soa torta mesmo com a gaita limpa e seca. O que pode ser?',['É preciso conserto da gaita','É normal sempre','Só toque assim'],0)]}
 ];
 let TQ=null;
 function renderTheory(){const l=$('theoryList');if(!l)return;l.innerHTML='';
- TH.forEach((t,i)=>{const u=i==0||(S.th&&S.th[TH[i-1].id]),st=(S.th||{})[t.id]||0,b=document.createElement('button');b.className='item'+(u?'':' lock');
+ TH.forEach((t,i)=>{const u=i==0||(S.th&&S.th[TH[i-1].id]),st=(S.th||{})[t.id]||0,b=document.createElement('button');
+  if(t.u){const h=document.createElement('div');h.style.cssText='font-weight:900;margin:16px 0 8px;font-size:15px;color:var(--mut)';h.textContent=t.u;l.appendChild(h)}
+  b.className='item'+(u?'':' lock');
   b.innerHTML=`<span class="ic" style="background:var(--blow)">${u?t.ic:'🔒'}</span><span>${t.t}<small>${st?'★'.repeat(st)+'☆'.repeat(3-st):u?'Novo':'Complete a anterior'}</small></span>`;b.onclick=()=>{if(u)openTheory(i)};l.appendChild(b)});
- const rv=document.createElement('button');rv.className='item';rv.innerHTML='<span class="ic" style="background:var(--draw)">🔁</span><span>Revisão rápida<small>6 perguntas das lições que você já fez</small></span>';rv.onclick=openReview;l.appendChild(rv)}
+ const rv=document.createElement('button');rv.className='item';rv.style.marginTop='16px';rv.innerHTML='<span class="ic" style="background:var(--draw)">🔁</span><span>Revisão rápida<small>6 perguntas das lições que você já fez</small></span>';rv.onclick=openReview;l.appendChild(rv)}
 function openTheory(i){const t=TH[i];TQ={kind:'lesson',id:t.id,steps:t.steps.slice(),i:0,wrong:0};$('thPlay').style.display='block';thRender()}
 function openReview(){const pool=[];TH.forEach(t=>{if(S.th&&S.th[t.id])t.steps.forEach(x=>{if(x.k=='q')pool.push(x)})});
  if(pool.length<3){toast('Complete uma lição primeiro');return}
@@ -641,11 +798,15 @@ function thFinish(){
  sfx('win');if(w<=1)confetti();
 }
 $('thClose').onclick=()=>{$('thPlay').style.display='none';refresh()};
+$('openTuner').onclick=()=>{$('tunerPlay').style.display='block'};
+$('tunerClose').onclick=()=>{$('tunerPlay').style.display='none'};
+$('relv').onclick=()=>{delete S.lv;S.unl=0;save();refresh();show('home');toast('Responda o teste de nível na tela Início')};
+$('wipe').onclick=()=>{if(confirm('Apagar todo o progresso deste aparelho? Isso não pode ser desfeito.')){try{localStorage.removeItem('gaita')}catch(e){}location.reload()}};
 /* laço */
 let prevT=performance.now();
 function loop(now){
   const dt=now-prevT;prevT=now;
-  if(micOn&&!running&&$('s-tuner').classList.contains('act'))tunerTick();
+  if(micOn&&!running&&$('tunerPlay').style.display=='block')tunerTick();
   if(micOn&&running){
     addTime(dt);const fr=smooth(detectF());
     const st=fr;if(st!=null){const r=Math.round(st),ce=Math.round((st-r)*100);$('sub').textContent='Você toca: '+nm(r)+' ('+(ce>0?'+':'')+ce+' cents)'}
@@ -670,7 +831,7 @@ function loop(now){
 }
 
 $('bkOut').onclick=()=>{const o={xp:S.xp,streak:S.streak,last:S.last,done:S.done,key:S.key,bends:S.bends,cals:S.cals};const c=btoa(unescape(encodeURIComponent(JSON.stringify(o))));$('bk').value=c;$('bk').select();try{navigator.clipboard.writeText(c)}catch(e){}};
-$('bkIn').onclick=()=>{try{const o=JSON.parse(decodeURIComponent(escape(atob($('bk').value.trim()))));Object.assign(S,o);save();$('key').value=S.key;$('bends').checked=S.bends!==false;refresh();$('bk').value='';$('homeMsg').textContent='Progresso restaurado!'}catch(e){$('homeMsg').textContent='Código inválido.'}};
+$('bkIn').onclick=()=>{try{const o=JSON.parse(decodeURIComponent(escape(atob($('bk').value.trim()))));Object.assign(S,o);save();$('key').value=S.key;$('bends').checked=S.bends!==false;refresh();$('bk').value='';toast('Progresso restaurado!')}catch(e){toast('Código inválido')}};
 async function parseAudio(ab){
  const c=new (window.AudioContext||window.webkitAudioContext)();const au=await c.decodeAudioData(ab);try{c.close()}catch(e){}
  const sr=au.sampleRate,x=au.getChannelData(0),H=2048,N=1024,lo=Math.floor(sr/2300),hi=Math.floor(sr/200);
