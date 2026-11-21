@@ -187,7 +187,7 @@ details>summary{list-style:none}details>summary::-webkit-details-marker{display:
   </div>
   <div class="sg">Microfone e afinação</div>
   <div class="card">
-   <button class="item" id="openTuner" style="margin-bottom:6px"><span class="ic" style="background:var(--blow)">🎚️</span><span>Afinador e calibração<small>Descobrir o tom, calibrar notas e mapa de notas</small></span></button>
+   <button class="item" id="openTuner" style="margin-bottom:6px"><span class="ic" style="background:var(--blow)">🎚️</span><span>Afinador e calibração<small>Ajustar ao som da gaita, calibrar notas e mapa de notas</small></span></button>
    <div class="srow"><span>Sensibilidade do microfone</span><span><input type="range" id="gate" min="1" max="20" value="3"> <b id="gatev"></b></span></div>
    <div class="srow"><span>Tolerância (cents)</span><span><input type="range" id="tol" min="25" max="70" value="50"> <b id="tolv"></b></span></div>
    <div class="srow"><span>Aceitar nota de outra oitava</span><input type="checkbox" id="oct"></div>
@@ -232,7 +232,7 @@ details>summary{list-style:none}details>summary::-webkit-details-marker{display:
  <div class="card" style="text-align:center"><div id="tNote" style="font-size:64px;font-weight:900">–</div><div id="tHz" class="mut">Toque uma nota na gaita</div>
   <div style="position:relative;height:36px;margin:14px 0;background:var(--bd);border-radius:18px"><div style="position:absolute;left:50%;top:0;bottom:0;width:3px;background:var(--ok)"></div><div id="tNeedle" style="position:absolute;top:2px;bottom:2px;width:12px;margin-left:-6px;border-radius:6px;background:var(--draw);left:50%"></div></div>
   <div id="tCents" style="font-size:20px;font-weight:800">&nbsp;</div><div id="tHole" class="mut"></div><div class="mut" id="tMic" style="margin-top:10px">🎤 Ligue o microfone no botão do topo</div></div>
- <div class="card"><b>Descobrir o tom</b><p class="mut">Sopre o furo 4 com firmeza e toque no botão logo em seguida.</p><button class="go" id="tKey">🔍 Descobrir o tom</button><div class="mut" id="tKeyMsg" style="margin-top:6px"></div></div>
+ <div class="card"><b>Ajustar ao som da minha gaita</b><p class="mut">Escolha o tom da gaita em Ajustes. Depois sopre o furo 4 com firmeza e toque no botão. O app mantém o tom escolhido e aprende o som da sua gaita.</p><button class="go" id="tKey">🎯 Ajustar ao som da minha gaita</button><div class="mut" id="tKeyMsg" style="margin-top:6px"></div></div>
  <div class="card"><b>Calibrar notas</b><p class="mut">Se você toca a nota certa e o app marca errado, toque uma nota firme e toque em Calibrar. Cada nota guarda a própria calibração.</p>
   <div class="row"><button class="go" id="tCal">🎯 Calibrar</button><button id="tReset1">Zerar esta nota</button><button id="tReset">Zerar todas</button></div><div class="mut" id="tCalv"></div></div>
  <div class="card"><b>Mapa de notas da sua gaita</b><div id="chart" style="overflow-x:auto;margin-top:8px"></div></div>
@@ -359,7 +359,7 @@ function detect(){
     const f=sr/(l+(c[l+1]-c[l-1])/(2*(2*c[l]-c[l-1]-c[l+1])||1));return Math.round(69+12*Math.log2(f/440))}
   return null;
 }
-function beep(m){const o=actx.createOscillator(),g=actx.createGain();o.type='triangle';o.frequency.value=440*Math.pow(2,(m-69)/12);g.gain.value=.15;o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+.25)}
+function beep(m){try{ac();harmNote(440*Math.pow(2,(m-69)/12),actx.currentTime,.4,'b',.7)}catch(e){}}
 
 /* atividade */
 function openLesson(i){
@@ -429,7 +429,7 @@ function finish(){
   $('res').style.display='flex';if(st){sfx('win');confetti()}else sfx('bad');
 }
 
-function detectF(){
+function detectF(){lastRaw=null;
  an.getFloatTimeDomainData(buf);const sr=actx.sampleRate,W=2048;
  let e=0;for(let i=0;i<W;i++)e+=buf[i]*buf[i];if(Math.sqrt(e/W)<(S.gate||0.003))return null;
  const t0=Math.floor(sr/2500),t1=Math.floor(sr/190),d=new Float32Array(t1+2),c=new Float32Array(t1+2);
@@ -439,7 +439,7 @@ function detectF(){
  for(let t=t0;t<=t1;t++){if(c[t]<0.25){while(t+1<=t1&&c[t+1]<c[t])t++;tau=t;break}}
  if(tau<0){let m=1,mt=-1;for(let t=t0;t<=t1;t++)if(c[t]<m){m=c[t];mt=t}if(m<0.45)tau=mt;else return null}
  const a=c[tau-1],b=c[tau],g=c[tau+1],dn=a-2*b+g,f=sr/(tau+(dn?(a-g)/(2*dn):0));
- const raw=69+12*Math.log2(f/440);return raw-((S.cals&&S.cals[Math.round(raw)])||0)/100;
+ const raw=69+12*Math.log2(f/440);lastRaw=raw;const r0=raw-(S.g||0)/100;return r0-((S.cals&&S.cals[Math.round(r0)])||0)/100;
 }
 function detectOld(){
  an.getFloatTimeDomainData(buf);const sr=actx.sampleRate,N=2048;
@@ -457,8 +457,8 @@ function smooth(f){fbuf.push(f);if(fbuf.length>4)fbuf.shift();const v=fbuf.filte
 function matches(n,fr){if(fr==null)return false;let d=fr-n.m;if(S.oct!==false)d=((d%12)+18)%12-6;return Math.abs(d*100)<=(S.tol||50)}
 let tb=[],tLast=null,tHeld=null,tHeldT=0;
 function tunerTick(){
- tb.push(detectF());if(tb.length>4)tb.shift();
- const v=tb.filter(x=>x!=null).sort((a,b)=>a-b),fr=v.length>=3?v[Math.floor(v.length/2)]:null;tLast=fr;if(fr!=null){tHeld=fr;tHeldT=performance.now()}
+ tb.push(detectF());if(tb.length>4)tb.shift();tbr.push(lastRaw);if(tbr.length>4)tbr.shift();
+ const v=tb.filter(x=>x!=null).sort((a,b)=>a-b),fr=v.length>=3?v[Math.floor(v.length/2)]:null;tLast=fr;if(fr!=null){tHeld=fr;tHeldRaw=medRaw();tHeldT=performance.now()}
  if(fr==null){$('tNote').textContent='–';$('tCents').innerHTML='&nbsp;';$('tHz').textContent='Toque uma nota na gaita';$('tHole').textContent='';$('tNeedle').style.left='50%';return}
  const r=Math.round(fr),ce=Math.round((fr-r)*100),hz=(440*Math.pow(2,(fr-69)/12)).toFixed(1);
  $('tNote').textContent=nm(r);$('tHz').textContent=hz+' Hz';
@@ -466,15 +466,24 @@ function tunerTick(){
  $('tNeedle').style.left=(50+Math.max(-50,Math.min(50,ce))*0.9)+'%';
  const h=mapNote(r);$('tHole').textContent=h?'Furo '+h.h+(h.dir=='b'?' soprando':' aspirando')+(h.bd?' (bend '+h.bd+')':''):'Nota fora da sua gaita';
 }
-function updCal(k,just){const c=S.cals||{},ks=Object.keys(c).sort((a,b)=>a-b);$('tCalv').textContent=(just&&k!=null?'Nota '+nm(k)+' calibrada ('+(c[k]>0?'+':'')+c[k]+' cents). ':'')+(ks.length?ks.length+' nota(s) calibrada(s): '+ks.map(x=>nm(+x)).join(', '):'Nenhuma nota calibrada ainda.')}
+function updCal(k,just){const c=S.cals||{},ks=Object.keys(c).sort((a,b)=>a-b);$('tCalv').textContent=(S.g?'Ajuste da gaita: '+(S.g>0?'+':'')+S.g+' cents. ':'')+(just&&k!=null?'Nota '+nm(k)+' calibrada ('+(c[k]>0?'+':'')+c[k]+' cents). ':'')+(ks.length?ks.length+' nota(s) calibrada(s): '+ks.map(x=>nm(+x)).join(', '):'Nenhuma nota calibrada ainda.')}
 $('tCal').onclick=()=>{const L=(performance.now()-tHeldT<4000)?tHeld:null;if(L==null){$('tCalv').textContent='Toque uma nota firme e calibre logo em seguida.';return}const k=Math.round(L),ce=(L-k)*100;S.cals=S.cals||{};S.cals[k]=Math.max(-50,Math.min(50,Math.round((S.cals[k]||0)+ce)));save();updCal(k,true)};
-$('tReset').onclick=()=>{S.cals={};S.cal=0;save();updCal()};
+$('tReset').onclick=()=>{S.cals={};S.cal=0;S.g=0;save();updCal()};
 $('tReset1').onclick=()=>{const L=(performance.now()-tHeldT<4000)?tHeld:null;if(L==null){$('tCalv').textContent='Toque a nota que quer zerar e toque no botão logo em seguida.';return}const k=Math.round(L);if(S.cals)delete S.cals[k];save();updCal()};
 $('oct').checked=S.oct!==false;$('oct').onchange=()=>{S.oct=$('oct').checked;save()};
 $('tol').value=S.tol||50;$('tolv').textContent=S.tol||50;$('tol').oninput=()=>{S.tol=+$('tol').value;$('tolv').textContent=S.tol;save()};
 $('tMic').onclick=ensureMic;updCal();
-$('tKey').onclick=()=>{const L=(performance.now()-tHeldT<4000)?tHeld:null;if(L==null){$('tKeyMsg').textContent='Não ouvi nada. Ative o microfone, sopre o furo 4 com firmeza e toque de novo logo em seguida.';return}
- const pc=((Math.round(L)%12)+12)%12,k=Object.keys(KEYS).find(n=>KEYS[n]==pc);S.key=k;save();$('key').value=k;refresh();$('tKeyMsg').textContent='Tom definido: '+k+'. Agora o furo 4 soprado é a nota '+k+'.'};
+var lastRaw=null,tbr=[],tHeldRaw=null;
+function medRaw(){const v=tbr.filter(x=>x!=null).sort((a,b)=>a-b);return v.length?v[Math.floor(v.length/2)]:null}
+function fitKey(R){const nom=BLOW[3]+KEY(),d=((R-nom)%12+18)%12-6;S.g=Math.round(d*100);S.cals={};save();updCal();
+ $('tKeyMsg').textContent='Pronto! O tom continua '+S.key+'. O app agora entende o som da sua gaita (desvio de '+(S.g>0?'+':'')+S.g+' cents) como '+S.key+'.'}
+$('tKey').onclick=()=>{const R=(performance.now()-tHeldT<4000)?tHeldRaw:null;
+ if(R==null){$('tKeyMsg').textContent='Não ouvi nada. Ative o microfone, sopre o furo 4 com firmeza e toque de novo logo em seguida.';return}
+ const pc=((Math.round(R)%12)+12)%12,det=Object.keys(KEYS).find(n=>KEYS[n]==pc),cu=S.key;
+ if(det==cu){fitKey(R);return}
+ $('tKeyMsg').innerHTML='O furo 4 soprado soou como <b>'+det+'</b>, e o tom escolhido é <b>'+cu+'</b>. O que fazer?<div class="row" style="margin-top:8px"><button class="go" id="kKeep">Manter '+cu+' e ajustar ao som</button><button id="kChg">Mudar para '+det+'</button></div>';
+ $('kKeep').onclick=()=>fitKey(R);
+ $('kChg').onclick=()=>{S.key=det;S.g=0;S.cals={};save();$('key').value=det;refresh();updCal();$('tKeyMsg').textContent='Tom alterado para '+det+'.'}};
 let advT=0,prevN=null,needRel=false,relT=0,lastBeat=-99,demoO=[],demoTO=[];
 function waitStep(n,st,dt,now){
  const m=matches(n,st),since=now-advT,need=Math.max(350,Math.min(2000,n.d*60000/$('bpm').value*0.6));
@@ -487,15 +496,48 @@ function waitStep(n,st,dt,now){
 }
 function tick(acc){if(!actx)return;const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=acc?1500:1000;g.gain.value=.12;o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+.04)}
 function stopDemo(){demoO.forEach(o=>{try{o.stop()}catch(e){}});demoTO.forEach(clearTimeout);demoO=[];demoTO=[]}
+/* ===== voz de gaita (síntese) ===== */
+let hBus=null;
+function hInit(){
+ const a=ac();if(hBus&&hBus.ctx===a)return hBus;
+ const inp=a.createGain(),f1=a.createBiquadFilter(),f2=a.createBiquadFilter(),lp=a.createBiquadFilter(),dry=a.createGain(),wet=a.createGain(),conv=a.createConvolver(),comp=a.createDynamicsCompressor(),out=a.createGain();
+ f1.type='peaking';f1.frequency.value=1100;f1.Q.value=.8;f1.gain.value=4;
+ f2.type='peaking';f2.frequency.value=2400;f2.Q.value=1;f2.gain.value=3;
+ lp.type='lowpass';lp.frequency.value=4200;lp.Q.value=.4;
+ dry.gain.value=.82;wet.gain.value=.22;comp.threshold.value=-18;comp.ratio.value=3;out.gain.value=.9;
+ const len=Math.floor(a.sampleRate*1.4),ir=a.createBuffer(2,len,a.sampleRate);
+ for(let c=0;c<2;c++){const d=ir.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6)}
+ conv.buffer=ir;
+ inp.connect(f1);f1.connect(f2);f2.connect(lp);lp.connect(dry);lp.connect(conv);conv.connect(wet);dry.connect(comp);wet.connect(comp);comp.connect(out);out.connect(a.destination);
+ const nb=a.createBuffer(1,a.sampleRate*2,a.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+ const re=new Float32Array(16),im=new Float32Array(16),am=[0,1,.62,.5,.34,.26,.18,.13,.1,.07,.05,.04,.03,.02,.015,.01];for(let i=1;i<16;i++)im[i]=am[i];
+ hBus={ctx:a,inp,nb,wave:a.createPeriodicWave(re,im)};return hBus;
+}
+function harmNote(freq,t,dur,dir,vel,dest){
+ const a=ac(),B=hInit(),to=dest||B.inp;dur=Math.max(dur,.12);const end=t+dur,voices=[];
+ const peak=(vel||1)*.2*(freq>1000?.75:1)*(.92+Math.random()*.16),att=.05+Math.random()*.02,rel=Math.min(.12,dur*.4);
+ const g=a.createGain();g.connect(to);
+ g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(peak*1.15,t+att);g.gain.linearRampToValueAtTime(peak,t+att+.12);
+ g.gain.setValueAtTime(peak,Math.max(t+att+.12,end-rel));g.gain.linearRampToValueAtTime(0,end);
+ [-4,4].forEach(det=>{
+  const o=a.createOscillator();o.setPeriodicWave(B.wave);
+  o.frequency.setValueAtTime(freq*Math.pow(2,(det-22)/1200),t);o.frequency.exponentialRampToValueAtTime(freq*Math.pow(2,det/1200),t+.05);
+  const lfo=a.createOscillator(),lg=a.createGain();lfo.frequency.value=4.8+Math.random()*.8;
+  lg.gain.setValueAtTime(0,t);lg.gain.linearRampToValueAtTime(freq*.0035,t+Math.min(.6,dur));lfo.connect(lg);lg.connect(o.frequency);lfo.start(t);lfo.stop(end+.05);
+  const og=a.createGain();og.gain.value=.5;o.connect(og);og.connect(g);o.start(t);o.stop(end+.05);voices.push(o,lfo)});
+ const ns=a.createBufferSource(),bp=a.createBiquadFilter(),ng=a.createGain();ns.buffer=B.nb;ns.loop=true;bp.type='bandpass';bp.frequency.value=dir=='d'?2200:3000;bp.Q.value=.7;
+ ng.gain.setValueAtTime(0,t);ng.gain.linearRampToValueAtTime(peak*.55,t+.02);ng.gain.exponentialRampToValueAtTime(peak*.06,t+.18);
+ ng.gain.setValueAtTime(peak*.06,Math.max(t+.18,end-rel));ng.gain.linearRampToValueAtTime(0,end);
+ ns.connect(bp);bp.connect(ng);ng.connect(to);ns.start(t,Math.random());ns.stop(end+.05);voices.push(ns);
+ return voices;
+}
 function playDemo(){
- if(running||!notes.length)return;if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();if(actx.state=='suspended')actx.resume();
- stopDemo();const spb=60/$('bpm').value,t=actx.currentTime+.15;
- notes.forEach((n,i)=>{const o=actx.createOscillator(),g=actx.createGain(),f=actx.createBiquadFilter(),s=t+n.t*spb,e=s+Math.max(.15,n.d*spb*.92);
-  o.type='sawtooth';o.frequency.value=440*Math.pow(2,(n.m-69)/12);f.type='lowpass';f.frequency.value=1800;
-  g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(.12,s+.03);g.gain.setValueAtTime(.12,e-.05);g.gain.linearRampToValueAtTime(0,e);
-  o.connect(f);f.connect(g);g.connect(actx.destination);o.start(s);o.stop(e+.02);demoO.push(o);
-  demoTO.push(setTimeout(()=>{cur=i;update();$('big').textContent=`${n.h} ${n.dir=='b'?'↑ sopra':'↓ aspira'}`;$('big').style.color=n.dir=='b'?'var(--blow)':'var(--draw)'},(s-actx.currentTime)*1000))});
- const la=notes[notes.length-1];demoTO.push(setTimeout(()=>{cur=0;update();$('big').textContent='Aperte Começar';$('big').style.color=''},(t+(la.t+la.d)*spb-actx.currentTime)*1000+300));
+ if(running||!notes.length)return;const a=ac();hInit();
+ stopDemo();const spb=60/$('bpm').value,t=a.currentTime+.2;
+ notes.forEach((n,i)=>{const s=t+n.t*spb+(Math.random()-.5)*.016,d=Math.max(.15,n.d*spb*.93);
+  harmNote(440*Math.pow(2,(n.m-69)/12),s,d,n.dir,1).forEach(v=>demoO.push(v));
+  demoTO.push(setTimeout(()=>{cur=i;update();$('big').textContent=`${n.h} ${n.dir=='b'?'↑ sopra':'↓ aspira'}${n.bd?' (bend '+n.bd+')':''}`;$('big').style.color=n.dir=='b'?'var(--blow)':'var(--draw)'},Math.max(0,(s-a.currentTime)*1000)))});
+ const la=notes[notes.length-1];demoTO.push(setTimeout(()=>{cur=0;update();$('big').textContent='Aperte Começar';$('big').style.color=''},(t+(la.t+la.d)*spb-a.currentTime)*1000+400));
 }
 $('demo').onclick=playDemo;
 function renderChart(){let h='<table style="width:100%;border-collapse:collapse;text-align:center;font-size:12px"><tr><td></td>';for(let i=1;i<=10;i++)h+=`<th>${i}</th>`;h+='</tr><tr><td style="color:var(--blow)">↑</td>';BLOW.forEach(m=>h+=`<td style="color:var(--blow);font-weight:800">${NN[(m+KEY())%12]}</td>`);h+='</tr><tr><td style="color:var(--draw)">↓</td>';DRAW.forEach(m=>h+=`<td style="color:var(--draw);font-weight:800">${NN[(m+KEY())%12]}</td>`);$('chart').innerHTML=h+'</tr></table>'}
@@ -830,7 +872,7 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 
-$('bkOut').onclick=()=>{const o={xp:S.xp,streak:S.streak,last:S.last,done:S.done,key:S.key,bends:S.bends,cals:S.cals};const c=btoa(unescape(encodeURIComponent(JSON.stringify(o))));$('bk').value=c;$('bk').select();try{navigator.clipboard.writeText(c)}catch(e){}};
+$('bkOut').onclick=()=>{const o={xp:S.xp,streak:S.streak,last:S.last,done:S.done,key:S.key,bends:S.bends,cals:S.cals,g:S.g};const c=btoa(unescape(encodeURIComponent(JSON.stringify(o))));$('bk').value=c;$('bk').select();try{navigator.clipboard.writeText(c)}catch(e){}};
 $('bkIn').onclick=()=>{try{const o=JSON.parse(decodeURIComponent(escape(atob($('bk').value.trim()))));Object.assign(S,o);save();$('key').value=S.key;$('bends').checked=S.bends!==false;refresh();$('bk').value='';toast('Progresso restaurado!')}catch(e){toast('Código inválido')}};
 async function parseAudio(ab){
  const c=new (window.AudioContext||window.webkitAudioContext)();const au=await c.decodeAudioData(ab);try{c.close()}catch(e){}
