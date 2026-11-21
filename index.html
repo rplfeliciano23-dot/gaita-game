@@ -206,7 +206,7 @@ details>summary{list-style:none}details>summary::-webkit-details-marker{display:
 
  <section class="scr" id="s-songs">
   <h2 style="margin:4px 0 12px">Músicas</h2><div class="row" id="sFilter"><button data-f="all">Todas</button><button data-f="easy">Fácil</button><button data-f="mid">Médio</button><button data-f="imp">Importadas</button></div><div id="songs"></div>
-  <div class="card"><label class="btn" style="display:block;text-align:center">🎵 Importar MIDI ou MP3<input type="file" id="file" accept=".mid,.midi,.mp3,.wav,.m4a,.ogg,audio/*" hidden></label><p class="mut" id="impMsg">O app converte as notas para furos da sua gaita e transpõe para caber nela. MP3 só funciona bem com melodia solo (uma voz ou instrumento).</p></div>
+  <div class="card"><label class="btn" style="display:block;text-align:center">🎵 Importar MIDI ou MP3<input type="file" id="file" accept=".mid,.midi,.mp3,.wav,.m4a,.ogg,audio/*" multiple hidden></label><p class="mut" id="impMsg">O app converte as notas para furos da sua gaita e transpõe para caber nela. MP3 só funciona bem com melodia solo (uma voz ou instrumento).</p></div>
  </section>
 </div>
 <nav><i id="navInd"></i><button id="n-home" class="act"><span class="ni">🏠</span><span>Início</span></button><button id="n-theory"><span class="ni">📖</span><span>Teoria</span></button><button id="n-act"><span class="ni">🎯</span><span>Prática</span></button><button id="n-songs"><span class="ni">🎵</span><span>Músicas</span></button><button id="n-settings"><span class="ni">⚙️</span><span>Ajustes</span></button></nav>
@@ -869,11 +869,19 @@ function parseMidi(ab){
   return{bpm:Math.max(40,Math.min(140,Math.round(6e7/tempo))),raw:out.map((e,i)=>{const nx=out[i+1];let dd=e.d;if(nx&&nx.t<e.t+dd)dd=nx.t-e.t;return{m:e.m,t:+(e.t/ppq).toFixed(3),d:+Math.max(dd/ppq,.25).toFixed(3)}})};
 }
 $('file').onchange=async e=>{
-  const f=e.target.files[0];if(!f)return;$('impMsg').textContent='Analisando o arquivo… pode levar alguns segundos.';
-  try{const isA=/\.(mp3|wav|m4a|ogg|aac)$/i.test(f.name)||(f.type||'').startsWith('audio/');const r=isA?await parseAudio(await f.arrayBuffer()):parseMidi(await f.arrayBuffer());
-    const s={t:f.name.replace(/\.\w+$/,''),bpm:r.bpm,raw:r.raw.slice(0,300)};
-    S.imp=S.imp.filter(x=>x.t!=s.t).concat(s).slice(-3);save();refresh();$('impMsg').textContent='Música importada! Toque nela na lista.';
-  }catch(x){$('impMsg').textContent='Não consegui ler esse arquivo. Use MIDI, MP3 ou WAV com melodia clara.'}
+  const fs=[...e.target.files];if(!fs.length)return;let ok=0,bad=0,zip=false;
+  for(const f of fs){
+   $('impMsg').textContent='Importando '+(ok+bad+1)+' de '+fs.length+'… pode levar alguns segundos.';
+   try{const ab=await f.arrayBuffer(),mg=String.fromCharCode(...new Uint8Array(ab,0,4));
+    if(mg.slice(0,2)=='PK'){zip=true;throw 0}
+    const r=mg=='MThd'?parseMidi(ab):await parseAudio(ab);
+    const t=f.name.replace(/\.\w+$/,'').replace(/^\d+[_ ]/,'').replace(/_/g,' ');
+    S.imp=S.imp.filter(x=>x.t!=t).concat({t,bpm:r.bpm,raw:r.raw.slice(0,300)}).slice(-40);ok++}
+   catch(x){bad++}
+  }
+  e.target.value='';save();refresh();
+  $('impMsg').textContent=zip?'Esse arquivo é um .zip. Extraia o zip primeiro e escolha os arquivos .mid.':ok?ok+' música(s) importada(s)! Veja em "Importadas".'+(bad?' ('+bad+' não deu para ler)':''):'Não consegui ler o arquivo. Use MIDI, MP3 ou WAV com melodia clara.';
+  if(ok){sf='imp';refresh()}
 };
 
 /* início */
