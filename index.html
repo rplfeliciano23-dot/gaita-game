@@ -129,6 +129,9 @@ nav button{font-size:11px}
 #tunerPlay{position:fixed;inset:0;background:var(--bg);overflow:auto;display:none;z-index:6;padding:calc(12px + env(safe-area-inset-top,0px)) 12px 24px;animation:slideUp .35s ease}
 #tunerPlay .in{max-width:640px;margin:auto}
 details>summary{list-style:none}details>summary::-webkit-details-marker{display:none}
+#stagePlay,#diaryPlay,#routinePlay{position:fixed;inset:0;background:var(--bg);overflow:auto;display:none;z-index:6;padding:calc(12px + env(safe-area-inset-top,0px)) 12px 24px;animation:slideUp .35s ease}
+#stagePlay .in,#diaryPlay .in,#routinePlay .in{max-width:640px;margin:auto}
+#play,#thPlay{z-index:8}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -169,11 +172,13 @@ details>summary{list-style:none}details>summary::-webkit-details-marker{display:
   <div class="card"><b id="lvl"></b><div class="xp"><i id="xpb"></i></div><span class="mut" id="xpt"></span></div>
   <div class="card" id="lvCard"><b>Qual é o seu nível?</b><p class="mut">Assim eu libero as atividades certas para você começar.</p><button class="big lvb" data-lv="0" style="margin-bottom:6px">🌱 Nunca toquei gaita</button><button class="big lvb" data-lv="3" style="margin-bottom:6px">🎶 Já sei o básico</button><button class="big lvb" data-lv="5">🔥 Já toco algumas músicas</button></div>
   <button class="go big" id="cont" style="padding:18px;font-size:18px;margin-bottom:12px">▶ Continuar</button>
+  <div class="row" style="margin-bottom:12px"><button class="big" id="rtBtn" style="flex:1">🗓️ Rotina de hoje <span id="rtN"></span></button><button class="big" id="diaBtn" style="flex:1">📒 Meu progresso</button></div>
   <div class="card"><b>Meta de hoje</b><div class="xp"><i id="goalb"></i></div><span class="mut" id="goalt"></span></div>
   <div class="card" id="wkCard"><b>🏆 Desafio da semana</b><div id="wkT" style="font-size:18px;font-weight:800;margin:4px 0"></div><div class="mut" id="wkD"></div><button class="go big" id="wkGo" style="margin-top:8px">Jogar desafio</button></div>
  </section>
 
- <section class="scr" id="s-act"><h2 style="margin:4px 0 12px">Trilha de aprendizado</h2><div id="lessons"></div><h2 style="margin:18px 0 12px">Treinos técnicos</h2><div id="works"></div></section>
+ <section class="scr" id="s-act"><h2 style="margin:4px 0 4px">Formação</h2><p class="mut" style="margin:0 0 12px">Do zero ao avançado, em 8 etapas. Você avança quando demonstra o domínio, não só por completar tarefas.</p><div id="stages"></div>
+  <details class="card" style="margin-top:14px"><summary style="cursor:pointer;font-weight:800">Treinos avulsos</summary><div id="works" style="margin-top:10px"></div></details></section>
 
  <section class="scr" id="s-theory"><h2 style="margin:4px 0 12px">Teoria</h2><div class="card mut">Aprenda o básico antes de tocar: como segurar, a boca, a respiração e muito mais. Responda as perguntas para ganhar XP.</div><div id="theoryList"></div></section>
 
@@ -237,6 +242,9 @@ details>summary{list-style:none}details>summary::-webkit-details-marker{display:
   <div class="row"><button class="go" id="tCal">🎯 Calibrar</button><button id="tReset1">Zerar esta nota</button><button id="tReset">Zerar todas</button></div><div class="mut" id="tCalv"></div></div>
  <div class="card"><b>Mapa de notas da sua gaita</b><div id="chart" style="overflow-x:auto;margin-top:8px"></div></div>
 </div></div>
+<div id="stagePlay"><div class="in"><div class="row" style="margin-bottom:12px"><button id="stageClose">✕</button><h2 id="stageT" style="margin:0"></h2></div><div id="stageBody"></div></div></div>
+<div id="diaryPlay"><div class="in"><div class="row" style="margin-bottom:12px"><button id="diaryClose">✕</button><h2 style="margin:0">Meu progresso</h2></div><div id="diaryBody"></div></div></div>
+<div id="routinePlay"><div class="in"><div class="row" style="margin-bottom:12px"><button id="routineClose">✕</button><h2 style="margin:0">Rotina de hoje</h2></div><div id="routineBody"></div></div></div>
 <div id="thPlay"><div class="in">
  <div class="row"><button id="thClose">✕</button><div class="bar"><i id="thProg"></i></div></div>
  <div id="thBody"></div><div id="thBanner"></div><button class="go big" id="thBtn">Continuar</button>
@@ -289,6 +297,71 @@ const WORK=[
  {id:'w6',t:'Bend no furo 4',desc:'O primeiro bend, meio tom para baixo',seq:'4d 4d1 4d 4d1 4d',d:2,bpm:50},
  {id:'w7',t:'Escala de blues (2ª posição)',desc:'Sol, Si bemol, Dó, Ré bemol, Ré, Fá',seq:'2d 3d1 4b 4d1 4d 5d',d:1.5,bpm:60}
 ];
+const MNO={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+const SQ=q=>{let t=0;const o=[];q.split(' ').forEach(x=>{const a=x.split(':'),d=+a[1];if(a[0]!='R'){const m=/^([A-G])(b|#)?(\d)$/.exec(a[0]);o.push({m:12*(+m[3]+1)+MNO[m[1]]+(m[2]=='#'?1:m[2]=='b'?-1:0),t,d})}t+=d});return o};
+const rp=(x,n)=>Array(n).fill(x).join(' ');
+SONGS.push(
+ {t:'Hot Cross Buns',bpm:100,lv:'easy',raw:SQ('E5:1 D5:1 C5:2 E5:1 D5:1 C5:2 '+rp('C5:.5',4)+' '+rp('D5:.5',4)+' E5:1 D5:1 C5:2')},
+ {t:'Row Row Row Your Boat',bpm:96,lv:'easy',raw:SQ('C5:1.5 C5:1.5 C5:1 D5:.5 E5:1.5 E5:1 D5:.5 E5:1 F5:.5 G5:3 '+rp('C6:.5',3)+' '+rp('G5:.5',3)+' '+rp('E5:.5',3)+' '+rp('C5:.5',3)+' G5:1 F5:.5 E5:1 D5:.5 C5:3')},
+ {t:'London Bridge',bpm:100,lv:'easy',raw:SQ('G5:1.5 A5:.5 G5:1 F5:1 E5:1 F5:1 G5:2 D5:1 E5:1 F5:2 E5:1 F5:1 G5:2 G5:1.5 A5:.5 G5:1 F5:1 E5:1 F5:1 G5:2 D5:2 G5:2 E5:2 C5:2')},
+ {t:'Au Clair de la Lune',bpm:90,lv:'easy',raw:SQ(rp('C5:1 C5:1 C5:1 D5:1 E5:2 D5:2 C5:1 E5:1 D5:1 D5:1 C5:4',2))},
+ {t:'Old MacDonald (trecho)',bpm:100,lv:'easy',raw:SQ(rp('C5:1 C5:1 C5:1 G5:1 A5:1 A5:1 G5:2 E5:1 E5:1 D5:1 D5:1 C5:4',2))},
+ {t:'Três Ratinhos Cegos (trecho)',bpm:100,lv:'easy',raw:SQ('E5:1 D5:1 C5:2 E5:1 D5:1 C5:2 G5:1.5 F5:.5 F5:1 E5:1 G5:1.5 F5:.5 F5:1 E5:1 E5:1 D5:1 C5:4')},
+ {t:'Noite Feliz (Silent Night)',bpm:66,lv:'mid',raw:SQ('G5:1.5 A5:.5 G5:1 E5:3 G5:1.5 A5:.5 G5:1 E5:3 D6:2 D6:1 B5:3 C6:2 C6:1 G5:3 A5:2 A5:1 C6:1.5 B5:.5 A5:1 G5:1.5 A5:.5 G5:1 E5:3 A5:2 A5:1 C6:1.5 B5:.5 A5:1 G5:1.5 A5:.5 G5:1 E5:3 D6:2 D6:1 F6:1.5 D6:.5 B5:1 C6:3 E6:3 C6:1 G5:1 E5:1 G5:1.5 F5:.5 D5:1 C5:3')},
+ {t:'Blues Lento em G (original)',bpm:72,lv:'mid',raw:SQ('G4:1 Bb4:1 C5:2 Db5:1 D5:1 C5:2 Bb4:1 C5:1 Bb4:1 G4:1 G4:4 C5:1 Db5:1 D5:1 F5:1 D5:2 C5:1 Bb4:1 G4:1 Bb4:1 C5:1 Db5:1 D5:2 C5:1 Bb4:1 G4:4')},
+ {t:'Escada do Blues (original)',bpm:80,lv:'mid',raw:SQ('G4:1 Bb4:1 C5:1 Db5:1 D5:1 F5:1 G5:2 F5:1 D5:1 Db5:1 C5:1 Bb4:1 G4:2')},
+ {t:'Pentatônica de Dó (original)',bpm:90,lv:'easy',raw:SQ('C5:1 D5:1 E5:1 G5:1 A5:2 G5:1 E5:1 D5:1 C5:2 C5:1 E5:1 G5:1 E5:1 D5:1 C5:1 D5:1 E5:1 G5:2 E5:2 C5:4')},
+ {t:'Saltos de Furos (original)',bpm:80,lv:'mid',raw:SQ('C5:1 G5:1 E5:1 C6:1 G5:1 C5:1 A5:1 E5:1 D5:1 A5:1 F5:1 B5:1 C6:2 C5:2')},
+ {t:'Chamada e Resposta (original)',bpm:90,lv:'mid',raw:SQ('C5:1 E5:1 G5:2 R:1 G5:1 E5:1 C5:1 D5:1 F5:1 A5:2 R:1 A5:1 F5:1 D5:1 C5:2 E5:2 G5:2 C6:4')}
+);
+const ACT2=[
+ {id:'d1',t:'Diagnóstico: notas 1 a 10',desc:'Toque cada nota, soprando e aspirando',seq:'1b 1d 2b 2d 3b 3d 4b 4d 5b 5d 6b 6d 7b 7d 8b 8d 9b 9d 10b 10d',d:1.5,bpm:60},
+ {id:'d2',t:'Diagnóstico: sopro e aspiração',desc:'Controle ao trocar a direção do ar',seq:'4b 4d 4b 4d 5b 5d 5b 5d 6b 6d 6b 6d',d:1,bpm:70},
+ {id:'d3',t:'Diagnóstico: ritmo com metrônomo',desc:'Acompanhe o pulso a 70 BPM',seq:'4b 5b 6b 5b 4b 5b 6b 5b',d:1,bpm:70,mode:'time'},
+ {id:'d4',t:'Diagnóstico: saltos entre furos',desc:'Mire o furo certo',seq:'2b 5b 3b 6b 4b 7d',d:1.5,bpm:60},
+ {id:'a_alt',t:'Alternar sopro e aspiração',desc:'Precisão ao trocar a direção do ar',seq:'4b 4d 4b 4d 5b 5d 5b 5d 6b 6d 6b 6d',d:1,bpm:60},
+ {id:'a_esc',t:'Escala maior no metrônomo',desc:'Escala de Dó a 60 BPM, no tempo',seq:'4b 4d 5b 5d 6b 6d 7d 7b',d:1,bpm:60,mode:'time'},
+ {id:'a_art',t:'Articulação: notas repetidas',desc:'Separe cada nota com "ta"',seq:'4b 4b 4b 4b 5b 5b 5b 5b',d:.75,bpm:70},
+ {id:'a_trill',t:'Trinado entre dois furos',desc:'Alterne 4↑ e 5↑ com ritmo',seq:'4b 5b 4b 5b 4b 5b 4b 5b',d:.5,bpm:80},
+ {id:'a_pent',t:'Pentatônica de Dó (1ª posição)',desc:'Dó Ré Mi Sol Lá e volta',seq:'4b 4d 5b 6b 6d 6b 5b 4d 4b',d:1,bpm:70},
+ {id:'a_pos3',t:'Ré dórico (3ª posição)',desc:'Escala da 3ª posição, subindo e descendo',seq:'4d 5b 5d 6b 6d 7d 7b 7d 6d 6b 5d 5b 4d',d:1,bpm:70},
+ {id:'a_blues12',t:'Riff de blues em 12 compassos',desc:'I-IV-V em Sol, na 2ª posição',seq:rp('3b 3d1 4b 3d1',4)+' '+rp('4b 4d1 4d 4d1',2)+' 3b 3d1 4b 3d1 3b 3d1 4b 3d1 4d 5d 4d 3d1 4b 4d1 4d 4d1 3b 3d1 4b 3d1 3b 3d1 4b 3b',d:1,bpm:70},
+ {id:'a_b3',t:'Bends precisos no furo 3',desc:'Os três passos do 3 aspirado',seq:'3d 3d1 3d 3d2 3d 3d3 3d',d:2,bpm:50},
+ {id:'a_b10',t:'Blow bends: furos 8, 9 e 10',desc:'Bends soprados nos agudos',seq:'8b 8b1 8b 9b 9b1 9b 10b 10b1 10b2 10b',d:2,bpm:50},
+ {id:'a_mix',t:'Sol mixolídio (2ª posição)',desc:'Escala da 2ª posição nos agudos',seq:'6b 6d 7d 7b 8d 8b 9d 9b',d:1,bpm:70},
+ {id:'a_min',t:'Lá menor natural (4ª posição)',desc:'Escala da 4ª posição',seq:'6d 7d 7b 8d 8b 9d 9b 10d',d:1,bpm:70},
+ {id:'a_phr',t:'Mi frígio (5ª posição)',desc:'Escala da 5ª posição',seq:'5b 5d 6b 6d 7d 7b 8d 8b',d:1,bpm:70},
+ {id:'a_ear1',t:'Ouvido: três notas',desc:'Ouça (🔊) e toque de ouvido',seq:'4b 5b 6b 5b 4b',d:1.5,bpm:60,ear:true},
+ {id:'a_ear2',t:'Ouvido: melodia curta',desc:'Os furos ficam escondidos',seq:'4b 5b 6b 6d 6b 5b 4b 4d',d:1.5,bpm:60,ear:true},
+ {id:'a_ear3',t:'Ouvido: saltos e aspirados',desc:'Mais difícil: com saltos',seq:'4b 6b 5b 7d 6b 4d 5d 4b',d:1.5,bpm:60,ear:true}
+];
+const DIAG={id:0,t:'Diagnóstico inicial',ic:'🧪',obj:'Quatro testes práticos curtos mostram onde você está, para você não repetir o que já domina. Faça com o microfone ligado e calcule o ponto de partida no final.',crit:'',th:[],act:['d1','d2','d3','d4'],songs:[],chk:[]};
+const ST=[
+ {id:1,t:'Fundamentos',ic:'🌱',obj:'Anatomia, pegada, respiração, embocadura, notas individuais, localização dos furos e primeiras melodias.',crit:'Notas limpas, respiração sem tensão e uma melodia simples com ritmo regular.',
+  th:['t1','g1','t2','t3','t4','t5','t8','t7'],act:['l1','l2','l3','w1','w2'],songs:['Mary Had a Little Lamb','Hot Cross Buns'],
+  chk:['Faço notas limpas nos furos 4, 5 e 6','Respiro sem tensão na garganta e nos ombros','Seguro a gaita corretamente, sem apertar demais','Toco uma melodia simples com ritmo regular']},
+ {id:2,t:'Controle e musicalidade',ic:'🎚️',obj:'Precisão entre sopro e aspiração, saltos entre furos, escala maior, ritmo e metrônomo, articulação, dinâmica e memorização.',crit:'Escala maior de memória, tempo estável a 60 BPM e articulação clara.',
+  th:['t18','t9','g9','t20'],act:['a_alt','w3','w4','l6','a_esc','a_art'],songs:['Twinkle Twinkle Little Star','Row Row Row Your Boat','Frère Jacques','Ode à Alegria'],
+  chk:['Alterno sopro e aspiração com precisão','Toco a escala maior de memória','Mantenho o tempo com o metrônomo (60 BPM)','Controlo a dinâmica: toco baixo e alto sem desafinar']},
+ {id:3,t:'Técnicas intermediárias',ic:'🌀',obj:'Bending, vibrato, concha das mãos, bloqueio de língua, trinados, acordes e primeiras improvisações.',crit:'Atingir e sustentar um bend; vibrato controlado; trinado limpo.',
+  th:['t6','t15','t10','t13','t12','t11','g3'],act:['l7','l8','w6','w5','a_trill'],songs:['London Bridge','Au Clair de la Lune','Três Ratinhos Cegos (trecho)'],
+  chk:['Atinjo e sustento um bend no furo 4','Faço um vibrato controlado em uma nota longa','Abro e fecho a concha das mãos (efeito wah)','Toco um acorde ou uma oitava com bloqueio de língua','Improviso com 3 notas']},
+ {id:4,t:'Harmonia e posições',ic:'🎼',obj:'Teoria musical, intervalos, campo harmônico, pentatônicas, 1ª, 2ª e 3ª posições, blues de 12 compassos e acompanhamento.',crit:'Tocar as escalas das 3 primeiras posições e um blues de 12 compassos.',
+  th:['g4','g5','g6','g17','t19','t22'],act:['a_pent','w7','a_pos3','a_blues12'],songs:['Pentatônica de Dó (original)','Blues Lento em G (original)','Escada do Blues (original)'],
+  chk:['Explico o que são tônica, terça, quinta e sétima','Toco a pentatônica nas 1ª e 2ª posições','Conheço a estrutura do blues de 12 compassos','Acompanho uma progressão simples']},
+ {id:5,t:'Nível avançado',ic:'🔥',obj:'Bends precisos, blow bends, oitavas, tongue slap, tongue flutter, vibrato avançado, fraseado e solos.',crit:'Bends estáveis na nota-alvo e frases com começo, meio e fim.',
+  th:['t16','g8','t21'],act:['a_b3','l9','a_b10'],songs:['Noite Feliz (Silent Night)','Saltos de Furos (original)'],
+  chk:['Sustento os bends do furo 3 na nota-alvo','Faço um blow bend no furo 8 ou 9','Toco oitavas com bloqueio de língua','Faço um tongue slap','Crio uma frase com começo, meio e fim']},
+ {id:6,t:'Técnicas profissionais',ic:'🚀',obj:'Overblows, overdraws, cromatismo, modos musicais, transposição, improvisação avançada e controle de timbre.',crit:'Entender e tocar os modos nas posições e controlar o timbre.',
+  th:['t17','g7'],act:['a_mix','a_min','a_phr'],songs:[],
+  chk:['Explico como funcionam o overblow e o overdraw','Toco os modos das 2ª, 3ª, 4ª e 5ª posições','Transponho uma melodia para outro tom','Mudo o timbre com boca, mãos e ar']},
+ {id:7,t:'Domínio musical',ic:'👂',obj:'Tocar de ouvido, aprender músicas rapidamente, improvisar em tons diferentes, acompanhar bandas, ter identidade sonora e criar arranjos.',crit:'Reproduzir melodias de ouvido e improvisar sem tablatura.',
+  th:['g18','g11','g10'],act:['a_ear1','a_ear2','a_ear3'],songs:['Chamada e Resposta (original)'],
+  chk:['Tiro uma melodia simples de ouvido','Improviso em dois tons diferentes','Aprendo uma música nova em poucos dias','Acompanho outro músico ou uma faixa de apoio','Crio um arranjo ou uma introdução']},
+ {id:8,t:'Performance',ic:'🏆',obj:'Repertório completo, execução ao vivo, gravação, interpretação, musicalidade e consistência técnica.',crit:'5 músicas com 3 estrelas e uma gravação ou apresentação concluída.',
+  th:['g14','g15','g12','g13','g16'],act:[],songs:['Ode à Alegria','Jingle Bells (refrão)','Parabéns pra Você','Noite Feliz (Silent Night)','Twinkle Twinkle Little Star','Frère Jacques','Row Row Row Your Boat','London Bridge'],perf:5,
+  chk:['Tenho um repertório de 5 músicas completas','Gravei uma execução completa e avaliei','Toquei para outras pessoas (ao vivo ou online)','Mantenho a consistência técnica nas gravações']}
+];
 let notes=[],cur=0,hold=0,wrong=0,hits=0,errs=0,mode='wait',running=false,t0=0,lastAct=-1,ctx=null,done=false;
 let actx,an,buf,micOn=false,last=null,cnt=0;
 
@@ -309,14 +382,9 @@ function refresh(){
   const lv=Math.floor(S.xp/100)+1;
   $('pStreak').textContent='🔥 '+S.streak;$('pXp').textContent='⭐ '+S.xp;if(window._lx!==undefined&&window._lx!==S.xp)bump($('pXp'));window._lx=S.xp;
   $('lvl').textContent='Nível '+lv;$('xpb').style.width=(S.xp%100)+'%';$('xpt').textContent=(S.xp%100)+'/100 XP';
-  const nx=LES.findIndex(l=>!S.done[l.id]);$('cont').textContent=nx<0?'🏆 Refazer atividades':'▶ Continuar: '+LES[nx].t;
   $('tMic').style.display=micOn?'none':'block';renderChart();refreshHome();
   const mb=$('micTop');mb.classList.toggle('on',micOn);
-  $('lessons').innerHTML='';
-  LES.forEach((l,i)=>{const b=document.createElement('button'),u=unlocked(i),st=S.done[l.id]||0;
-    b.className='item'+(u?'':' lock');b.innerHTML=`<span class="ic">${u?(i+1):'🔒'}</span><span>${l.t}<small>${st?'★'.repeat(st)+'☆'.repeat(3-st):u?'Novo':'Complete a anterior'}</small></span>`;
-    b.onclick=()=>{if(u){$('pmode').value='play';openLesson(i)}};$('lessons').appendChild(b)});
-  $('songs').innerHTML='';
+    $('songs').innerHTML='';
   SONGS.concat(S.imp.map(x=>Object.assign({lv:'imp'},x))).filter(x=>sf=='all'||x.lv==sf).forEach(x=>{const bs=(S.best||{})['s:'+x.t],b=document.createElement('button');b.className='item';
    b.innerHTML=`<span class="ic" style="background:var(--blow)">♪</span><span>${x.t}<small>${({easy:'Fácil',mid:'Médio',imp:'Importada'})[x.lv]||''} · ${x.raw.length} notas${bs?' · '+'★'.repeat(bs.st)+'☆'.repeat(3-bs.st)+' '+Math.round(bs.acc*100)+'%':''}</small></span>`;
    b.onclick=()=>{$('pmode').value='play';openSong(x)};$('songs').appendChild(b)});
@@ -325,7 +393,7 @@ function refresh(){
 $('key').innerHTML=Object.keys(KEYS).map(k=>`<option>${k}</option>`).join('');$('key').value=S.key;
 $('key').onchange=()=>{S.key=$('key').value;save();refresh()};
 $('bends').checked=S.bends!==false;$('bends').onchange=()=>{S.bends=$('bends').checked;save()};
-$('cont').onclick=()=>{const nx=LES.findIndex(l=>!S.done[l.id]);$('pmode').value='play';openLesson(nx<0?0:nx)};
+$('cont').onclick=()=>{const na=nextAct();if(na){$('pmode').value='play';na.open()}else showStage(curStage().id)}
 
 /* mic */
 async function ensureMic(){
@@ -368,7 +436,8 @@ function openLesson(i){
   begin(l.t,60,'wait');
 }
 function openWork(i){const l=WORK[i];ctx={type:'work',i};notes=P(l.seq).map((x,k)=>({m:midiOf(x.h,x.dir,x.bd),t:k*l.d,d:l.d,h:x.h,dir:x.dir,bd:x.bd,s:'p',hit:false}));begin(l.t,l.bpm,'wait')}
-function reopen(){if(ctx.type=='lesson')openLesson(ctx.i);else if(ctx.type=='work')openWork(ctx.i);else openSong(ctx.s)}
+function openAct(a){ctx={type:'act',id:a.id,ear:!!a.ear,a};notes=P(a.seq).map((x,k)=>({m:midiOf(x.h,x.dir,x.bd),t:k*a.d,d:a.d,h:x.h,dir:x.dir,bd:x.bd,s:'p',hit:false}));begin(a.t,a.bpm,a.mode||'wait')}
+function reopen(){if(ctx.type=='lesson')openLesson(ctx.i);else if(ctx.type=='work')openWork(ctx.i);else if(ctx.type=='act')openAct(ctx.a);else openSong(ctx.s)}
 function openSong(s){
   ctx={type:'song',s};let best=0,bc=-1;
   for(let sh=-24;sh<=24;sh++){const c=s.raw.reduce((a,n)=>{const r=mapNote(n.m+sh);return a+(r?(r.bd?.6:1):0)},0);if(c>bc||(c==bc&&Math.abs(sh)<Math.abs(best))){bc=c;best=sh}}
@@ -379,7 +448,7 @@ function openSong(s){
 function begin(title,bpm,md,skipped,shift){
   cur=0;hits=0;errs=0;hold=0;wrong=0;running=false;lastAct=-1;done=false;mode=md;$('mode').value=md;
   $('bpm').value=bpm;$('bpmv').textContent=bpm;$('start').textContent='▶ Começar';
-  $('mode').style.display=ctx.type=='song'?'':'none';$('guide').parentNode.style.display=ctx.type=='song'?'':'none';
+  $('mode').style.display=ctx.type=='song'?'':'none';$('guide').parentNode.style.display=(ctx.type=='song'||md=='time')?'':'none';
   $('play').style.display='block';$('res').style.display='none';
   const strip=$('strip');strip.innerHTML='';
   notes.forEach((n,i)=>{const d=document.createElement('div');d.id='ch'+i;d.style.minWidth=Math.max(46,Math.min(160,n.d*34))+'px';d.innerHTML=chipHtml(n);strip.appendChild(d)});
@@ -390,10 +459,11 @@ function begin(title,bpm,md,skipped,shift){
 function update(flash){
   const n=notes[cur];
   $('prog').style.width=(cur/notes.length*100)+'%';$('pst').textContent=`✔ ${hits} · ✖ ${errs}`;
-  if(n&&running){$('big').textContent=`${n.h} ${n.dir=='b'?'SOPRE ↑':'ASPIRE ↓'}${n.bd?' (bend '+n.bd+')':''}`;$('big').style.color=n.dir=='b'?'var(--blow)':'var(--draw)'}
+  if(running&&ctx&&ctx.ear){$('big').textContent='👂 Toque de ouvido';$('big').style.color=''}
+  if(n&&running&&!(ctx&&ctx.ear)){$('big').textContent=`${n.h} ${n.dir=='b'?'SOPRE ↑':'ASPIRE ↓'}${n.bd?' (bend '+n.bd+')':''}`;$('big').style.color=n.dir=='b'?'var(--blow)':'var(--draw)'}
   document.querySelectorAll('.c').forEach(c=>{c.classList.remove('on','okf','badf');c.textContent=c.classList.contains('b')?'↑':'↓'});
-  if(n&&(running||mode=='wait')){const el=$(n.dir+n.h);el.classList.add('on');if(n.bd)el.textContent='↘'+n.bd;if(flash)el.classList.add(flash)}
-  notes.forEach((x,i)=>{const c=$('ch'+i);c.className='chip '+x.dir+(x.s=='ok'?' ok':x.s=='bad'?' bad':'')+(i==cur?' cur':'')+(inR(i)?'':' out')});
+  if(n&&(running||mode=='wait')&&!(ctx&&ctx.ear)){const el=$(n.dir+n.h);el.classList.add('on');if(n.bd)el.textContent='↘'+n.bd;if(flash)el.classList.add(flash)}
+  notes.forEach((x,i)=>{const c=$('ch'+i);c.className='chip '+x.dir+(x.s=='ok'?' ok':x.s=='bad'?' bad':'')+(i==cur?' cur':'')+(inR(i)?'':' out');if(ctx&&ctx.ear)c.innerHTML=chipHtml(x)});
   const c=$('ch'+cur);if(c)c.scrollIntoView({inline:'center',block:'nearest'});
 }
 const setHit=n=>{if(n.s!='bad'){n.s='ok';hits++;vib(20)}},setBad=n=>{if(n.s!='bad'){n.s='bad';errs++;vib([40,40,40])}};
@@ -412,7 +482,7 @@ function finish(){
   running=false;done=true;$('start').textContent='↻ Repetir';
   const tot=hits+errs,acc=tot?hits/tot:0,st=acc>=.9?3:acc>=.75?2:acc>=.6?1:0;
   const gain=hits*10+(st?20:0);S.xp+=gain;
-  const bk=ctx.type=='lesson'?'l:'+LES[ctx.i].id:ctx.type=='work'?'w:'+WORK[ctx.i].id:'s:'+ctx.s.t;S.best=S.best||{};const pb=S.best[bk];let rec=false;
+  const bk=ctx.type=='lesson'?'l:'+LES[ctx.i].id:ctx.type=='work'?'w:'+WORK[ctx.i].id:ctx.type=='act'?'a:'+ctx.id:'s:'+ctx.s.t;S.best=S.best||{};const pb=S.best[bk];let rec=false;
   if(!pb||acc>pb.acc){S.best[bk]={acc,st:Math.max(st,pb?pb.st:0)};rec=!!pb}else if(st>pb.st)pb.st=st;
   let bonus=0;if(ctx.type=='song'){const k=wkSong();if(st==3&&S.wkDone!==k.w&&ctx.s.t==k.s.t){S.wkDone=k.w;bonus=100;S.xp+=100}}
   const today=new Date().toISOString().slice(0,10);
@@ -536,7 +606,7 @@ function playDemo(){
  stopDemo();const spb=60/$('bpm').value,t=a.currentTime+.2;
  notes.forEach((n,i)=>{const s=t+n.t*spb+(Math.random()-.5)*.016,d=Math.max(.15,n.d*spb*.93);
   harmNote(440*Math.pow(2,(n.m-69)/12),s,d,n.dir,1).forEach(v=>demoO.push(v));
-  demoTO.push(setTimeout(()=>{cur=i;update();$('big').textContent=`${n.h} ${n.dir=='b'?'↑ sopra':'↓ aspira'}${n.bd?' (bend '+n.bd+')':''}`;$('big').style.color=n.dir=='b'?'var(--blow)':'var(--draw)'},Math.max(0,(s-a.currentTime)*1000)))});
+  demoTO.push(setTimeout(()=>{if(ctx&&ctx.ear)return;cur=i;update();$('big').textContent=`${n.h} ${n.dir=='b'?'↑ sopra':'↓ aspira'}${n.bd?' (bend '+n.bd+')':''}`;$('big').style.color=n.dir=='b'?'var(--blow)':'var(--draw)'},Math.max(0,(s-a.currentTime)*1000)))});
  const la=notes[notes.length-1];demoTO.push(setTimeout(()=>{cur=0;update();$('big').textContent='Aperte Começar';$('big').style.color=''},(t+(la.t+la.d)*spb-a.currentTime)*1000+400));
 }
 $('demo').onclick=playDemo;
@@ -562,7 +632,7 @@ var sf='all';
 const isPractice=()=>$('pmode').value=='practice',loopA=()=>+$('loopA').value,loopB=()=>+$('loopB').value;
 const endIdx=()=>isPractice()?loopB():notes.length-1;
 function inR(i){return !isPractice()||(i>=loopA()&&i<=loopB())}
-function chipHtml(n){const v=$('view').value,a=nm(n.m),b=n.h+(n.dir=='b'?'↑':'↓')+(n.bd?'<br>bend '+n.bd:'');return v=='note'?a:v=='tab'?b:a+'<br>'+b}
+function chipHtml(n){if(ctx&&ctx.ear&&n.s=='p')return '?';const v=$('view').value,a=nm(n.m),b=n.h+(n.dir=='b'?'↑':'↓')+(n.bd?'<br>bend '+n.bd:'');return v=='note'?a:v=='tab'?b:a+'<br>'+b}
 function pmUI(){$('practiceBox').style.display=isPractice()?'block':'none'}
 function loopLabel(){$('loopLbl').textContent='Trecho: notas '+(loopA()+1)+' a '+(loopB()+1)+' de '+notes.length}
 function loopInit(){const mx=Math.max(0,notes.length-1);$('loopA').max=mx;$('loopB').max=mx;$('loopA').value=0;$('loopB').value=mx;pmUI();loopLabel()}
@@ -589,10 +659,10 @@ function refreshHome(){
  const g=+(S.goal||10),m=(S.todaySecs||0)/60;$('goal').value=g;$('goalb').style.width=Math.min(100,m/g*100)+'%';
  $('goalt').textContent=m>=g?'Meta cumprida hoje! 🎉':Math.floor(m)+' de '+g+' minutos hoje';
  const k=wkSong();$('wkT').textContent=k.s.t;$('wkD').textContent=S.wkDone===k.w?'Desafio concluído! ✔ +100 XP':'Tire 3 estrelas (90%) no modo valendo estrelas e ganhe +100 XP';
- $('lvCard').style.display=S.lv?'none':'block';renderWorks();renderTheory()}
+ $('lvCard').style.display=S.lv?'none':'block';renderWorks();renderTheory();renderStages();homeExtra();refreshStageOverlay()}
 $('goal').onchange=()=>{S.goal=+$('goal').value;save();refreshHome()};
 $('wkGo').onclick=()=>{$('pmode').value='play';openSong(wkSong().s)};
-document.querySelectorAll('.lvb').forEach(b=>b.onclick=()=>{S.lv=1;S.unl=+b.dataset.lv;save();refresh()});
+document.querySelectorAll('.lvb').forEach(b=>b.onclick=()=>{S.lv=1;S.unl=+b.dataset.lv;S.skip=({0:1,3:2,5:3})[b.dataset.lv];save();refresh()});
 document.querySelectorAll('#sFilter button').forEach(b=>b.onclick=()=>{sf=b.dataset.f;refresh()});
 let dip=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;$('instCard').style.display='block'});
 $('instBtn').onclick=async()=>{if(!dip)return;dip.prompt();try{await dip.userChoice}catch(e){}dip=null;$('instCard').style.display='none'};
@@ -803,11 +873,143 @@ const TH=[
   Q('Saem várias notas ao mesmo tempo. O que fazer?',['Fechar os lábios e conferir o furo','Soprar mais forte','Trocar de gaita'],0),
   Q('A nota sai fraca. O que conferir?',['Se está vazando ar e se a boca está bem encaixada','Se a gaita é azul','O horário'],0),
   Q('O app marca errado uma nota que está certa. O que fazer?',['Calibrar a nota no Afinador','Desinstalar o app','Mudar de aparelho'],0),
-  Q('Uma palheta soa torta mesmo com a gaita limpa e seca. O que pode ser?',['É preciso conserto da gaita','É normal sempre','Só toque assim'],0)]}
+  Q('Uma palheta soa torta mesmo com a gaita limpa e seca. O que pode ser?',['É preciso conserto da gaita','É normal sempre','Só toque assim'],0)]},
+ {u:'Unidade 7 · Conhecer a gaita',id:'g1',t:'Tipos de gaita e anatomia',ic:'🎷',steps:[
+  I('Os tipos de gaita','Diatônica: geralmente 10 furos, afinada em um tom (blues, rock, country, folk, pop). Cromática: tem um botão lateral com lâmina deslizante (jazz, clássico, MPB). Tremolo: duas fileiras de palhetas levemente desafinadas (música tradicional). Oitavada: notas duplicadas em oitavas. Baixo: região grave, para conjuntos. Acordes: grupos de notas e acordes prontos, para acompanhamento.'),
+  I('Qual escolher','A gaita diatônica em Dó é uma ótima base. Você não precisa comprar outra antes de desenvolver os fundamentos.'),
+  I('Anatomia da diatônica','Pente (comb): estrutura com os canais de ar. Palhetas (reeds): lâminas metálicas que vibram e produzem o som. Placas de palhetas: suportam as palhetas. Tampas (covers): protegem as placas e influenciam a projeção. Furos: passagens de ar para soprar e aspirar.'),
+  I('Nota que não soa bem','Uma nota que não soa corretamente nem sempre indica defeito: pode ser embocadura, fluxo de ar ou técnica. Nunca compense soprando ou aspirando com força excessiva.'),
+  Q('Qual tipo tem um botão lateral com lâmina deslizante?',['Cromática','Tremolo','Diatônica'],0),
+  Q('Qual tem duas fileiras de palhetas levemente desafinadas?',['Tremolo','Baixo','Diatônica'],0),
+  Q('O que faz a palheta?',['Vibra e produz o som','Guarda a gaita','Mostra o furo'],0),
+  Q('Uma nota que soa mal indica sempre defeito?',['Não: pode ser técnica, ar ou embocadura','Sim, sempre','Só em gaita nova'],0)]},
+ {id:'g3',t:'Técnicas além do básico',ic:'🛠️',steps:[
+  I('Tongue slap','A língua libera o bloqueio de forma rápida e percussiva, deixando um acorde ou intervalo soar brevemente. Faz parte das técnicas de bloqueio de língua.'),
+  I('Flutter e outros recursos','Tongue flutter: movimento rápido da língua que cria uma textura vibratória (o termo é usado para abordagens diferentes, então estude com demonstração sonora confiável). Outros recursos: pulls, U-blocking, trills de garganta, glissandos, bends combinados, acordes rítmicos e tremolo.'),
+  I('Ataque, dinâmica e sustentação','Controle como a nota começa (ataque), o volume (dinâmica) e como ela se mantém (sustentação). Consoantes como "ta" e "ka" separam as notas e dão caráter.'),
+  I('Uma técnica por vez','A técnica deve servir à música. Som, tempo, intenção e fraseado importam mais do que exibir recursos difíceis. Não aprenda tudo ao mesmo tempo.'),
+  Q('O tongue slap é...',['A língua liberando o bloqueio de forma rápida e percussiva','Bater a gaita na mão','Um tipo de bend'],0),
+  Q('O que mais importa numa execução convincente?',['Som, tempo, intenção e fraseado','Usar todas as técnicas','Tocar o mais rápido possível'],0),
+  Q('Como aprender técnicas novas?',['Uma por vez, a serviço da música','Todas de uma vez','Só as mais difíceis'],0)]},
+ {u:'Unidade 8 · Teoria musical',id:'g4',t:'Teoria I: notas e intervalos',ic:'🎹',steps:[
+  I('Notas naturais e acidentes','As notas naturais são Dó, Ré, Mi, Fá, Sol, Lá e Si (C D E F G A B). Os acidentes são sustenidos (#, sobem meio tom) e bemóis (♭, descem meio tom).'),
+  I('Semitons e tons','O menor passo é o semitom. Dois semitons formam um tom. Entre Mi e Fá e entre Si e Dó há apenas um semitom.'),
+  I('Intervalos','Intervalo é a distância entre duas notas. Tônica (a nota-base), terça, quinta e sétima são as notas que formam os acordes. Na gaita em Dó, soprar 4↑ e 5↑ forma uma terça maior (Dó–Mi).'),
+  Q('Entre quais notas há só um semitom?',['Mi e Fá','Dó e Ré','Sol e Lá'],0),
+  Q('Quantos semitons formam um tom?',['2','1','4'],0),
+  Q('O que é um bemol?',['Uma nota meio tom abaixo','Uma nota meio tom acima','Uma pausa'],0),
+  Q('Dó–Mi é uma...',['Terça maior','Quinta','Oitava'],0)]},
+ {id:'g5',t:'Teoria II: escalas',ic:'📈',steps:[
+  I('Escala maior','Fórmula: tom, tom, semitom, tom, tom, tom, semitom. Em Dó: Dó Ré Mi Fá Sol Lá Si Dó. Na gaita em Dó, está nos furos 4 a 7 (4↑ 4↓ 5↑ 5↓ 6↑ 6↓ 7↓ 7↑).','scale'),
+  I('Escala menor natural','Fórmula: tom, semitom, tom, tom, semitom, tom, tom. Em Lá menor: Lá Si Dó Ré Mi Fá Sol Lá. Na gaita em Dó, é a 4ª posição.'),
+  I('Pentatônicas','Pentatônica maior: 5 notas da escala maior (graus 1, 2, 3, 5 e 6). Em Dó: Dó Ré Mi Sol Lá. Pentatônica menor: graus 1, ♭3, 4, 5 e ♭7. Em Lá: Lá Dó Ré Mi Sol. São a base da improvisação.'),
+  I('Blues e cromática','Escala de blues: a pentatônica menor com a "blue note" (♭5). Em Sol: Sol Si♭ Dó Ré♭ Ré Fá. Escala cromática: todos os 12 semitons.'),
+  Q('Qual é a fórmula da escala maior?',['Tom, tom, semitom, tom, tom, tom, semitom','Só tons','Semitom, tom, tom, semitom, tom, tom, tom'],0),
+  Q('A pentatônica maior de Dó tem as notas...',['Dó Ré Mi Sol Lá','Dó Mi Fá Si Lá','Dó Ré Fá Sol Si'],0),
+  Q('O que acrescenta a "blue note" à pentatônica menor?',['O ♭5 (quinta bemol)','Uma oitava','Nada'],0),
+  Q('A escala cromática tem...',['Os 12 semitons','Só 5 notas','Só os tons inteiros'],0)]},
+ {id:'g6',t:'Teoria III: acordes e harmonia',ic:'🎼',steps:[
+  I('Formação de acordes','Um acorde básico (tríade) tem a tônica, a terça e a quinta. Dó maior: Dó, Mi, Sol. Na gaita em Dó, soprar os furos 4, 5 e 6 forma esse acorde.'),
+  I('Campo harmônico','É o conjunto de acordes de uma escala. Em Dó maior: C, Dm, Em, F, G, Am e Bdim (graus I a VII). Os mais usados são o I (Dó), o IV (Fá) e o V (Sol).'),
+  I('Progressões','Progressão é uma sequência de acordes, como I–IV–V–I (Dó, Fá, Sol, Dó). Ela guia a melodia e a improvisação.'),
+  I('Blues de 12 compassos','Estrutura clássica: I I I I / IV IV I I / V IV I I. Em Sol (2ª posição na gaita em Dó): G G G G / C C G G / D C G G.'),
+  Q('Quais notas formam o acorde de Dó maior?',['Dó, Mi, Sol','Dó, Ré, Fá','Dó, Lá, Si'],0),
+  Q('Quais são os acordes mais usados no campo harmônico?',['I, IV e V','II, III e VII','Só o VI'],0),
+  Q('Quantos compassos tem o blues clássico?',['12','8','16'],0),
+  Q('No blues em Sol, os acordes são...',['G, C e D','C, F e G','A, D e E'],0)]},
+ {id:'g17',t:'As posições na gaita',ic:'📍',steps:[
+  I('Posição = tom da música','Posições são maneiras de organizar a relação entre a afinação da gaita e o tom da música. Na gaita em Dó: 1ª posição = Dó (melodias, folk, country); 2ª = Sol (blues, rock, country); 3ª = Ré (blues menor e músicas em Ré).','pos'),
+  I('Outras posições','4ª posição = Lá menor (melodias e tons menores). 5ª = Mi menor (blues e melodias menores). 12ª = Fá (melodias e improvisação).'),
+  I('Uma referência, não uma regra','A tabela é um ponto de partida. Cada posição tem notas, repousos e possibilidades próprias, e não substitui o estudo de escalas e harmonia.'),
+  Q('Na gaita em Dó, a 2ª posição toca em...',['Sol','Ré','Lá menor'],0,'pos'),
+  Q('A 3ª posição na gaita em Dó toca em...',['Ré','Sol','Fá'],0),
+  Q('A 4ª posição na gaita em Dó corresponde a...',['Lá menor','Mi menor','Fá'],0),
+  Q('Qual posição é muito usada no blues e no rock?',['2ª','1ª só','12ª só'],0)]},
+ {id:'g7',t:'Modos e transposição',ic:'🔁',steps:[
+  I('Modos','Modos são escalas que começam em outro grau da escala maior. Na gaita em Dó: Dó jônio (1ª posição), Sol mixolídio (2ª), Ré dórico (3ª), Lá eólio ou menor natural (4ª) e Mi frígio (5ª).'),
+  I('Transposição','Transpor é tocar a mesma música em outro tom, mantendo os intervalos. Na gaita, dá para transpor mudando de posição ou de gaita (G, A, D...).'),
+  I('No app','Mude o "Tom da gaita" em Ajustes para usar outra gaita. As músicas se ajustam sozinhas ao tom que você escolheu.'),
+  Q('A 2ª posição na gaita em Dó é qual modo?',['Sol mixolídio','Ré dórico','Mi frígio'],0),
+  Q('A 3ª posição é qual modo?',['Ré dórico','Lá menor natural','Dó jônio'],0),
+  Q('Transpor é...',['Tocar a música em outro tom mantendo os intervalos','Tocar mais rápido','Tocar mais baixo'],0)]},
+ {id:'g8',t:'Tablatura: convenções',ic:'🔤',steps:[
+  I('Convenções comuns','Muitos materiais usam: 4 = soprar no furo 4; -4 = aspirar no furo 4; 4\' = bend (meio tom) no furo 4; -3\'\' = bend de dois semitons no furo 3. As convenções variam entre autores, então confira sempre a legenda.'),
+  I('No app','O app usa setas: 4↑ (soprar), 4↓ (aspirar) e "bend 1", "bend 2" para os bends. A cor também mostra a direção.'),
+  I('O que aprender a ler','Número dos furos, direção do ar, duração das notas, pausas, ligaduras, bends, compassos, ritmo, dinâmica e articulações. Aprenda tablatura e leitura musical em paralelo, para não depender só de números.'),
+  Q('Na tablatura comum, o que significa -4 ?',['Aspirar no furo 4','Soprar no furo 4','Pular o furo 4'],0),
+  Q('O que significa -3\'\' ?',['Bend de 2 semitons no furo 3 (aspirando)','Furo 3 e 2 juntos','Pausa de 3 tempos'],0),
+  Q('Por que conferir a legenda da tablatura?',['As convenções variam entre autores','Para ver o preço','Não é preciso'],0)]},
+ {id:'g9',t:'Ritmo em detalhe',ic:'⏱️',steps:[
+  I('Divisões do tempo','Semínima: 1 nota por tempo. Colcheias: 2 por tempo. Semicolcheias: 4 por tempo. Tercinas: 3 iguais por tempo. Síncope: deslocamento de acentos. Pausas também são música: organizam e dão tempo de respirar.','beats'),
+  I('Swing e shuffle','Swing é a sensação rítmica do jazz e do blues, com colcheias "balançadas". O shuffle é a divisão muito usada no blues, com notas longa e curta alternadas (como 2 + 1 de uma tercina). Rubato é a flexibilidade expressiva controlada.'),
+  I('Treino com metrônomo','Referências: 50 BPM (lento e consciente), 60 (estabilização), 70 (precisão), 80 (fluidez), 100 (agilidade), 120 (consolidação). São referências, não metas universais. Só aumente quando a execução estiver correta e relaxada.'),
+  Q('Quantas colcheias cabem em um tempo?',['2','4','3'],0),
+  Q('Quantas notas tem uma tercina por tempo?',['3 iguais','2','4'],0),
+  Q('Qual andamento é indicado para "estabilizar"?',['60 BPM','120 BPM','200 BPM'],0),
+  Q('Quando aumentar o andamento?',['Quando a execução estiver correta e relaxada','Logo no início','Nunca'],0)]},
+ {u:'Unidade 9 · Estilo e improvisação',id:'g10',t:'Estilos musicais',ic:'🎤',steps:[
+  I('Blues','Bending, vibrato, 2ª posição, riffs, acordes, fraseado e improvisação. Para ouvir: Little Walter, Sonny Boy Williamson II e Big Walter Horton.'),
+  I('Pop, soul, folk e country','Pop e soul: melodias precisas, ornamentação e interpretação (referência: Stevie Wonder). Folk e country: melodias, acordes e acompanhamento com violão (referência: Bob Dylan).'),
+  I('Jazz e bluegrass','Jazz: cromatismo, escalas, harmonia, intervalos e improvisação, geralmente na gaita cromática (referência: Toots Thielemans). Bluegrass e música tradicional: escalas rápidas, melodias ornamentadas e alternância de notas.'),
+  I('Rock e música brasileira','Rock: ataques fortes, bends, riffs, vibrato e amplificação. Música brasileira: MPB, sertanejo, forró, regional e religiosa. Estude a interpretação melódica, a adaptação de melodias e o fraseado.'),
+  Q('Quem é referência do jazz na gaita cromática?',['Toots Thielemans','Bob Dylan','Stevie Wonder'],0),
+  Q('Qual posição é típica do blues?',['2ª posição','Nenhuma','Só a 12ª'],0),
+  Q('Referência de folk e country com gaita e violão?',['Bob Dylan','Little Walter','Toots Thielemans'],0),
+  Q('O que se estuda na música brasileira?',['Interpretação melódica, adaptação e fraseado','Só bends','Só acordes'],0)]},
+ {id:'g11',t:'Improvisação',ic:'🎷',steps:[
+  I('O que é improvisar','Improvisar não é tocar notas aleatórias. É criar frases coerentes em tempo real, respeitando o tom, a harmonia, o ritmo e a intenção.'),
+  I('Elementos fundamentais','1) Identificar o tom. 2) Escolher a posição e a escala. 3) Conhecer as notas de repouso. 4) Construir frases com começo, desenvolvimento e conclusão. 5) Controlar ritmo, dinâmica e silêncio.'),
+  I('Passo a passo de estudo','1) Improvise com 3 notas. 2) Use as 5 notas de uma pentatônica. 3) Crie frases curtas com pausas. 4) Responda a frases de outro instrumento. 5) Acompanhe progressões. 6) Varie motivos e desenvolva solos. 7) Improvise em várias posições e tons.'),
+  Q('Improvisar é...',['Criar frases coerentes em tempo real','Tocar notas aleatórias','Decorar um solo'],0),
+  Q('Por onde começar a improvisar?',['Com 3 notas','Com todas as notas e bends','Com overblows'],0),
+  Q('Uma boa frase tem...',['Começo, desenvolvimento e conclusão','Só notas rápidas','Nenhuma pausa'],0)]},
+ {id:'g18',t:'Ouvido musical',ic:'👂',steps:[
+  I('Por que treinar o ouvido','Ouvir, cantar e reconhecer notas faz parte do treino. O objetivo é pegar a gaita, ouvir uma música, encontrar as notas e reproduzir a melodia sem depender da tablatura.'),
+  I('O que desenvolver','Tocar de ouvido, identificar tons, reconhecer intervalos, transpor melodias, variar uma mesma música, criar introduções e finais e tocar sem tablatura.'),
+  I('Exercício','Ouça uma nota ou frase, cante, e só depois procure no instrumento. Use as atividades "Ouvido" do app: o app toca a frase, esconde os furos, e você descobre as notas.'),
+  Q('Qual é um bom exercício de ouvido?',['Ouvir, cantar e só depois achar a nota na gaita','Tocar sem ouvir','Só ler tablatura'],0),
+  Q('O objetivo do treino de ouvido é...',['Tocar sem depender da tablatura','Aprender mais bends','Tocar mais alto'],0),
+  Q('Transpor é uma habilidade de...',['Ouvido e teoria','Só equipamento','Só ritmo'],0)]},
+ {u:'Unidade 10 · Equipamento, rotina e evolução',id:'g12',t:'Equipamentos e acessórios',ic:'🎧',steps:[
+  I('O que ter','Gaita diatônica em Dó (estudo); gaitas em G, A, D e outras (ampliam as possibilidades); gaita cromática (repertório cromático); suporte de pescoço (gaita e violão juntos); metrônomo (ritmo); afinador (altura das notas); gravador ou celular (registrar e avaliar). Não é necessário comprar tudo no início.'),
+  I('Som amplificado','Microfone, amplificador e pedais de efeitos (reverb, delay, overdrive) criam o som elétrico, muito usado no blues e no rock.'),
+  I('Modelos para conhecer','Hohner Special 20, Hohner Marine Band, Seydel 1847, Suzuki Manji e Hohner Chromonica 48. São exemplos conhecidos, não uma recomendação de compra imediata: a sua gaita em Dó já basta para muitos fundamentos.'),
+  Q('Qual acessório ajuda a tocar gaita e violão juntos?',['Suporte de pescoço','Metrônomo','Pedal'],0),
+  Q('Você precisa comprar tudo no início?',['Não','Sim','Só o amplificador'],0),
+  Q('Qual acessório confere a altura das notas?',['Afinador','Metrônomo','Suporte'],0)]},
+ {id:'g13',t:'Conservação e manutenção',ic:'🧽',steps:[
+  I('Cuidados diários','Evite tocar imediatamente depois de comer. Não compartilhe a gaita sem higienização adequada. Aqueça a gaita com as mãos em dias frios. Retire a umidade depois de tocar, seguindo as orientações do fabricante.'),
+  I('Guardar e proteger','Guarde em local seco e protegido. Evite quedas e impactos. Não mergulhe a gaita inteira na água.'),
+  I('Palhetas','Não desmonte nem ajuste palhetas sem conhecer o procedimento. Uma nota que não responde pode ser técnica, umidade, sujeira, palheta desalinhada ou dano: diagnostique antes de consertar. Consulte as instruções do seu modelo.'),
+  Q('Pode mergulhar a gaita inteira na água?',['Não','Sim, para limpar','Só a de plástico'],0),
+  Q('Em dias frios, o que ajuda?',['Aquecer a gaita com as mãos','Colocar no gelo','Tocar mais forte'],0),
+  Q('Uma nota não responde. O que fazer primeiro?',['Diagnosticar a causa antes de consertar','Desmontar logo','Soprar com muita força'],0)]},
+ {id:'g14',t:'Rotina de treino e avaliação',ic:'🗓️',steps:[
+  I('Sessão de 40 minutos','5 min de aquecimento (respiração, notas longas, relaxamento); 10 min de técnica (exercício da etapa); 10 min de teoria e percepção (notas, escalas, ritmo, ouvido); 10 min de repertório; 5 min de revisão e gravação. Faça 5 ou 6 dias por semana. Pode reduzir para 15 ou 30 min, ou ampliar para 1 hora. Regularidade e atenção valem mais que sessões longas.'),
+  I('Grave e avalie','Sempre que possível, grave sua execução e avalie: afinação, clareza das notas, ruídos indesejados, ritmo, duração, articulação, respiração e tensão física.'),
+  I('Critérios para avançar','Notas individuais: som limpo e consistente. Respiração: controle sem tensão. Ritmo: execução estável com metrônomo. Memorização: tocar sem consultar. Bending: atingir e sustentar a nota-alvo. Vibrato: oscilação controlada. Improvisação: frases coerentes. Repertório: músicas completas.'),
+  Q('Quanto dura o bloco de repertório na sessão de 40 min?',['10 minutos','5 minutos','30 minutos'],0),
+  Q('O que importa mais na rotina?',['Regularidade e atenção','Sessões longas e cansativas','Tocar sem pausas'],0),
+  Q('Como é o critério de avanço em bending?',['Atingir e sustentar a nota-alvo','Fazer o bend o mais alto possível','Fazer qualquer barulho'],0)]},
+ {id:'g15',t:'Como evoluir de verdade',ic:'🧭',steps:[
+  I('Princípios do curso','Precisão antes de velocidade. Som antes de quantidade. Relaxamento. Ouvido junto com técnica. Música desde o início. Revisão espaçada. Gravação objetiva. Progressão individual (não avance só por calendário). Saúde e conforto: pare se houver dor, tontura ou desconforto. Expressividade: técnica é meio, não fim.'),
+  I('Prazos de referência','1 a 3 meses: fundamentos e melodias. 3 a 6 meses: controle técnico e primeiras expressões. 6 a 12 meses: repertório e improvisação inicial. 1 a 2 anos: nível intermediário sólido. 2 a 4 anos: desenvolvimento avançado. 4 anos ou mais: aprofundamento, identidade e performance. Não são garantias nem certificações.'),
+  I('Ser profissional','Exige também experiência musical em conjunto, repertório, consistência e capacidade de apresentação. A meta é domínio musical real: pegar a gaita, ouvir uma música, encontrar as notas, interpretar, acompanhar outros músicos, improvisar e ter identidade própria.'),
+  Q('O que vale mais, precisão ou velocidade?',['Precisão antes de velocidade','Velocidade antes de precisão','Os dois sem ordem'],0),
+  Q('Quando avançar de etapa?',['Quando demonstrar domínio','Quando o calendário mandar','Sem critério'],0),
+  Q('O que fazer se sentir dor ou tontura?',['Parar','Insistir','Tocar mais forte'],0),
+  Q('Os prazos de evolução são...',['Referências, não garantias','Garantias','Obrigatórios'],0)]},
+ {id:'g16',t:'Estudar com fontes externas',ic:'🔎',steps:[
+  I('Pontos de partida','Harmonica Academy (<a href="https://www.harmonicaacademy.com/" target="_blank" rel="noopener">harmonicaacademy.com</a>): curso progressivo. Harmonica.com (<a href="https://www.harmonica.com/" target="_blank" rel="noopener">harmonica.com</a>): aulas, exercícios, repertório e posições. Hohner (<a href="https://www.hohner.de/" target="_blank" rel="noopener">hohner.de</a>): materiais sobre instrumentos, manutenção e técnica. As páginas podem mudar.'),
+  I('Como usar bem','Priorize professores que demonstrem a técnica em vídeo e áudio. Compare mais de uma explicação quando a nomenclatura divergir. Confira a afinação e a tablatura antes de praticar. Não copie exercícios avançados sem entender a mecânica. Use gravações de referência para comparar som, ritmo e articulação.'),
+  I('Manual do fabricante','Para limpeza, desmontagem, afinação e manutenção, consulte as instruções do seu modelo. Nem todos usam o mesmo procedimento.'),
+  Q('Como usar fontes externas?',['Comparando mais de uma explicação','Copiando exercícios avançados sem entender','Ignorando o manual'],0),
+  Q('Qual é a melhor fonte para aprender uma técnica?',['Professores que demonstram em vídeo e áudio','Só textos','Só tablaturas'],0)]}
+
 ];
 let TQ=null;
 function renderTheory(){const l=$('theoryList');if(!l)return;l.innerHTML='';
- TH.forEach((t,i)=>{const u=i==0||(S.th&&S.th[TH[i-1].id]),st=(S.th||{})[t.id]||0,b=document.createElement('button');
+ TH.forEach((t,i)=>{const u=true,st=(S.th||{})[t.id]||0,b=document.createElement('button');
   if(t.u){const h=document.createElement('div');h.style.cssText='font-weight:900;margin:16px 0 8px;font-size:15px;color:var(--mut)';h.textContent=t.u;l.appendChild(h)}
   b.className='item'+(u?'':' lock');
   b.innerHTML=`<span class="ic" style="background:var(--blow)">${u?t.ic:'🔒'}</span><span>${t.t}<small>${st?'★'.repeat(st)+'☆'.repeat(3-st):u?'Novo':'Complete a anterior'}</small></span>`;b.onclick=()=>{if(u)openTheory(i)};l.appendChild(b)});
@@ -842,8 +1044,81 @@ function thFinish(){
 $('thClose').onclick=()=>{$('thPlay').style.display='none';refresh()};
 $('openTuner').onclick=()=>{$('tunerPlay').style.display='block'};
 $('tunerClose').onclick=()=>{$('tunerPlay').style.display='none'};
-$('relv').onclick=()=>{delete S.lv;S.unl=0;save();refresh();show('home');toast('Responda o teste de nível na tela Início')};
+$('relv').onclick=()=>{delete S.lv;S.unl=0;S.skip=1;save();refresh();show('home');toast('Responda o teste de nível na tela Início')};
 $('wipe').onclick=()=>{if(confirm('Apagar todo o progresso deste aparelho? Isso não pode ser desfeito.')){try{localStorage.removeItem('gaita')}catch(e){}location.reload()}};
+/* ===== Formação em etapas ===== */
+const getAct=id=>{let i=LES.findIndex(l=>l.id==id);if(i>=0)return{id,t:LES[i].t,desc:'Exercício guiado',open:()=>openLesson(i)};i=WORK.findIndex(l=>l.id==id);if(i>=0)return{id,t:WORK[i].t,desc:WORK[i].desc,open:()=>openWork(i)};const a=ACT2.find(x=>x.id==id);return a?{id,t:a.t,desc:a.desc,open:()=>openAct(a)}:null};
+const stars=id=>{const b=S.best||{};return Math.max((S.done||{})[id]||0,(b['l:'+id]||{}).st||0,(b['w:'+id]||{}).st||0,(b['a:'+id]||{}).st||0)};
+const findSong=t=>SONGS.concat(S.imp).find(x=>x.t==t);
+const chkGet=(sid,i)=>!!(S.chk&&S.chk[sid]&&S.chk[sid][i]);
+const perfCount=()=>Object.keys(S.best||{}).filter(k=>k.slice(0,2)=='s:'&&S.best[k].st==3).length;
+function stageProg(s){return{a:s.act.filter(id=>stars(id)>=1).length,at:s.act.length,c:s.chk.filter((x,i)=>chkGet(s.id,i)).length,ct:s.chk.length}}
+function stageDone(s){if(s.id<(S.skip||1))return true;const p=stageProg(s);return p.a==p.at&&p.c==p.ct&&(!s.perf||perfCount()>=s.perf)}
+function stageOpen(s){return s.id==1||stageDone(ST[s.id-2])||(S.skip||1)>=s.id}
+function curStage(){return ST.find(x=>stageOpen(x)&&!stageDone(x))||ST[ST.length-1]}
+function nextAct(){const id=curStage().act.find(i=>stars(i)<1);return id?getAct(id):null}
+var stageId=1;
+const dots=n=>'★'.repeat(n)+'☆'.repeat(3-n);
+function mkItem(ic,col,t,sm,fn){const b=document.createElement('button');b.className='item';b.innerHTML=`<span class="ic" style="background:${col}">${ic}</span><span>${t}<small>${sm||''}</small></span>`;b.onclick=fn;return b}
+function renderStages(){const box=$('stages');if(!box)return;box.innerHTML='';const cs=curStage();
+ const mk=(x,diag)=>{const open=diag||stageOpen(x),p=stageProg(x),done=!diag&&stageDone(x),sk=!diag&&x.id<(S.skip||1);
+  const sm=open?(diag?(p.a?p.a+'/'+p.at+' testes feitos':'Comece por aqui'):(sk?'Etapa pulada pelo seu nível':p.a+'/'+p.at+' atividades · '+p.c+'/'+p.ct+' critérios'+(x.id==cs.id&&!done?' · você está aqui':''))):'Conclua a etapa anterior';
+  box.appendChild(mkItem(open?(done?'✔':x.ic):'🔒',done?'var(--ok)':diag?'var(--draw)':'var(--blow)',(diag?'':'Etapa '+x.id+' · ')+x.t,sm,()=>{if(open)showStage(x.id)}))};
+ mk(DIAG,true);ST.forEach(x=>mk(x,false))}
+function showStage(id){stageId=id;$('stagePlay').style.display='block';renderStageDetail();$('stagePlay').scrollTop=0}
+function refreshStageOverlay(){const o=$('stagePlay');if(o.style.display=='block'){const y=o.scrollTop;renderStageDetail();o.scrollTop=y}}
+function renderStageDetail(){
+ const x=stageId==0?DIAG:ST[stageId-1],box=$('stageBody'),diag=stageId==0;$('stageT').textContent=(diag?'':'Etapa '+x.id+' · ')+x.t;box.innerHTML='';
+ const sec=t=>{const w=document.createElement('div');w.innerHTML='<div class="sg">'+t+'</div>';box.appendChild(w);return w};
+ box.insertAdjacentHTML('beforeend',`<div class="card"><p style="line-height:1.5;margin:0">${x.obj}</p>${x.crit?`<p class="mut" style="margin:8px 0 0"><b>Para avançar:</b> ${x.crit}</p>`:''}</div>`);
+ if(x.th.length){const w=sec('📖 Teoria');x.th.forEach(id=>{const i=TH.findIndex(t=>t.id==id);if(i<0)return;const t=TH[i],st=(S.th||{})[id]||0;w.appendChild(mkItem(t.ic,'var(--blow)',t.t,st?dots(st):'Novo',()=>openTheory(i)))})}
+ if(x.act.length){const w=sec('🎯 Atividades práticas');x.act.forEach(id=>{const a=getAct(id);if(!a)return;const st=stars(id);w.appendChild(mkItem(st?'★':'▶','var(--ok)',a.t,(a.desc?a.desc+' · ':'')+(st?dots(st):'Faça pelo menos 60%'),()=>{$('pmode').value='play';a.open()}))})}
+ if(x.songs.length){const w=sec('🎵 Repertório');x.songs.forEach(t=>{const so=findSong(t);if(!so)return;const bs=(S.best||{})['s:'+t];w.appendChild(mkItem('♪','var(--blow)',t,bs?dots(bs.st)+' '+Math.round(bs.acc*100)+'%':'Novo',()=>{$('pmode').value='play';openSong(so)}))})}
+ if(x.perf)box.insertAdjacentHTML('beforeend',`<div class="card" style="margin-top:12px"><b>Repertório de performance</b><div class="xp"><i style="width:${Math.min(100,perfCount()/x.perf*100)}%"></i></div><span class="mut">${Math.min(perfCount(),x.perf)} de ${x.perf} músicas com 3 estrelas</span></div>`);
+ if(x.chk.length){const w=sec('✅ Autoavaliação: marque só o que você realmente faz');x.chk.forEach((c,i)=>{const r=document.createElement('label');r.className='srow';r.style.cssText='background:var(--card);padding:12px;border:2px solid var(--bd);border-radius:12px;margin-bottom:8px;cursor:pointer';r.innerHTML=`<span>${c}</span><input type="checkbox" ${chkGet(x.id,i)?'checked':''}>`;
+  r.querySelector('input').onchange=e=>{S.chk=S.chk||{};S.chk[x.id]=S.chk[x.id]||{};S.chk[x.id][i]=e.target.checked;save();sfx('click');renderStages();homeExtra();refreshStageOverlay()};w.appendChild(r)})}
+ if(!diag){const p=stageProg(x),ok=stageDone(x),falta=(p.at-p.a?(p.at-p.a)+' atividade(s) com pelo menos 1 estrela. ':'')+(p.ct-p.c?(p.ct-p.c)+' critério(s) da autoavaliação. ':'')+(x.perf&&perfCount()<x.perf?'Faltam '+(x.perf-perfCount())+' música(s) com 3 estrelas.':'');
+  box.insertAdjacentHTML('beforeend',`<div class="ban ${ok?'ok':'bad'}">${ok?'✔ Etapa concluída! Você pode seguir para a próxima.':'Para concluir: '+falta}</div>`)}
+ else{const all=x.act.every(id=>(S.best||{})['a:'+id]);const bt=document.createElement('button');bt.className='go big';bt.style.marginTop='12px';bt.textContent='🎯 Calcular meu ponto de partida';bt.disabled=!all;bt.style.opacity=all?1:.5;
+  bt.onclick=()=>{const av=x.act.reduce((a,id)=>a+S.best['a:'+id].acc,0)/x.act.length;S.skip=av>=.9?3:av>=.8?2:1;S.lv=1;save();refresh();toast('Você começa na Etapa '+S.skip+' (média '+Math.round(av*100)+'%)')};box.appendChild(bt);
+  if(!all)box.insertAdjacentHTML('beforeend','<p class="mut" style="text-align:center">Faça os 4 testes para liberar o cálculo.</p>')}
+}
+$('stageClose').onclick=()=>{$('stagePlay').style.display='none'};
+
+/* ===== Meu progresso (boletim e diário) ===== */
+const SKL=[['Notas individuais','Som limpo e consistente'],['Respiração','Controle sem tensão'],['Ritmo','Execução estável com metrônomo'],['Memorização','Executar sem consultar'],['Bending','Atingir e sustentar a nota-alvo'],['Vibrato','Oscilação controlada'],['Improvisação','Criar frases coerentes'],['Repertório','Executar músicas completas']];
+function renderDiary(){const b=$('diaryBody'),dn=ST.filter(stageDone).length,cs=curStage();
+ let h=`<div class="card"><b>Etapa atual: ${cs.id} · ${cs.t}</b><div class="xp"><i style="width:${dn/8*100}%"></i></div><span class="mut">${dn} de 8 etapas concluídas · ${S.xp} XP · sequência de ${S.streak} dia(s)</span></div><div class="sg">Habilidades (critérios do guia)</div><div class="card">`;
+ SKL.forEach((k,i)=>{const v=(S.skills&&S.skills[i])||0;h+=`<div class="srow"><span><b>${k[0]}</b><br><small class="mut">${k[1]}</small></span><select data-sk="${i}"><option value="0"${v==0?' selected':''}>Ainda não</option><option value="1"${v==1?' selected':''}>Em treino</option><option value="2"${v==2?' selected':''}>Domino</option></select></div>`});
+ const ss=SONGS.concat(S.imp).filter(x=>(S.best||{})['s:'+x.t]);
+ h+='</div><div class="sg">Músicas estudadas</div><div class="card">'+(ss.length?ss.map(x=>{const q=S.best['s:'+x.t];return `<div class="srow"><span>${x.t}</span><span>${dots(q.st)} ${Math.round(q.acc*100)}%</span></div>`}).join(''):'<span class="mut">Nenhuma ainda. Toque uma música na aba Músicas.</span>')+'</div>';
+ h+=`<div class="sg">Dificuldades pendentes</div><div class="card"><textarea id="dnote" rows="4" style="width:100%;border-radius:10px;border:2px solid var(--bd);background:var(--card);color:var(--tx)" placeholder="Ex.: bend do furo 3 ainda desafina; troca 4↔6 lenta...">${(S.dnote||'').replace(/</g,'&lt;')}</textarea></div>`;
+ h+='<div class="sg">Prazos de referência</div><div class="card mut" style="line-height:1.6">1 a 3 meses: fundamentos e melodias · 3 a 6 meses: controle técnico · 6 a 12 meses: repertório e improvisação inicial · 1 a 2 anos: nível intermediário sólido · 2 a 4 anos: avançado · 4 anos ou mais: identidade e performance. São referências, não garantias.</div>';
+ b.innerHTML=h;b.querySelectorAll('select[data-sk]').forEach(sel=>sel.onchange=()=>{S.skills=S.skills||{};S.skills[sel.dataset.sk]=+sel.value;save()});$('dnote').oninput=()=>{S.dnote=$('dnote').value;save()}}
+$('diaBtn').onclick=()=>{renderDiary();$('diaryPlay').style.display='block'};
+$('diaryClose').onclick=()=>{$('diaryPlay').style.display='none'};
+
+/* ===== Rotina de hoje (sessão do guia) ===== */
+const RT=[['🔥','Aquecimento','Respiração, notas longas e relaxamento',5],['🎯','Técnica','Exercício específico da sua etapa',10],['📖','Teoria e percepção','Notas, escalas, ritmo e ouvido',10],['🎵','Repertório','Aprender ou aperfeiçoar uma música',10],['🎙️','Revisão e gravação','Toque sem consultar e avalie',5]];
+function rtState(){const td=dayKey();if(!S.rt||S.rt.day!==td)S.rt={day:td,done:{},tot:(S.rt&&S.rt.tot)||40};return S.rt}
+function rtAct(i){const cs=curStage();
+ if(i==0){$('pmode').value='play';openWork(0)}
+ else if(i==1){const a=nextAct();if(a){$('pmode').value='play';a.open()}else{$('routinePlay').style.display='none';showStage(cs.id)}}
+ else if(i==2){const id=cs.th.find(t=>!(S.th&&S.th[t]));if(id)openTheory(TH.findIndex(t=>t.id==id));else openReview()}
+ else if(i==3){const t=cs.songs.find(n=>!((S.best||{})['s:'+n]&&S.best['s:'+n].st==3))||cs.songs[0]||'Ode à Alegria';$('pmode').value='play';openSong(findSong(t)||SONGS[0])}}
+function renderRoutine(){const st=rtState(),k=st.tot/40,b=$('routineBody');
+ let h=`<div class="card"><div class="mut">Duração total da sessão</div><div class="row" style="margin-top:8px">${[15,30,40,60].map(n=>`<button data-tot="${n}" class="${n==st.tot?'go':''}">${n} min</button>`).join('')}</div></div>`;
+ RT.forEach((r,i)=>{h+=`<div class="card"><div class="srow" style="border:0;padding:0"><span><b>${r[0]} ${r[1]}</b> · ${Math.max(1,Math.round(r[3]*k))} min<br><small class="mut">${r[2]}</small></span><input type="checkbox" data-rd="${i}" ${st.done[i]?'checked':''}></div>${i<4?`<button class="go big" data-ra="${i}" style="margin-top:10px">Começar</button>`:'<p class="mut" style="margin:8px 0 0">Grave 1 a 2 minutos no celular e avalie: afinação, clareza das notas, ruídos, ritmo, duração, articulação, respiração e tensão física.</p>'}</div>`});
+ b.innerHTML=h;
+ b.querySelectorAll('[data-tot]').forEach(e=>e.onclick=()=>{st.tot=+e.dataset.tot;save();renderRoutine()});
+ b.querySelectorAll('[data-rd]').forEach(e=>e.onchange=()=>{st.done[e.dataset.rd]=e.checked;save();homeExtra()});
+ b.querySelectorAll('[data-ra]').forEach(e=>e.onclick=()=>rtAct(+e.dataset.ra))}
+$('rtBtn').onclick=()=>{renderRoutine();$('routinePlay').style.display='block'};
+$('routineClose').onclick=()=>{$('routinePlay').style.display='none'};
+function homeExtra(){const st=rtState(),cs=curStage(),na=nextAct();
+ $('rtN').textContent=Object.values(st.done).filter(Boolean).length+'/5';
+ $('lvl').textContent='Nível '+(Math.floor(S.xp/100)+1)+' · Etapa '+cs.id+' de 8';
+ $('cont').textContent=na?'▶ Continuar: '+na.t:'📋 Abrir a Etapa '+cs.id}
 /* laço */
 let prevT=performance.now();
 function loop(now){
@@ -872,7 +1147,7 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 
-$('bkOut').onclick=()=>{const o={xp:S.xp,streak:S.streak,last:S.last,done:S.done,key:S.key,bends:S.bends,cals:S.cals,g:S.g};const c=btoa(unescape(encodeURIComponent(JSON.stringify(o))));$('bk').value=c;$('bk').select();try{navigator.clipboard.writeText(c)}catch(e){}};
+$('bkOut').onclick=()=>{const o={xp:S.xp,streak:S.streak,last:S.last,done:S.done,key:S.key,bends:S.bends,cals:S.cals,g:S.g,best:S.best,th:S.th,chk:S.chk,skills:S.skills,dnote:S.dnote,skip:S.skip,lv:S.lv,unl:S.unl};const c=btoa(unescape(encodeURIComponent(JSON.stringify(o))));$('bk').value=c;$('bk').select();try{navigator.clipboard.writeText(c)}catch(e){}};
 $('bkIn').onclick=()=>{try{const o=JSON.parse(decodeURIComponent(escape(atob($('bk').value.trim()))));Object.assign(S,o);save();$('key').value=S.key;$('bends').checked=S.bends!==false;refresh();$('bk').value='';toast('Progresso restaurado!')}catch(e){toast('Código inválido')}};
 async function parseAudio(ab){
  const c=new (window.AudioContext||window.webkitAudioContext)();const au=await c.decodeAudioData(ab);try{c.close()}catch(e){}
