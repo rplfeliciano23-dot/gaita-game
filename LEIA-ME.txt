@@ -1,9 +1,28 @@
-GAITA GAME - PACOTE VISUAL ATUALIZADO
+GAITA GAME - PACOTE VISUAL + AFINADOR + AJUDA
 
-Arquivos: index.html, manifest.webmanifest, sw.js, mascote-bem-te-vi.png, icon-192.png, icon-512.png, icon-maskable-512.png e textura-tronco.svg.
+Inclui:
+- index.html: interface, afinador com mapa interativo e central de ajuda.
+- sw.js: cache atualizado para v8.
+- manifest.webmanifest e textura-tronco.svg.
+- mascote-bem-te-vi.png e ícones 192, 512 e maskable.
+- gaita-architecture.js, supabase-schema.sql e cloud-config.example.js da fundação pedagógica.
+- documentação da implementação.
 
-Como publicar: substitua os arquivos correspondentes na raiz do repositório GitHub Pages.
+PUBLICAÇÃO:
+1. Faça backup do repositório GitHub atual.
+2. Extraia este ZIP.
+3. Envie/substitua os arquivos correspondentes na raiz do repositório.
+4. Faça commit e aguarde o GitHub Pages publicar.
+5. No Android, feche e reabra o PWA. Se necessário, atualize a página ou limpe os dados/cache do site para obter o service worker v8.
 
-IMPORTANTE SOBRE AS FAIXAS DO ANDROID: a barra de status (relógio/sinais) e a barra de navegação/gesto pertencem ao próprio Android. O PWA não consegue desenhar uma textura de madeira dentro dessas barras. Configurei a cor do sistema para marrom de madeira (#56351f), que remove o verde. A barra de navegação do aplicativo, que fica dentro da página, recebeu textura de tronco real.
+AFINADOR:
+1. Abra Ajustes > Afinador e calibração.
+2. Permita o microfone.
+3. Toque uma nota limpa na gaita.
+4. Selecione no mapa o furo e a direção correspondentes (sopro ou aspiração).
+5. Com o som ainda detectado, pressione Calibrar nota selecionada.
+6. Repita para outras notas que precisem de correção.
 
-O mascote foi exportado em PNG com transparência e a gaita de boca permanece como elemento central. Os ícones foram gerados a partir do mascote.
+A calibração depende do microfone e deve ser testada no aparelho real. O ajuste individual corrige pequenos desvios; não conserta palhetas danificadas nem substitui a afinação física da gaita.
+
+A central de ajuda fica em Ajustes > Ajuda e dúvidas.

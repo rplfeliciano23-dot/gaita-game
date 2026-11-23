@@ -130,6 +130,17 @@ nav button{font-size:11px}
 .srow select{max-width:55%}
 #tunerPlay{position:fixed;inset:0;background:var(--bg);overflow:auto;display:none;z-index:6;padding:calc(12px + env(safe-area-inset-top,0px)) 12px 24px;animation:slideUp .35s ease}
 #tunerPlay .in{max-width:640px;margin:auto}
+.helpTopic{border-top:1px solid var(--bd);padding:12px 2px}
+.helpTopic summary{cursor:pointer;font-weight:800;list-style:none;position:relative;padding-right:24px}
+.helpTopic summary:after{content:'＋';position:absolute;right:2px;top:0;color:var(--mut)}
+.helpTopic[open] summary:after{content:'−'}
+.helpText{padding:8px 2px 2px;line-height:1.55}
+#chart .tMap{min-width:38px;padding:8px 3px;margin:2px;border-radius:9px;font-size:12px;line-height:1.2}
+#chart .tMap.b{border-bottom:4px solid var(--blow);color:var(--blow)}
+#chart .tMap.d{border-bottom:4px solid var(--draw);color:var(--draw)}
+#chart .tMap.sel{background:var(--gold);border-color:var(--gold2);color:var(--ink);outline:3px solid rgba(240,174,52,.25)}
+#chart .tMap small{display:block;font-size:10px;opacity:.8}
+
 details>summary{list-style:none}details>summary::-webkit-details-marker{display:none}
 #stagePlay,#diaryPlay,#routinePlay{position:fixed;inset:0;background:var(--bg);overflow:auto;display:none;z-index:6;padding:calc(12px + env(safe-area-inset-top,0px)) 12px 24px;animation:slideUp .35s ease}
 #stagePlay .in,#diaryPlay .in,#routinePlay .in{max-width:640px;margin:auto}
@@ -338,6 +349,21 @@ nav .ni{font-size:20px}
   <div class="sg">Dados</div>
   <div class="card"><div class="mut">Backup do progresso (para trocar de aparelho)</div><textarea id="bk" rows="3" style="width:100%;margin:6px 0;border-radius:10px;border:2px solid var(--bd);background:var(--card);color:var(--tx)" placeholder="O código aparece aqui. Para restaurar, cole um código e toque em Restaurar."></textarea><div class="row"><button id="bkOut">📋 Gerar código</button><button id="bkIn">📥 Restaurar</button></div>
    <div class="srow" style="margin-top:6px"><span>Apagar todo o progresso</span><button id="wipe" style="padding:6px 12px;color:var(--bad);border-color:var(--bad)">Apagar</button></div></div>
+  <div class="sg">Ajuda e dúvidas</div>
+  <div class="card" id="helpCard">
+   <p class="mut">Encontre explicações sobre cada parte do Gaita Game. Abra o assunto para entender como funciona e como aproveitar melhor o recurso.</p>
+   <details class="helpTopic"><summary>🏠 Início, nível, XP e sequência diária</summary><div class="mut helpText"><p>A tela Início reúne sua próxima atividade, nível, experiência (XP), sequência de dias e meta diária. O XP recompensa sua participação, mas não substitui o domínio musical. A sequência registra a continuidade dos estudos.</p></div></details>
+   <details class="helpTopic"><summary>📖 Aulas teóricas</summary><div class="mut helpText"><p>As aulas teóricas explicam conceitos como notas, ritmo, respiração, tablatura, técnicas e cuidados com a gaita. Leia cada explicação e responda às perguntas. Se errar, use a resposta correta como oportunidade de revisão.</p></div></details>
+   <details class="helpTopic"><summary>🎯 Aulas práticas e exercícios</summary><div class="mut helpText"><p>As atividades práticas mostram a sequência de furos e a direção do ar. Azul indica soprar e laranja indica aspirar. No modo “Aprender”, o app espera sua nota. No modo “Ritmo”, você acompanha o andamento definido. Use “Prática” para repetir sem disputar estrelas e diminua o BPM quando necessário.</p></div></details>
+   <details class="helpTopic"><summary>🎵 Músicas, tablaturas e importação</summary><div class="mut helpText"><p>Escolha uma música conforme sua experiência. A tablatura indica o número do furo e a direção: seta para cima/sopro e seta para baixo/aspiração. Use a demonstração para ouvir, pratique em trechos e só aumente a velocidade quando estiver confortável. MIDI costuma oferecer resultados mais confiáveis que gravações MP3 com vários instrumentos.</p></div></details>
+   <details class="helpTopic"><summary>🎚️ Afinador: como funciona</summary><div class="mut helpText"><p>O afinador usa o microfone para estimar a frequência do som e mostrar a nota mais próxima, a frequência em Hz e a diferença em cents. Cents indicam o quanto a nota está acima ou abaixo da referência: valores negativos significam mais grave; positivos, mais agudo. Procure tocar uma nota isolada, estável e em ambiente silencioso.</p></div></details>
+   <details class="helpTopic"><summary>🗺️ Mapa da gaita e calibração individual</summary><div class="mut helpText"><p>O mapa mostra as notas dos dez furos para o tom de gaita escolhido. Na tela do afinador, toque a nota na gaita e depois selecione no mapa o furo e a direção que você tocou. Pressione “Calibrar nota selecionada” enquanto o som ainda estiver sendo detectado. Isso associa o desvio medido à nota que você identificou. Calibre apenas notas tocadas corretamente e com som limpo. “Ajustar ao som da minha gaita” corrige o desvio geral; a calibração individual corrige notas específicas.</p></div></details>
+   <details class="helpTopic"><summary>🎤 Microfone: permissão e sensibilidade</summary><div class="mut helpText"><p>O navegador precisa de permissão para usar o microfone e, normalmente, o site deve estar aberto por HTTPS. Se não houver leitura, confira a permissão do microfone, aproxime a gaita do aparelho e reduza o ruído ao redor. A sensibilidade controla o nível mínimo de som aceito. Se o afinador captar ruído, aumente o limite; se não captar notas suaves, diminua-o.</p></div></details>
+   <details class="helpTopic"><summary>🌀 Bends e tolerância de afinação</summary><div class="mut helpText"><p>O bend altera a altura da nota sem trocar de furo. Treine sem forçar o ar ou a garganta. A tolerância em cents define a margem usada para considerar uma nota suficientemente próxima do alvo em exercícios compatíveis. “Aceitar nota de outra oitava” permite comparar a mesma classe de nota em outra oitava, quando apropriado.</p></div></details>
+   <details class="helpTopic"><summary>📅 Rotina, progresso e desafios</summary><div class="mut helpText"><p>A rotina sugere uma sequência de atividades e a meta diária ajuda a distribuir o estudo. “Meu progresso” reúne seu histórico. Desafios e estrelas servem como motivação. Para aprender melhor, pratique em sessões curtas, repita os pontos difíceis e retome conteúdos antigos.</p></div></details>
+   <details class="helpTopic"><summary>💾 Backup e restauração</summary><div class="mut helpText"><p>“Gerar código” cria uma cópia exportável dos dados guardados neste aparelho. Guarde o código em local seguro. Em outro aparelho, cole o código e use “Restaurar”. Restaurar pode substituir dados locais, portanto faça um backup antes.</p></div></details>
+   <details class="helpTopic"><summary>⚙️ Tom da gaita e visualização</summary><div class="mut helpText"><p>Escolha o tom que corresponde à sua gaita física. O mapa de notas e as músicas transpostas usam essa configuração. “Furo + nota”, “Só furo” e “Só nota” alteram como a informação aparece na prática.</p></div></details>
+  </div>
   <p class="mut" style="text-align:center;margin-top:16px">Gaita Bem-te-vi 🎶</p>
  </section>
 
@@ -370,9 +396,12 @@ nav .ni{font-size:20px}
   <div style="position:relative;height:36px;margin:14px 0;background:var(--bd);border-radius:18px"><div style="position:absolute;left:50%;top:0;bottom:0;width:3px;background:var(--ok)"></div><div id="tNeedle" style="position:absolute;top:2px;bottom:2px;width:12px;margin-left:-6px;border-radius:6px;background:var(--draw);left:50%"></div></div>
   <div id="tCents" style="font-size:20px;font-weight:800">&nbsp;</div><div id="tHole" class="mut"></div><div class="mut" id="tMic" style="margin-top:10px">🎤 Ligue o microfone no botão do topo</div></div>
  <div class="card"><b>Ajustar ao som da minha gaita</b><p class="mut">Escolha o tom da gaita em Ajustes. Depois sopre o furo 4 com firmeza e toque no botão. O app mantém o tom escolhido e aprende o som da sua gaita.</p><button class="go" id="tKey">🎯 Ajustar ao som da minha gaita</button><div class="mut" id="tKeyMsg" style="margin-top:6px"></div></div>
- <div class="card"><b>Calibrar notas</b><p class="mut">Se você toca a nota certa e o app marca errado, toque uma nota firme e toque em Calibrar. Cada nota guarda a própria calibração.</p>
-  <div class="row"><button class="go" id="tCal">🎯 Calibrar</button><button id="tReset1">Zerar esta nota</button><button id="tReset">Zerar todas</button></div><div class="mut" id="tCalv"></div></div>
- <div class="card"><b>Mapa de notas da sua gaita</b><div id="chart" style="overflow-x:auto;margin-top:8px"></div></div>
+ <div class="card"><b>1. Toque e escolha no mapa</b><p class="mut">Ligue o microfone, toque uma nota firme na sua gaita e selecione no mapa o furo e a direção que você acabou de tocar. O app compara o som captado com a nota que você informou.</p>
+  <div id="tSelected" class="ban" style="background:var(--bg);border:1px solid var(--bd);color:var(--tx)">Nenhuma posição selecionada. Escolha uma no mapa abaixo.</div>
+  <div class="row"><button class="go" id="tCal">🎯 Calibrar nota selecionada</button><button id="tReset1">Zerar esta calibração</button><button id="tReset">Zerar todas</button></div><div class="mut" id="tCalv"></div>
+ </div>
+ <div class="card"><b>2. Mapa de notas da sua gaita</b><p class="mut">Toque em qualquer nota do mapa para dizer ao afinador qual furo está tocando. Azul = soprar. Laranja = aspirar. A seleção fica destacada.</p><div id="chart" style="overflow-x:auto;margin-top:8px"></div><div class="legend"><span><b style="background:var(--blow)"></b>Soprar</span><span><b style="background:var(--draw)"></b>Aspirar</span></div></div>
+ <div class="card"><b>Como calibrar corretamente</b><ol class="mut" style="padding-left:20px;line-height:1.55"><li>Permita o acesso ao microfone.</li><li>Toque uma nota limpa e estável, sem soprar com força excessiva.</li><li>Toque no furo e na direção correspondentes no mapa.</li><li>Com a nota ainda sendo detectada, pressione “Calibrar nota selecionada”.</li><li>Repita para outras notas que o afinador esteja lendo incorretamente.</li></ol><p class="mut">A calibração individual corrige pequenos desvios de cada nota. Se todas as notas estiverem deslocadas, use também “Ajustar ao som da minha gaita”.</p></div>
 </div></div>
 <div id="stagePlay"><div class="in"><div class="row" style="margin-bottom:12px"><button id="stageClose">✕</button><h2 id="stageT" style="margin:0"></h2></div><div id="stageBody"></div></div></div>
 <div id="diaryPlay"><div class="in"><div class="row" style="margin-bottom:12px"><button id="diaryClose">✕</button><h2 style="margin:0">Meu progresso</h2></div><div id="diaryBody"></div></div></div>
@@ -385,6 +414,7 @@ nav .ni{font-size:20px}
 <div id="res"><div class="card"><div class="mas" id="mRes" data-m="idle" style="width:96px;margin:0 auto -4px"></div><h2 id="rt"></h2><div id="rs" style="font-size:34px"></div><p id="rd"></p>
  <button class="go big" id="rNext" style="margin-bottom:8px">Próxima</button><button class="big" id="rAgain" style="margin-bottom:8px">↻ Repetir</button><button class="big" id="rExit">Sair</button></div></div>
 
+<script src="./gaita-architecture.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const BLOW=[60,64,67,72,76,79,84,88,91,96],DRAW=[62,67,71,74,77,81,83,86,89,93];
@@ -392,7 +422,8 @@ const NN=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],nm=m=>NN[m%12]+(
 const KEYS={C:0,Db:1,D:2,Eb:3,E:4,F:5,'F#':6,G:7,Ab:8,A:9,Bb:10,B:11};
 let S={xp:0,streak:0,last:'',done:{},key:'C',imp:[]};
 try{Object.assign(S,JSON.parse(localStorage.getItem('gaita')||'{}'))}catch(e){}
-const save=()=>{try{localStorage.setItem('gaita',JSON.stringify(S))}catch(e){}};
+if(window.GaitaArchitecture) S=window.GaitaArchitecture.migrateState(S);
+const save=()=>{try{S._meta=S._meta||{};S._meta.updatedAt=new Date().toISOString();localStorage.setItem('gaita',JSON.stringify(S))}catch(e){}};
 const KEY=()=>KEYS[S.key]||0;
 
 const P=s=>s.split(' ').map(x=>{const r=/^(\d+)([bd])(\d?)$/.exec(x);return{h:+r[1],dir:r[2],bd:+(r[3]||0)}});
@@ -523,7 +554,7 @@ function refresh(){
   document.querySelectorAll('#sFilter button').forEach(b=>b.classList.toggle('go',b.dataset.f==sf));
 }
 $('key').innerHTML=Object.keys(KEYS).map(k=>`<option>${k}</option>`).join('');$('key').value=S.key;
-$('key').onchange=()=>{S.key=$('key').value;save();refresh()};
+$('key').onchange=()=>{S.key=$('key').value;save();refresh();renderChart()};
 $('bends').checked=S.bends!==false;$('bends').onchange=()=>{S.bends=$('bends').checked;save()};
 $('cont').onclick=()=>{const na=nextAct();if(na){$('pmode').value='play';na.open()}else showStage(curStage().id)}
 
@@ -668,13 +699,17 @@ function tunerTick(){
  $('tNeedle').style.left=(50+Math.max(-50,Math.min(50,ce))*0.9)+'%';
  const h=mapNote(r);$('tHole').textContent=h?'Furo '+h.h+(h.dir=='b'?' soprando':' aspirando')+(h.bd?' (bend '+h.bd+')':''):'Nota fora da sua gaita';
 }
-function updCal(k,just){const c=S.cals||{},ks=Object.keys(c).sort((a,b)=>a-b);$('tCalv').textContent=(S.g?'Ajuste da gaita: '+(S.g>0?'+':'')+S.g+' cents. ':'')+(just&&k!=null?'Nota '+nm(k)+' calibrada ('+(c[k]>0?'+':'')+c[k]+' cents). ':'')+(ks.length?ks.length+' nota(s) calibrada(s): '+ks.map(x=>nm(+x)).join(', '):'Nenhuma nota calibrada ainda.')}
-$('tCal').onclick=()=>{const L=(performance.now()-tHeldT<4000)?tHeld:null;if(L==null){$('tCalv').textContent='Toque uma nota firme e calibre logo em seguida.';return}const k=Math.round(L),ce=(L-k)*100;S.cals=S.cals||{};S.cals[k]=Math.max(-50,Math.min(50,Math.round((S.cals[k]||0)+ce)));save();updCal(k,true)};
+let selectedTunerMidi=null,selectedTunerHole=null,selectedTunerDir=null;
+function selectTunerNote(hole,dir){selectedTunerHole=hole;selectedTunerDir=dir;selectedTunerMidi=(dir==='b'?BLOW[hole-1]:DRAW[hole-1])+KEY();
+ $('tSelected').textContent='Selecionada: furo '+hole+' · '+(dir==='b'?'soprando ↑':'aspirando ↓')+' · '+nm(selectedTunerMidi)+'. Agora toque essa nota e calibre enquanto o som estiver sendo detectado.';
+ document.querySelectorAll('#chart .tMap').forEach(b=>b.classList.toggle('sel',+b.dataset.hole===hole&&b.dataset.dir===dir));}
+function updCal(k,just){const c=S.cals||{},ks=Object.keys(c).sort((a,b)=>a-b);$('tCalv').textContent=(S.g?'Ajuste geral da gaita: '+(S.g>0?'+':'')+S.g+' cents. ':'')+(just&&k!=null?'Nota '+nm(k)+' calibrada. ':'')+(ks.length?ks.length+' nota(s) com calibração individual: '+ks.map(x=>nm(+x)).join(', '):'Nenhuma nota calibrada individualmente ainda.')}
+$('tCal').onclick=()=>{if(selectedTunerMidi==null){$('tCalv').textContent='Primeiro selecione no mapa o furo e a direção que está tocando.';return}const raw=(performance.now()-tHeldT<4000)?tHeldRaw:null;if(raw==null){$('tCalv').textContent='Não estou detectando uma nota estável. Toque a nota selecionada e pressione calibrar logo em seguida.';return}const cents=(raw-(S.g||0)/100-selectedTunerMidi)*100;if(Math.abs(cents)>150){$('tCalv').textContent='A nota detectada está muito distante da nota selecionada ('+Math.round(cents)+' cents). Confira o furo e se está soprando ou aspirando corretamente.';return}S.cals=S.cals||{};S.cals[selectedTunerMidi]=Math.max(-50,Math.min(50,Math.round((S.cals[selectedTunerMidi]||0)+cents)));save();updCal(selectedTunerMidi,true);$('tSelected').textContent='Calibração aplicada em '+nm(selectedTunerMidi)+' ('+(cents>0?'+':'')+Math.round(cents)+' cents medidos).';};
 $('tReset').onclick=()=>{S.cals={};S.cal=0;S.g=0;save();updCal()};
-$('tReset1').onclick=()=>{const L=(performance.now()-tHeldT<4000)?tHeld:null;if(L==null){$('tCalv').textContent='Toque a nota que quer zerar e toque no botão logo em seguida.';return}const k=Math.round(L);if(S.cals)delete S.cals[k];save();updCal()};
+$('tReset1').onclick=()=>{if(selectedTunerMidi==null){$('tCalv').textContent='Selecione primeiro uma nota no mapa.';return}if(S.cals)delete S.cals[selectedTunerMidi];save();updCal();$('tSelected').textContent='Calibração individual removida de '+nm(selectedTunerMidi)+'.'};
 $('oct').checked=S.oct!==false;$('oct').onchange=()=>{S.oct=$('oct').checked;save()};
 $('tol').value=S.tol||50;$('tolv').textContent=S.tol||50;$('tol').oninput=()=>{S.tol=+$('tol').value;$('tolv').textContent=S.tol;save()};
-$('tMic').onclick=ensureMic;updCal();
+$('tMic').onclick=ensureMic;renderChart();updCal();
 var lastRaw=null,tbr=[],tHeldRaw=null;
 function medRaw(){const v=tbr.filter(x=>x!=null).sort((a,b)=>a-b);return v.length?v[Math.floor(v.length/2)]:null}
 function fitKey(R){const nom=BLOW[3]+KEY(),d=((R-nom)%12+18)%12-6;S.g=Math.round(d*100);S.cals={};save();updCal();
@@ -685,7 +720,7 @@ $('tKey').onclick=()=>{const R=(performance.now()-tHeldT<4000)?tHeldRaw:null;
  if(det==cu){fitKey(R);return}
  $('tKeyMsg').innerHTML='O furo 4 soprado soou como <b>'+det+'</b>, e o tom escolhido é <b>'+cu+'</b>. O que fazer?<div class="row" style="margin-top:8px"><button class="go" id="kKeep">Manter '+cu+' e ajustar ao som</button><button id="kChg">Mudar para '+det+'</button></div>';
  $('kKeep').onclick=()=>fitKey(R);
- $('kChg').onclick=()=>{S.key=det;S.g=0;S.cals={};save();$('key').value=det;refresh();updCal();$('tKeyMsg').textContent='Tom alterado para '+det+'.'}};
+ $('kChg').onclick=()=>{S.key=det;S.g=0;S.cals={};save();$('key').value=det;refresh();renderChart();updCal();$('tKeyMsg').textContent='Tom alterado para '+det+'.'}};
 let advT=0,prevN=null,needRel=false,relT=0,lastBeat=-99,demoO=[],demoTO=[];
 function waitStep(n,st,dt,now){
  const m=matches(n,st),since=now-advT,need=Math.max(350,Math.min(2000,n.d*60000/$('bpm').value*0.6));
@@ -742,7 +777,8 @@ function playDemo(){
  const la=notes[notes.length-1];demoTO.push(setTimeout(()=>{cur=0;update();setBigText('Aperte Começar')},(t+(la.t+la.d)*spb-a.currentTime)*1000+400));
 }
 $('demo').onclick=playDemo;
-function renderChart(){let h='<table style="width:100%;border-collapse:collapse;text-align:center;font-size:12px"><tr><td></td>';for(let i=1;i<=10;i++)h+=`<th>${i}</th>`;h+='</tr><tr><td style="color:var(--blow)">↑</td>';BLOW.forEach(m=>h+=`<td style="color:var(--blow);font-weight:800">${NN[(m+KEY())%12]}</td>`);h+='</tr><tr><td style="color:var(--draw)">↓</td>';DRAW.forEach(m=>h+=`<td style="color:var(--draw);font-weight:800">${NN[(m+KEY())%12]}</td>`);$('chart').innerHTML=h+'</tr></table>'}
+function renderChart(){let h='<table style="width:100%;border-collapse:collapse;text-align:center;font-size:12px"><tr><td>Furo</td>';for(let i=1;i<=10;i++)h+=`<th>${i}</th>`;h+='</tr><tr><td style="color:var(--blow);font-weight:900">↑</td>';BLOW.forEach((m,i)=>{const midi=m+KEY();h+=`<td><button type="button" class="tMap b" data-hole="${i+1}" data-dir="b" aria-label="Furo ${i+1} soprando, ${nm(midi)}">${NN[midi%12]}<small>${nm(midi)}</small></button></td>`});h+='</tr><tr><td style="color:var(--draw);font-weight:900">↓</td>';DRAW.forEach((m,i)=>{const midi=m+KEY();h+=`<td><button type="button" class="tMap d" data-hole="${i+1}" data-dir="d" aria-label="Furo ${i+1} aspirando, ${nm(midi)}">${NN[midi%12]}<small>${nm(midi)}</small></button></td>`});$('chart').innerHTML=h+'</tr></table>';if(selectedTunerMidi!=null)selectTunerNote(selectedTunerHole,selectedTunerDir)}
+$('chart').addEventListener('click',e=>{const b=e.target.closest('.tMap');if(b)selectTunerNote(+b.dataset.hole,b.dataset.dir)});
 $('gate').value=Math.round((S.gate||0.003)*1000);$('gatev').textContent=$('gate').value;$('gate').oninput=()=>{S.gate=$('gate').value/1000;$('gatev').textContent=$('gate').value;save()};
 function ac(){if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();if(actx.state=='suspended')actx.resume();return actx}
 function sfx(k){if(S.sfx===false||running)return;try{const a=ac(),t=a.currentTime;
