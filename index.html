@@ -35,6 +35,7 @@ nav button.act{color:var(--blow)}
 .item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin-bottom:8px;border-bottom-width:4px}
 .item .ic{width:42px;height:42px;border-radius:50%;background:var(--ok);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
 .item.lock{opacity:.5}.item.lock .ic{background:var(--bd)}
+.songrow{display:flex;gap:7px;align-items:stretch;margin-bottom:8px}.songopen{flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-align:left;margin:0;padding:10px 12px}.songopen .stxt{min-width:0;flex:1}.songopen .stxt b{display:block;overflow-wrap:anywhere}.songopen small{display:block;color:var(--mut);font-weight:600}.songtool{width:46px;min-width:46px;padding:8px 5px;display:flex;align-items:center;justify-content:center;font-size:18px}.songtool.del{color:var(--bad);border-color:var(--badd)}
 .item small{display:block;color:var(--mut);font-weight:600}
 #play{position:fixed;inset:0;background:var(--bg);overflow:auto;display:none;z-index:5;padding:calc(12px + env(safe-area-inset-top,0px)) 12px 24px}
 #play .in{max-width:640px;margin:auto}
@@ -302,6 +303,28 @@ nav .ni{font-size:20px}
 @keyframes mtiltx{50%{transform:rotate(-7deg)}}
 @keyframes nup{0%{opacity:0;transform:translate(0,0) scale(.6)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),-320%) rotate(14deg) scale(1.1)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== cenário natural do Bem-te-vi ===== */
+body{position:relative;isolation:isolate;background-color:var(--bg);
+ background-image:
+  radial-gradient(ellipse at 8% 8%,rgba(91,145,83,.18),transparent 34%),
+  radial-gradient(ellipse at 92% 22%,rgba(190,153,83,.16),transparent 32%),
+  radial-gradient(ellipse at 48% 100%,rgba(63,117,76,.12),transparent 42%),
+  linear-gradient(145deg,rgba(248,238,217,.96),rgba(232,239,216,.92) 52%,rgba(246,231,202,.96));}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.34;
+ background:
+  radial-gradient(ellipse 34px 76px at 7% 18%,rgba(67,119,65,.17) 0 42%,transparent 45%),
+  radial-gradient(ellipse 28px 62px at 11% 23%,rgba(67,119,65,.13) 0 42%,transparent 45%),
+  radial-gradient(ellipse 38px 82px at 94% 65%,rgba(67,119,65,.15) 0 42%,transparent 45%),
+  radial-gradient(ellipse 26px 58px at 89% 71%,rgba(67,119,65,.12) 0 42%,transparent 45%),
+  radial-gradient(circle at 18% 78%,rgba(255,255,255,.42),transparent 28%),
+  radial-gradient(circle at 82% 12%,rgba(255,255,255,.35),transparent 25%);}
+@media(prefers-color-scheme:dark){body{background-image:
+ radial-gradient(ellipse at 8% 8%,rgba(70,115,72,.22),transparent 34%),
+ radial-gradient(ellipse at 92% 22%,rgba(133,111,66,.14),transparent 32%),
+ linear-gradient(145deg,#151c33,#1b2d2b 58%,#202b35)}}
+.app{position:relative}
+
 </style>
 </head>
 <body>
@@ -368,7 +391,7 @@ nav .ni{font-size:20px}
  </section>
 
  <section class="scr" id="s-songs">
-  <h2 style="margin:4px 0 12px">Músicas</h2><div class="row" id="sFilter"><button data-f="all">Todas</button><button data-f="easy">Fácil</button><button data-f="mid">Médio</button><button data-f="imp">Importadas</button></div><div id="songs"></div>
+  <h2 style="margin:4px 0 12px">Músicas</h2><div class="row" id="sFilter"><button data-f="all">Todas</button><button data-f="easy">Fácil</button><button data-f="mid">Médio</button><button data-f="imp">Importadas</button><button data-f="fav">♥ Favoritas</button><button data-f="recent">◷ Recentes</button></div><div id="songs"></div>
   <div class="card"><label class="btn" style="display:block;text-align:center">🎵 Importar MIDI ou MP3<input type="file" id="file" accept=".mid,.midi,.mp3,.wav,.m4a,.ogg,audio/*" multiple hidden></label><p class="mut" id="impMsg">O app converte as notas para furos da sua gaita e transpõe para caber nela. MP3 só funciona bem com melodia solo (uma voz ou instrumento).</p></div>
  </section>
 </div>
@@ -420,7 +443,7 @@ const $=id=>document.getElementById(id);
 const BLOW=[60,64,67,72,76,79,84,88,91,96],DRAW=[62,67,71,74,77,81,83,86,89,93];
 const NN=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],nm=m=>NN[m%12]+(Math.floor(m/12)-1);
 const KEYS={C:0,Db:1,D:2,Eb:3,E:4,F:5,'F#':6,G:7,Ab:8,A:9,Bb:10,B:11};
-let S={xp:0,streak:0,last:'',done:{},key:'C',imp:[]};
+let S={xp:0,streak:0,last:'',done:{},key:'C',imp:[],fav:{},recent:[]};
 try{Object.assign(S,JSON.parse(localStorage.getItem('gaita')||'{}'))}catch(e){}
 if(window.GaitaArchitecture) S=window.GaitaArchitecture.migrateState(S);
 const save=()=>{try{S._meta=S._meta||{};S._meta.updatedAt=new Date().toISOString();localStorage.setItem('gaita',JSON.stringify(S))}catch(e){}};
@@ -535,11 +558,27 @@ function bendCands(m,k,c){[['b',BLOW],['d',DRAW]].forEach(([dr,T])=>{const o=BD[
 
 /* telas */
 const TABS=['home','theory','act','songs','settings'];let curTab='home';
-function show(t){const di=TABS.indexOf(t)-TABS.indexOf(curTab);
+let navBusy=false,tabTrail=['home'];
+function navPush(kind,extra={}){try{history.pushState({gaita:true,kind,...extra},'')}catch(e){}}
+function show(t,fromPop=false){if(!TABS.includes(t)||t===curTab)return;
+ const di=TABS.indexOf(t)-TABS.indexOf(curTab);
  TABS.forEach(x=>{const e=$('s-'+x);e.classList.remove('inR','inL');e.classList.toggle('act',x==t);$('n-'+x).classList.toggle('act',x==t)});
- if(t!==curTab){$('s-'+t).classList.add(di>0?'inR':'inL');sfx('nav')}
- curTab=t;$('navInd').style.transform='translateX('+(TABS.indexOf(t)*100)+'%)';window.scrollTo(0,0);refresh()}
+ $('s-'+t).classList.add(di>0?'inR':'inL');sfx('nav');
+ curTab=t;if(!fromPop){tabTrail.push(t);navPush('tab',{tab:t})}
+ $('navInd').style.transform='translateX('+(TABS.indexOf(t)*100)+'%)';window.scrollTo(0,0);refresh()}
 TABS.forEach(x=>$('n-'+x).onclick=()=>show(x));
+history.replaceState({gaita:true,kind:'root',tab:'home'},'');
+window.addEventListener('popstate',e=>{
+ const overlays=['res','mh','play','thPlay','tunerPlay','stagePlay','diaryPlay','routinePlay'];
+ const active=overlays.find(id=>{const el=$(id);return el&&getComputedStyle(el).display!=='none'});
+ if(active){
+  if(active==='res'||active==='mh')$(active).style.display='none';
+  else if(active==='play'){stopDemo();running=false;$(active).style.display='none';refresh()}
+  else{$(active).style.display='none';if(active==='thPlay'||active==='stagePlay'||active==='diaryPlay'||active==='routinePlay')refresh()}
+  return;
+ }
+ if(e.state&&e.state.gaita&&e.state.kind==='tab'&&e.state.tab){curTab=e.state.tab;TABS.forEach(x=>{$('s-'+x).classList.toggle('act',x===curTab);$('n-'+x).classList.toggle('act',x===curTab)});$('navInd').style.transform='translateX('+(TABS.indexOf(curTab)*100)+'%)';refresh();return}
+});
 const unlocked=i=>i==0||i<=(S.unl||0)||S.done[LES[i-1].id];
 function refresh(){
   const lv=Math.floor(S.xp/100)+1;
@@ -548,9 +587,18 @@ function refresh(){
   $('tMic').style.display=micOn?'none':'block';renderChart();refreshHome();
   const mb=$('micTop');mb.classList.toggle('on',micOn);
     $('songs').innerHTML='';
-  SONGS.concat(S.imp.map(x=>Object.assign({lv:'imp'},x))).filter(x=>sf=='all'||x.lv==sf).forEach(x=>{const bs=(S.best||{})['s:'+x.t],b=document.createElement('button');b.className='item';
-   b.innerHTML=`<span class="ic" style="background:var(--blow)">♪</span><span>${x.t}<small>${({easy:'Fácil',mid:'Médio',imp:'Importada'})[x.lv]||''} · ${x.raw.length} notas${bs?' · '+'★'.repeat(bs.st)+'☆'.repeat(3-bs.st)+' '+Math.round(bs.acc*100)+'%':''}</small></span>`;
-   b.onclick=()=>{$('pmode').value='play';openSong(x)};$('songs').appendChild(b)});
+  const allSongs=SONGS.concat(S.imp.map(x=>Object.assign({lv:'imp'},x)));
+  allSongs.filter(x=>sf==='all'||x.lv===sf||(sf==='fav'&&S.fav&&S.fav[x.t])||(sf==='recent'&&(S.recent||[]).includes(x.t))).forEach(x=>{
+   const bs=(S.best||{})['s:'+x.t],row=document.createElement('div');row.className='songrow';
+   const b=document.createElement('button');b.className='item songopen';
+   const meta=({easy:'Fácil',mid:'Médio',imp:'Importada'})[x.lv]||'';
+   b.innerHTML=`<span class="ic" style="background:var(--blow)">♪</span><span class="stxt"><b>${x.t}</b><small>${meta} · ${x.raw.length} notas${bs?' · '+'★'.repeat(bs.st)+'☆'.repeat(3-bs.st)+' '+Math.round(bs.acc*100)+'%':''}</small></span>`;
+   b.onclick=()=>{$('pmode').value='play';openSong(x)};row.appendChild(b);
+   const fav=document.createElement('button');fav.className='songtool';fav.type='button';fav.title=S.fav&&S.fav[x.t]?'Remover dos favoritos':'Adicionar aos favoritos';fav.setAttribute('aria-label',fav.title);fav.textContent=S.fav&&S.fav[x.t]?'♥':'♡';fav.style.color=S.fav&&S.fav[x.t]?'var(--bad)':'';
+   fav.onclick=()=>{S.fav=S.fav||{};if(S.fav[x.t])delete S.fav[x.t];else S.fav[x.t]=true;save();refresh()};row.appendChild(fav);
+   if(x.lv==='imp'){const del=document.createElement('button');del.className='songtool del';del.type='button';del.title='Excluir música importada';del.setAttribute('aria-label','Excluir '+x.t);del.textContent='🗑';del.onclick=()=>{if(!confirm('Excluir a música importada “'+x.t+'”? Essa ação não afeta as músicas originais do Gaita Game.'))return;S.imp=(S.imp||[]).filter(y=>y.t!==x.t);if(S.fav)delete S.fav[x.t];S.recent=(S.recent||[]).filter(y=>y!==x.t);save();refresh();toast('Música importada excluída')};row.appendChild(del)}
+   $('songs').appendChild(row);
+  });
   document.querySelectorAll('#sFilter button').forEach(b=>b.classList.toggle('go',b.dataset.f==sf));
 }
 $('key').innerHTML=Object.keys(KEYS).map(k=>`<option>${k}</option>`).join('');$('key').value=S.key;
@@ -602,6 +650,7 @@ function openWork(i){const l=WORK[i];ctx={type:'work',i};notes=P(l.seq).map((x,k
 function openAct(a){ctx={type:'act',id:a.id,ear:!!a.ear,a};notes=P(a.seq).map((x,k)=>({m:midiOf(x.h,x.dir,x.bd),t:k*a.d,d:a.d,h:x.h,dir:x.dir,bd:x.bd,s:'p',hit:false}));begin(a.t,a.bpm,a.mode||'wait')}
 function reopen(){if(ctx.type=='lesson')openLesson(ctx.i);else if(ctx.type=='work')openWork(ctx.i);else if(ctx.type=='act')openAct(ctx.a);else openSong(ctx.s)}
 function openSong(s){
+  S.recent=S.recent||[];S.recent=[s.t,...S.recent.filter(t=>t!==s.t)].slice(0,20);save();
   ctx={type:'song',s};let best=0,bc=-1;
   for(let sh=-24;sh<=24;sh++){const c=s.raw.reduce((a,n)=>{const r=mapNote(n.m+sh);return a+(r?(r.bd?.6:1):0)},0);if(c>bc||(c==bc&&Math.abs(sh)<Math.abs(best))){bc=c;best=sh}}
   let prev=0;notes=[];
@@ -612,7 +661,7 @@ function begin(title,bpm,md,skipped,shift){
   cur=0;hits=0;errs=0;hold=0;wrong=0;running=false;lastAct=-1;done=false;mode=md;$('mode').value=md;
   $('bpm').value=bpm;$('bpmv').textContent=bpm;$('start').textContent='▶ Começar';
   $('mode').style.display=ctx.type=='song'?'':'none';$('guide').parentNode.style.display=(ctx.type=='song'||md=='time')?'':'none';
-  $('play').style.display='block';$('res').style.display='none';
+  navPush('overlay',{overlay:'play'});$('play').style.display='block';$('res').style.display='none';
   const strip=$('strip');strip.innerHTML='';
   notes.forEach((n,i)=>{const d=document.createElement('div');d.id='ch'+i;d.style.minWidth=Math.max(46,Math.min(160,n.d*34))+'px';d.innerHTML=chipHtml(n);strip.appendChild(d)});
   $('sub').textContent=title+(shift?` · transposta ${shift>0?'+':''}${shift}`:'')+(skipped?` · ${skipped} notas ignoradas`:'');
@@ -639,7 +688,7 @@ $('start').onclick=async()=>{
 };
 $('mode').onchange=()=>{mode=$('mode').value;reopen()};
 $('bpm').oninput=()=>$('bpmv').textContent=$('bpm').value;
-$('back').onclick=()=>{stopDemo();running=false;$('play').style.display='none';refresh()};
+$('back').onclick=()=>{if(history.state&&history.state.kind==='overlay'&&history.state.overlay==='play')history.back();else{stopDemo();running=false;$('play').style.display='none';refresh()}};
 
 function finish(){
   running=false;done=true;$('start').textContent='↻ Repetir';
@@ -672,18 +721,8 @@ function detectF(){lastRaw=null;
  for(let t=t0;t<=t1;t++){if(c[t]<0.25){while(t+1<=t1&&c[t+1]<c[t])t++;tau=t;break}}
  if(tau<0){let m=1,mt=-1;for(let t=t0;t<=t1;t++)if(c[t]<m){m=c[t];mt=t}if(m<0.45)tau=mt;else return null}
  const a=c[tau-1],b=c[tau],g=c[tau+1],dn=a-2*b+g,f=sr/(tau+(dn?(a-g)/(2*dn):0));
- const raw=69+12*Math.log2(f/440);lastRaw=raw;
- return applyHarmonicaCalibration(raw);
+ const raw=69+12*Math.log2(f/440);lastRaw=raw;const r0=raw-(S.g||0)/100;return r0-((S.cals&&S.cals[Math.round(r0)])||0)/100;
 }
-// Ponto único de calibração compartilhado pelo afinador e por TODAS as atividades.
-// S.cals usa a nota MIDI nominal como chave, que corresponde ao furo/direção
-// selecionado no mapa e também ao alvo midiOf() das lições, exercícios e músicas.
-function applyHarmonicaCalibration(rawMidi){
- if(rawMidi==null||!Number.isFinite(rawMidi))return null;
- const afterGlobal=rawMidi-(Number(S.g)||0)/100;
- return afterGlobal;
-}
-
 function detectOld(){
  an.getFloatTimeDomainData(buf);const sr=actx.sampleRate,N=2048;
  let e=0;for(let i=0;i<N;i++)e+=buf[i]*buf[i];if(Math.sqrt(e/N)<0.008)return null;
@@ -697,39 +736,26 @@ function detectOld(){
 }
 let fbuf=[];
 function smooth(f){fbuf.push(f);if(fbuf.length>4)fbuf.shift();const v=fbuf.filter(x=>x!=null).sort((a,b)=>a-b);return v.length>=3?v[Math.floor(v.length/2)]:null}
-function noteCalibrationCents(n){
- const key=`${n.h}:${n.dir}`;
- // Compatibilidade: calibrações antigas por nota MIDI continuam valendo.
- const byHole=(S.holeCals||{})[key];
- return Number(byHole!=null?byHole:((S.cals||{})[n.m]||0));
-}
-function matches(n,fr){if(fr==null)return false;let d=(fr-n.m)-noteCalibrationCents(n)/100;if(S.oct!==false)d=((d%12)+18)%12-6;return Math.abs(d*100)<=(S.tol||50)}
+function matches(n,fr){if(fr==null)return false;let d=fr-n.m;if(S.oct!==false)d=((d%12)+18)%12-6;return Math.abs(d*100)<=(S.tol||50)}
 let tb=[],tLast=null,tHeld=null,tHeldT=0;
 function tunerTick(){
  tb.push(detectF());if(tb.length>4)tb.shift();tbr.push(lastRaw);if(tbr.length>4)tbr.shift();
  const v=tb.filter(x=>x!=null).sort((a,b)=>a-b),fr=v.length>=3?v[Math.floor(v.length/2)]:null;tLast=fr;if(fr!=null){tHeld=fr;tHeldRaw=medRaw();tHeldT=performance.now()}
  if(fr==null){$('tNote').textContent='–';$('tCents').innerHTML='&nbsp;';$('tHz').textContent='Toque uma nota na gaita';$('tHole').textContent='';$('tNeedle').style.left='50%';return}
- const r=Math.round(fr),h=mapNote(r),hc=h?Number((S.holeCals||{})[h.h+':'+h.dir]||0):0;
- const shown=fr-hc/100,shownMidi=Math.round(shown),ce=Math.round((shown-shownMidi)*100),hz=(440*Math.pow(2,(shown-69)/12)).toFixed(1);
- $('tNote').textContent=nm(shownMidi);$('tHz').textContent=hz+' Hz';
+ const r=Math.round(fr),ce=Math.round((fr-r)*100),hz=(440*Math.pow(2,(fr-69)/12)).toFixed(1);
+ $('tNote').textContent=nm(r);$('tHz').textContent=hz+' Hz';
  $('tCents').textContent=(ce>0?'+':'')+ce+' cents '+(Math.abs(ce)<=10?'✔ afinado':ce>0?'(alto)':'(baixo)');
  $('tNeedle').style.left=(50+Math.max(-50,Math.min(50,ce))*0.9)+'%';
- $('tHole').textContent=h?'Furo '+h.h+(h.dir=='b'?' soprando':' aspirando')+(h.bd?' (bend '+h.bd+')':''):'Nota fora da sua gaita';
+ const h=mapNote(r);$('tHole').textContent=h?'Furo '+h.h+(h.dir=='b'?' soprando':' aspirando')+(h.bd?' (bend '+h.bd+')':''):'Nota fora da sua gaita';
 }
 let selectedTunerMidi=null,selectedTunerHole=null,selectedTunerDir=null;
 function selectTunerNote(hole,dir){selectedTunerHole=hole;selectedTunerDir=dir;selectedTunerMidi=(dir==='b'?BLOW[hole-1]:DRAW[hole-1])+KEY();
  $('tSelected').textContent='Selecionada: furo '+hole+' · '+(dir==='b'?'soprando ↑':'aspirando ↓')+' · '+nm(selectedTunerMidi)+'. Agora toque essa nota e calibre enquanto o som estiver sendo detectado.';
  document.querySelectorAll('#chart .tMap').forEach(b=>b.classList.toggle('sel',+b.dataset.hole===hole&&b.dataset.dir===dir));}
 function updCal(k,just){const c=S.cals||{},ks=Object.keys(c).sort((a,b)=>a-b);$('tCalv').textContent=(S.g?'Ajuste geral da gaita: '+(S.g>0?'+':'')+S.g+' cents. ':'')+(just&&k!=null?'Nota '+nm(k)+' calibrada. ':'')+(ks.length?ks.length+' nota(s) com calibração individual: '+ks.map(x=>nm(+x)).join(', '):'Nenhuma nota calibrada individualmente ainda.')}
-$('tCal').onclick=()=>{if(selectedTunerMidi==null){$('tCalv').textContent='Primeiro selecione no mapa o furo e a direção que está tocando.';return}const raw=(performance.now()-tHeldT<4000)?tHeldRaw:null;if(raw==null){$('tCalv').textContent='Não estou detectando uma nota estável. Toque a nota selecionada e pressione calibrar logo em seguida.';return}const cents=(raw-(S.g||0)/100-selectedTunerMidi)*100;if(Math.abs(cents)>150){$('tCalv').textContent='A nota detectada está muito distante da nota selecionada ('+Math.round(cents)+' cents). Confira o furo e se está soprando ou aspirando corretamente.';return}S.holeCals=S.holeCals||{};const holeKey=selectedTunerHole+':'+selectedTunerDir;
- S.holeCals[holeKey]=Math.max(-50,Math.min(50,Math.round((Number(S.holeCals[holeKey])||0)+cents)));save();
- // Limpa leituras antigas para o novo ajuste ser percebido imediatamente.
- tb=[];tbr=[];tHeld=null;tHeldRaw=null;tHeldT=0;fbuf=[];
- updCal(selectedTunerMidi,true);
- $('tSelected').textContent='Calibração salva exclusivamente para furo '+selectedTunerHole+' '+(selectedTunerDir==='b'?'soprado':'aspirado')+' · '+nm(selectedTunerMidi)+'. As atividades usam este ajuste ao avaliar essa posição.';
-};
-$('tReset').onclick=()=>{S.cals={};S.holeCals={};S.cal=0;S.g=0;save();updCal()};
-$('tReset1').onclick=()=>{if(selectedTunerMidi==null){$('tCalv').textContent='Selecione primeiro uma nota no mapa.';return}if(S.holeCals)delete S.holeCals[selectedTunerHole+':'+selectedTunerDir];save();updCal();$('tSelected').textContent='Calibração removida do furo '+selectedTunerHole+' '+(selectedTunerDir==='b'?'soprado':'aspirado')+'.'};
+$('tCal').onclick=()=>{if(selectedTunerMidi==null){$('tCalv').textContent='Primeiro selecione no mapa o furo e a direção que está tocando.';return}const raw=(performance.now()-tHeldT<4000)?tHeldRaw:null;if(raw==null){$('tCalv').textContent='Não estou detectando uma nota estável. Toque a nota selecionada e pressione calibrar logo em seguida.';return}const cents=(raw-(S.g||0)/100-selectedTunerMidi)*100;if(Math.abs(cents)>150){$('tCalv').textContent='A nota detectada está muito distante da nota selecionada ('+Math.round(cents)+' cents). Confira o furo e se está soprando ou aspirando corretamente.';return}S.cals=S.cals||{};S.cals[selectedTunerMidi]=Math.max(-50,Math.min(50,Math.round((S.cals[selectedTunerMidi]||0)+cents)));save();updCal(selectedTunerMidi,true);$('tSelected').textContent='Calibração aplicada em '+nm(selectedTunerMidi)+' ('+(cents>0?'+':'')+Math.round(cents)+' cents medidos).';};
+$('tReset').onclick=()=>{S.cals={};S.cal=0;S.g=0;save();updCal()};
+$('tReset1').onclick=()=>{if(selectedTunerMidi==null){$('tCalv').textContent='Selecione primeiro uma nota no mapa.';return}if(S.cals)delete S.cals[selectedTunerMidi];save();updCal();$('tSelected').textContent='Calibração individual removida de '+nm(selectedTunerMidi)+'.'};
 $('oct').checked=S.oct!==false;$('oct').onchange=()=>{S.oct=$('oct').checked;save()};
 $('tol').value=S.tol||50;$('tolv').textContent=S.tol||50;$('tol').oninput=()=>{S.tol=+$('tol').value;$('tolv').textContent=S.tol;save()};
 $('tMic').onclick=ensureMic;renderChart();updCal();
@@ -1205,10 +1231,10 @@ function renderTheory(){const l=$('theoryList');if(!l)return;l.innerHTML='';
   b.className='item'+(u?'':' lock');
   b.innerHTML=`<span class="ic" style="background:var(--blow)">${u?t.ic:'🔒'}</span><span>${t.t}<small>${st?'★'.repeat(st)+'☆'.repeat(3-st):u?'Novo':'Complete a anterior'}</small></span>`;b.onclick=()=>{if(u)openTheory(i)};l.appendChild(b)});
  const rv=document.createElement('button');rv.className='item';rv.style.marginTop='16px';rv.innerHTML='<span class="ic" style="background:var(--draw)">🔁</span><span>Revisão rápida<small>6 perguntas das lições que você já fez</small></span>';rv.onclick=openReview;l.appendChild(rv)}
-function openTheory(i){const t=TH[i];TQ={kind:'lesson',id:t.id,steps:t.steps.slice(),i:0,wrong:0};$('thPlay').style.display='block';thRender()}
+function openTheory(i){const t=TH[i];TQ={kind:'lesson',id:t.id,steps:t.steps.slice(),i:0,wrong:0};navPush('overlay',{overlay:'thPlay'});$('thPlay').style.display='block';thRender()}
 function openReview(){const pool=[];TH.forEach(t=>{if(S.th&&S.th[t.id])t.steps.forEach(x=>{if(x.k=='q')pool.push(x)})});
  if(pool.length<3){toast('Complete uma lição primeiro');return}
- pool.sort(()=>Math.random()-.5);TQ={kind:'review',steps:pool.slice(0,6),i:0,wrong:0};$('thPlay').style.display='block';thRender()}
+ pool.sort(()=>Math.random()-.5);TQ={kind:'review',steps:pool.slice(0,6),i:0,wrong:0};navPush('overlay',{overlay:'thPlay'});$('thPlay').style.display='block';thRender()}
 function thRender(){mood('mTh','idle');
  const st=TQ.steps[TQ.i],b=$('thBody'),btn=$('thBtn'),bn=$('thBanner');bn.className='';bn.innerHTML='';
  $('thProg').style.width=Math.min(100,TQ.i/TQ.steps.length*100)+'%';
@@ -1229,12 +1255,12 @@ function thFinish(){
  const td=dayKey();if(S.last!=td){S.streak=S.last==new Date(Date.now()-864e5).toISOString().slice(0,10)?S.streak+1:1;S.last=td}
  save();$('thProg').style.width='100%';
  $('thBody').innerHTML=`<div class="card" style="text-align:center"><h2>${w==0?'Perfeito! 🎉':'Concluído!'}</h2>${isL?`<div style="font-size:38px;color:#ffc800">${'★'.repeat(stars)}<span style="color:var(--bd)">${'★'.repeat(3-stars)}</span></div>`:''}<p>${w} erro(s) · +${gain} XP</p></div>`;
- $('thBanner').innerHTML='';$('thBtn').style.display='';$('thBtn').textContent='Voltar';$('thBtn').onclick=()=>{$('thPlay').style.display='none';refresh()};
+ $('thBanner').innerHTML='';$('thBtn').style.display='';$('thBtn').textContent='Voltar';$('thBtn').onclick=()=>{if(history.state&&history.state.kind==='overlay'&&history.state.overlay==='thPlay')history.back();else{$('thPlay').style.display='none';refresh()}};
  sfx('win');if(w<=1)confetti();mood('mTh','cheer',0);
 }
-$('thClose').onclick=()=>{$('thPlay').style.display='none';refresh()};
-$('openTuner').onclick=()=>{$('tunerPlay').style.display='block'};
-$('tunerClose').onclick=()=>{$('tunerPlay').style.display='none'};
+$('thClose').onclick=()=>{if(history.state&&history.state.kind==='overlay'&&history.state.overlay==='thPlay')history.back();else{$('thPlay').style.display='none';refresh()}};
+$('openTuner').onclick=()=>{navPush('overlay',{overlay:'tunerPlay'});$('tunerPlay').style.display='block'};
+$('tunerClose').onclick=()=>{if(history.state&&history.state.kind==='overlay'&&history.state.overlay==='tunerPlay')history.back();else $('tunerPlay').style.display='none'};
 $('relv').onclick=()=>{delete S.lv;S.unl=0;S.skip=1;save();refresh();show('home');toast('Responda o teste de nível na tela Início')};
 $('wipe').onclick=()=>{if(confirm('Apagar todo o progresso deste aparelho? Isso não pode ser desfeito.')){try{localStorage.removeItem('gaita')}catch(e){}location.reload()}};
 /* ===== Formação em etapas ===== */
@@ -1270,7 +1296,7 @@ function renderStages(){const box=$('stages');if(!box)return;box.innerHTML='';co
    nw.appendChild(bt);nw.insertAdjacentHTML('beforeend',`<small>${a.t}${st?'<br>'+dots(st):''}</small>`);path.appendChild(nw)});
   if(path.children.length)w.appendChild(path);box.appendChild(w)};
  unit(DIAG,true);ST.forEach(x=>unit(x,false))}
-function showStage(id){stageId=id;$('stagePlay').style.display='block';renderStageDetail();$('stagePlay').scrollTop=0}
+function showStage(id){stageId=id;navPush('overlay',{overlay:'stagePlay'});$('stagePlay').style.display='block';renderStageDetail();$('stagePlay').scrollTop=0}
 function refreshStageOverlay(){const o=$('stagePlay');if(o.style.display=='block'){const y=o.scrollTop;renderStageDetail();o.scrollTop=y}}
 function renderStageDetail(){
  const x=stageId==0?DIAG:ST[stageId-1],box=$('stageBody'),diag=stageId==0;$('stageT').textContent=(diag?'':'Etapa '+x.id+' · ')+x.t;box.innerHTML='';
@@ -1288,7 +1314,7 @@ function renderStageDetail(){
   bt.onclick=()=>{const av=x.act.reduce((a,id)=>a+S.best['a:'+id].acc,0)/x.act.length;S.skip=av>=.9?3:av>=.8?2:1;S.lv=1;save();refresh();toast('Você começa na Etapa '+S.skip+' (média '+Math.round(av*100)+'%)')};box.appendChild(bt);
   if(!all)box.insertAdjacentHTML('beforeend','<p class="mut" style="text-align:center">Faça os 4 testes para liberar o cálculo.</p>')}
 }
-$('stageClose').onclick=()=>{$('stagePlay').style.display='none'};
+$('stageClose').onclick=()=>{if(history.state&&history.state.kind==='overlay'&&history.state.overlay==='stagePlay')history.back();else $('stagePlay').style.display='none'};
 
 /* ===== Meu progresso (boletim e diário) ===== */
 const SKL=[['Notas individuais','Som limpo e consistente'],['Respiração','Controle sem tensão'],['Ritmo','Execução estável com metrônomo'],['Memorização','Executar sem consultar'],['Bending','Atingir e sustentar a nota-alvo'],['Vibrato','Oscilação controlada'],['Improvisação','Criar frases coerentes'],['Repertório','Executar músicas completas']];
@@ -1300,8 +1326,8 @@ function renderDiary(){const b=$('diaryBody'),dn=ST.filter(stageDone).length,cs=
  h+=`<div class="sg">Dificuldades pendentes</div><div class="card"><textarea id="dnote" rows="4" style="width:100%;border-radius:10px;border:2px solid var(--bd);background:var(--card);color:var(--tx)" placeholder="Ex.: bend do furo 3 ainda desafina; troca 4↔6 lenta...">${(S.dnote||'').replace(/</g,'&lt;')}</textarea></div>`;
  h+='<div class="sg">Prazos de referência</div><div class="card mut" style="line-height:1.6">1 a 3 meses: fundamentos e melodias · 3 a 6 meses: controle técnico · 6 a 12 meses: repertório e improvisação inicial · 1 a 2 anos: nível intermediário sólido · 2 a 4 anos: avançado · 4 anos ou mais: identidade e performance. São referências, não garantias.</div>';
  b.innerHTML=h;b.querySelectorAll('select[data-sk]').forEach(sel=>sel.onchange=()=>{S.skills=S.skills||{};S.skills[sel.dataset.sk]=+sel.value;save()});$('dnote').oninput=()=>{S.dnote=$('dnote').value;save()}}
-$('diaBtn').onclick=()=>{renderDiary();$('diaryPlay').style.display='block'};
-$('diaryClose').onclick=()=>{$('diaryPlay').style.display='none'};
+$('diaBtn').onclick=()=>{renderDiary();navPush('overlay',{overlay:'diaryPlay'});$('diaryPlay').style.display='block'};
+$('diaryClose').onclick=()=>{if(history.state&&history.state.kind==='overlay'&&history.state.overlay==='diaryPlay')history.back();else $('diaryPlay').style.display='none'};
 
 /* ===== Rotina de hoje (sessão do guia) ===== */
 const RT=[['🔥','Aquecimento','Respiração, notas longas e relaxamento',5],['🎯','Técnica','Exercício específico da sua etapa',10],['📖','Teoria e percepção','Notas, escalas, ritmo e ouvido',10],['🎵','Repertório','Aprender ou aperfeiçoar uma música',10],['🎙️','Revisão e gravação','Toque sem consultar e avalie',5]];
@@ -1318,8 +1344,8 @@ function renderRoutine(){const st=rtState(),k=st.tot/40,b=$('routineBody');
  b.querySelectorAll('[data-tot]').forEach(e=>e.onclick=()=>{st.tot=+e.dataset.tot;save();renderRoutine()});
  b.querySelectorAll('[data-rd]').forEach(e=>e.onchange=()=>{st.done[e.dataset.rd]=e.checked;save();homeExtra()});
  b.querySelectorAll('[data-ra]').forEach(e=>e.onclick=()=>rtAct(+e.dataset.ra))}
-$('rtBtn').onclick=()=>{renderRoutine();$('routinePlay').style.display='block'};
-$('routineClose').onclick=()=>{$('routinePlay').style.display='none'};
+$('rtBtn').onclick=()=>{renderRoutine();navPush('overlay',{overlay:'routinePlay'});$('routinePlay').style.display='block'};
+$('routineClose').onclick=()=>{if(history.state&&history.state.kind==='overlay'&&history.state.overlay==='routinePlay')history.back();else $('routinePlay').style.display='none'};
 function homeExtra(){const st=rtState(),cs=curStage(),na=nextAct();
  $('rtN').textContent=Object.values(st.done).filter(Boolean).length+'/5';
  $('lvl').textContent='Nível '+(Math.floor(S.xp/100)+1)+' · Etapa '+cs.id+' de 8';if($('hkey'))$('hkey').textContent=S.key;
@@ -1383,7 +1409,7 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 
-$('bkOut').onclick=()=>{const o={xp:S.xp,streak:S.streak,last:S.last,done:S.done,key:S.key,bends:S.bends,cals:S.cals,g:S.g,best:S.best,th:S.th,chk:S.chk,skills:S.skills,dnote:S.dnote,skip:S.skip,lv:S.lv,unl:S.unl};const c=btoa(unescape(encodeURIComponent(JSON.stringify(o))));$('bk').value=c;$('bk').select();try{navigator.clipboard.writeText(c)}catch(e){}};
+$('bkOut').onclick=()=>{const o={xp:S.xp,streak:S.streak,last:S.last,done:S.done,key:S.key,bends:S.bends,cals:S.cals,g:S.g,best:S.best,th:S.th,chk:S.chk,skills:S.skills,dnote:S.dnote,skip:S.skip,lv:S.lv,unl:S.unl,imp:S.imp||[],fav:S.fav||{},recent:S.recent||[]};const c=btoa(unescape(encodeURIComponent(JSON.stringify(o))));$('bk').value=c;$('bk').select();try{navigator.clipboard.writeText(c)}catch(e){}};
 $('bkIn').onclick=()=>{try{const o=JSON.parse(decodeURIComponent(escape(atob($('bk').value.trim()))));Object.assign(S,o);save();$('key').value=S.key;$('bends').checked=S.bends!==false;refresh();$('bk').value='';toast('Progresso restaurado!')}catch(e){toast('Código inválido')}};
 async function parseAudio(ab){
  const c=new (window.AudioContext||window.webkitAudioContext)();const au=await c.decodeAudioData(ab);try{c.close()}catch(e){}
