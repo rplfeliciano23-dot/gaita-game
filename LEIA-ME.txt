@@ -1,0 +1,9 @@
+GAITA GAME - PACOTE VISUAL ATUALIZADO
+
+Arquivos: index.html, manifest.webmanifest, sw.js, mascote-bem-te-vi.png, icon-192.png, icon-512.png, icon-maskable-512.png e textura-tronco.svg.
+
+Como publicar: substitua os arquivos correspondentes na raiz do repositório GitHub Pages.
+
+IMPORTANTE SOBRE AS FAIXAS DO ANDROID: a barra de status (relógio/sinais) e a barra de navegação/gesto pertencem ao próprio Android. O PWA não consegue desenhar uma textura de madeira dentro dessas barras. Configurei a cor do sistema para marrom de madeira (#56351f), que remove o verde. A barra de navegação do aplicativo, que fica dentro da página, recebeu textura de tronco real.
+
+O mascote foi exportado em PNG com transparência e a gaita de boca permanece como elemento central. Os ícones foram gerados a partir do mascote.
