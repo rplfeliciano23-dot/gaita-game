@@ -672,8 +672,18 @@ function detectF(){lastRaw=null;
  for(let t=t0;t<=t1;t++){if(c[t]<0.25){while(t+1<=t1&&c[t+1]<c[t])t++;tau=t;break}}
  if(tau<0){let m=1,mt=-1;for(let t=t0;t<=t1;t++)if(c[t]<m){m=c[t];mt=t}if(m<0.45)tau=mt;else return null}
  const a=c[tau-1],b=c[tau],g=c[tau+1],dn=a-2*b+g,f=sr/(tau+(dn?(a-g)/(2*dn):0));
- const raw=69+12*Math.log2(f/440);lastRaw=raw;const r0=raw-(S.g||0)/100;return r0-((S.cals&&S.cals[Math.round(r0)])||0)/100;
+ const raw=69+12*Math.log2(f/440);lastRaw=raw;
+ return applyHarmonicaCalibration(raw);
 }
+// Ponto único de calibração compartilhado pelo afinador e por TODAS as atividades.
+// S.cals usa a nota MIDI nominal como chave, que corresponde ao furo/direção
+// selecionado no mapa e também ao alvo midiOf() das lições, exercícios e músicas.
+function applyHarmonicaCalibration(rawMidi){
+ if(rawMidi==null||!Number.isFinite(rawMidi))return null;
+ const afterGlobal=rawMidi-(Number(S.g)||0)/100;
+ return afterGlobal;
+}
+
 function detectOld(){
  an.getFloatTimeDomainData(buf);const sr=actx.sampleRate,N=2048;
  let e=0;for(let i=0;i<N;i++)e+=buf[i]*buf[i];if(Math.sqrt(e/N)<0.008)return null;
@@ -687,26 +697,39 @@ function detectOld(){
 }
 let fbuf=[];
 function smooth(f){fbuf.push(f);if(fbuf.length>4)fbuf.shift();const v=fbuf.filter(x=>x!=null).sort((a,b)=>a-b);return v.length>=3?v[Math.floor(v.length/2)]:null}
-function matches(n,fr){if(fr==null)return false;let d=fr-n.m;if(S.oct!==false)d=((d%12)+18)%12-6;return Math.abs(d*100)<=(S.tol||50)}
+function noteCalibrationCents(n){
+ const key=`${n.h}:${n.dir}`;
+ // Compatibilidade: calibrações antigas por nota MIDI continuam valendo.
+ const byHole=(S.holeCals||{})[key];
+ return Number(byHole!=null?byHole:((S.cals||{})[n.m]||0));
+}
+function matches(n,fr){if(fr==null)return false;let d=(fr-n.m)-noteCalibrationCents(n)/100;if(S.oct!==false)d=((d%12)+18)%12-6;return Math.abs(d*100)<=(S.tol||50)}
 let tb=[],tLast=null,tHeld=null,tHeldT=0;
 function tunerTick(){
  tb.push(detectF());if(tb.length>4)tb.shift();tbr.push(lastRaw);if(tbr.length>4)tbr.shift();
  const v=tb.filter(x=>x!=null).sort((a,b)=>a-b),fr=v.length>=3?v[Math.floor(v.length/2)]:null;tLast=fr;if(fr!=null){tHeld=fr;tHeldRaw=medRaw();tHeldT=performance.now()}
  if(fr==null){$('tNote').textContent='–';$('tCents').innerHTML='&nbsp;';$('tHz').textContent='Toque uma nota na gaita';$('tHole').textContent='';$('tNeedle').style.left='50%';return}
- const r=Math.round(fr),ce=Math.round((fr-r)*100),hz=(440*Math.pow(2,(fr-69)/12)).toFixed(1);
- $('tNote').textContent=nm(r);$('tHz').textContent=hz+' Hz';
+ const r=Math.round(fr),h=mapNote(r),hc=h?Number((S.holeCals||{})[h.h+':'+h.dir]||0):0;
+ const shown=fr-hc/100,shownMidi=Math.round(shown),ce=Math.round((shown-shownMidi)*100),hz=(440*Math.pow(2,(shown-69)/12)).toFixed(1);
+ $('tNote').textContent=nm(shownMidi);$('tHz').textContent=hz+' Hz';
  $('tCents').textContent=(ce>0?'+':'')+ce+' cents '+(Math.abs(ce)<=10?'✔ afinado':ce>0?'(alto)':'(baixo)');
  $('tNeedle').style.left=(50+Math.max(-50,Math.min(50,ce))*0.9)+'%';
- const h=mapNote(r);$('tHole').textContent=h?'Furo '+h.h+(h.dir=='b'?' soprando':' aspirando')+(h.bd?' (bend '+h.bd+')':''):'Nota fora da sua gaita';
+ $('tHole').textContent=h?'Furo '+h.h+(h.dir=='b'?' soprando':' aspirando')+(h.bd?' (bend '+h.bd+')':''):'Nota fora da sua gaita';
 }
 let selectedTunerMidi=null,selectedTunerHole=null,selectedTunerDir=null;
 function selectTunerNote(hole,dir){selectedTunerHole=hole;selectedTunerDir=dir;selectedTunerMidi=(dir==='b'?BLOW[hole-1]:DRAW[hole-1])+KEY();
  $('tSelected').textContent='Selecionada: furo '+hole+' · '+(dir==='b'?'soprando ↑':'aspirando ↓')+' · '+nm(selectedTunerMidi)+'. Agora toque essa nota e calibre enquanto o som estiver sendo detectado.';
  document.querySelectorAll('#chart .tMap').forEach(b=>b.classList.toggle('sel',+b.dataset.hole===hole&&b.dataset.dir===dir));}
 function updCal(k,just){const c=S.cals||{},ks=Object.keys(c).sort((a,b)=>a-b);$('tCalv').textContent=(S.g?'Ajuste geral da gaita: '+(S.g>0?'+':'')+S.g+' cents. ':'')+(just&&k!=null?'Nota '+nm(k)+' calibrada. ':'')+(ks.length?ks.length+' nota(s) com calibração individual: '+ks.map(x=>nm(+x)).join(', '):'Nenhuma nota calibrada individualmente ainda.')}
-$('tCal').onclick=()=>{if(selectedTunerMidi==null){$('tCalv').textContent='Primeiro selecione no mapa o furo e a direção que está tocando.';return}const raw=(performance.now()-tHeldT<4000)?tHeldRaw:null;if(raw==null){$('tCalv').textContent='Não estou detectando uma nota estável. Toque a nota selecionada e pressione calibrar logo em seguida.';return}const cents=(raw-(S.g||0)/100-selectedTunerMidi)*100;if(Math.abs(cents)>150){$('tCalv').textContent='A nota detectada está muito distante da nota selecionada ('+Math.round(cents)+' cents). Confira o furo e se está soprando ou aspirando corretamente.';return}S.cals=S.cals||{};S.cals[selectedTunerMidi]=Math.max(-50,Math.min(50,Math.round((S.cals[selectedTunerMidi]||0)+cents)));save();updCal(selectedTunerMidi,true);$('tSelected').textContent='Calibração aplicada em '+nm(selectedTunerMidi)+' ('+(cents>0?'+':'')+Math.round(cents)+' cents medidos).';};
-$('tReset').onclick=()=>{S.cals={};S.cal=0;S.g=0;save();updCal()};
-$('tReset1').onclick=()=>{if(selectedTunerMidi==null){$('tCalv').textContent='Selecione primeiro uma nota no mapa.';return}if(S.cals)delete S.cals[selectedTunerMidi];save();updCal();$('tSelected').textContent='Calibração individual removida de '+nm(selectedTunerMidi)+'.'};
+$('tCal').onclick=()=>{if(selectedTunerMidi==null){$('tCalv').textContent='Primeiro selecione no mapa o furo e a direção que está tocando.';return}const raw=(performance.now()-tHeldT<4000)?tHeldRaw:null;if(raw==null){$('tCalv').textContent='Não estou detectando uma nota estável. Toque a nota selecionada e pressione calibrar logo em seguida.';return}const cents=(raw-(S.g||0)/100-selectedTunerMidi)*100;if(Math.abs(cents)>150){$('tCalv').textContent='A nota detectada está muito distante da nota selecionada ('+Math.round(cents)+' cents). Confira o furo e se está soprando ou aspirando corretamente.';return}S.holeCals=S.holeCals||{};const holeKey=selectedTunerHole+':'+selectedTunerDir;
+ S.holeCals[holeKey]=Math.max(-50,Math.min(50,Math.round((Number(S.holeCals[holeKey])||0)+cents)));save();
+ // Limpa leituras antigas para o novo ajuste ser percebido imediatamente.
+ tb=[];tbr=[];tHeld=null;tHeldRaw=null;tHeldT=0;fbuf=[];
+ updCal(selectedTunerMidi,true);
+ $('tSelected').textContent='Calibração salva exclusivamente para furo '+selectedTunerHole+' '+(selectedTunerDir==='b'?'soprado':'aspirado')+' · '+nm(selectedTunerMidi)+'. As atividades usam este ajuste ao avaliar essa posição.';
+};
+$('tReset').onclick=()=>{S.cals={};S.holeCals={};S.cal=0;S.g=0;save();updCal()};
+$('tReset1').onclick=()=>{if(selectedTunerMidi==null){$('tCalv').textContent='Selecione primeiro uma nota no mapa.';return}if(S.holeCals)delete S.holeCals[selectedTunerHole+':'+selectedTunerDir];save();updCal();$('tSelected').textContent='Calibração removida do furo '+selectedTunerHole+' '+(selectedTunerDir==='b'?'soprado':'aspirado')+'.'};
 $('oct').checked=S.oct!==false;$('oct').onchange=()=>{S.oct=$('oct').checked;save()};
 $('tol').value=S.tol||50;$('tolv').textContent=S.tol||50;$('tol').oninput=()=>{S.tol=+$('tol').value;$('tolv').textContent=S.tol;save()};
 $('tMic').onclick=ensureMic;renderChart();updCal();
