@@ -1,11 +1,6 @@
-// Gaita Bem-te-vi - service worker
-const V='gaita-bem-te-vi-v10';
-const FILES=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-maskable-512.png','./mascote-bem-te-vi.png','./textura-tronco.svg','./gaita-architecture.js','./cloud-config.js'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(FILES.filter(x=>x!=='./cloud-config.js'))).then(()=>self.skipWaiting()))});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
-self.addEventListener('fetch',e=>{
- if(e.request.method!=='GET')return;
- const u=new URL(e.request.url);
- if(u.origin!==location.origin)return;
- e.respondWith(fetch(e.request,{cache:'no-cache'}).then(r=>{if(r.ok){const cp=r.clone();caches.open(V).then(c=>c.put(e.request,cp))}return r}).catch(()=>caches.match(e.request).then(m=>m||caches.match('./index.html'))));
-});
+// Gaita Game | Bem-te-vi interativo
+const CACHE='gaita-bem-te-vi-v12';
+const FILES=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./fundo-natureza.webp','./mascote-bem-te-vi.png','./mascote-bem-te-vi-tocando.png','./textura-tronco.svg','./gaita-architecture.js','./cloud-config.example.js'];
+self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
+self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;const url=new URL(event.request.url);if(url.origin!==location.origin)return;event.respondWith(fetch(event.request,{cache:'no-cache'}).then(response=>{if(response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(event.request,copy))}return response}).catch(()=>caches.match(event.request).then(hit=>hit||caches.match('./index.html'))))});

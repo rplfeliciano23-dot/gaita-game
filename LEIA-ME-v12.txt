@@ -1,0 +1,31 @@
+GAITA GAME 2.0 | BEM-TE-VI INTERATIVO v12
+
+Atualização visual e interativa baseada no index.html mais recente disponibilizado.
+
+O QUE MUDOU
+- Cenário de natureza fornecido pelo usuário aplicado como fundo do aplicativo.
+- Ícones 192 e 512 substituídos pelos arquivos enviados.
+- O Bem-te-vi em repouso, aulas e resultado usa a nova pose com a gaita guardada no suporte lateral.
+- Durante a execução musical, o mascote troca para a arte original tocando gaita. Assim, a gaita permanece sempre com ele, mas não fica o tempo todo na boca.
+- Mantidas as reações existentes (piscar, balançar, dormir, comemorar, entristecer e acompanhar o ponteiro).
+- Toque e teclado podem acionar reações em mais aparições do mascote.
+- Service worker atualizado para v12 para renovar o cache dos novos arquivos.
+
+ARQUIVOS
+- index.html: aplicativo atualizado
+- mascote-bem-te-vi.png: pose de repouso com gaita no suporte
+- mascote-bem-te-vi-tocando.png: pose original tocando
+- fundo-natureza.webp, icon-192.png, icon-512.png
+- manifest.webmanifest, sw.js, textura-tronco.svg, gaita-architecture.js, cloud-config.example.js
+
+INSTALAÇÃO
+1. Faça backup da pasta atual do aplicativo.
+2. Extraia todos os arquivos deste ZIP juntos na raiz publicada do projeto.
+3. Substitua os arquivos correspondentes, sem apagar dados locais do navegador.
+4. Publique no mesmo endereço HTTPS.
+5. Feche e reabra o PWA. O service worker v12 deve atualizar o cache.
+
+VALIDAÇÃO
+- O JavaScript embutido no HTML deve ser validado com node --check após extração.
+- O comportamento de cache precisa ser confirmado no navegador de destino.
+- A interação foi adicionada por código; não foi possível executar um teste completo de interface Android nesta sessão.
