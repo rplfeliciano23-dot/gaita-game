@@ -327,10 +327,11 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 
 
 /* ===== cenário natureza: bosque do Bem-te-vi ===== */
+:root{--bg-image-opacity:.70;--bg-screen-wash:.30}
 body{position:relative;isolation:isolate;background:#dce8c8;color:var(--tx)}
-body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(242,248,225,.30),rgba(226,239,210,.48) 55%,rgba(210,229,193,.56)),url("fundo-natureza.webp") center center/cover no-repeat}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:var(--bg-image-opacity);background:url("fundo-natureza.webp") center center/cover no-repeat;transition:opacity .18s ease}
 .app{background:transparent}
-.card,.item{background:color-mix(in srgb,var(--card) 95%,transparent);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.card,.item{background:color-mix(in srgb,var(--card) 91%,transparent);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
 .top{background:linear-gradient(115deg,rgba(34,77,48,.97),rgba(24,57,39,.96));border-bottom:2px solid #b6c98d;box-shadow:0 5px 16px rgba(23,48,27,.20)}
 .brand img{border:2px solid rgba(255,245,210,.8)}
 .pill{color:#f3d47b}
@@ -338,9 +339,9 @@ nav{background:linear-gradient(180deg,rgba(43,91,54,.98),rgba(27,62,39,.99));bor
 nav button{color:#f4f0d9;text-shadow:0 1px 2px rgba(0,0,0,.45)}
 nav button.act{color:#ffe18a}
 #navInd{background:rgba(244,215,126,.16);border:1px solid rgba(255,232,157,.42);box-shadow:inset 0 0 12px rgba(255,232,157,.12)}
-#play,#thPlay,#tunerPlay,#stagePlay,#diaryPlay,#routinePlay{background:linear-gradient(rgba(235,244,220,.84),rgba(228,239,211,.90)),url("fundo-natureza.webp") center/cover fixed}
+#play,#thPlay,#tunerPlay,#stagePlay,#diaryPlay,#routinePlay{background:linear-gradient(rgba(235,244,220,var(--bg-screen-wash)),rgba(228,239,211,calc(var(--bg-screen-wash) + .08))),url("fundo-natureza.webp") center/cover fixed}
 #play .card,#thPlay .card,#tunerPlay .card,#stagePlay .card,#diaryPlay .card,#routinePlay .card{background:color-mix(in srgb,var(--card) 97%,transparent)}
-@media (prefers-color-scheme:dark){body::before{background:linear-gradient(180deg,rgba(10,25,18,.60),rgba(10,25,18,.72)),url("fundo-natureza.webp") center center/cover no-repeat}#play,#thPlay,#tunerPlay,#stagePlay,#diaryPlay,#routinePlay{background:linear-gradient(rgba(12,26,20,.78),rgba(12,26,20,.86)),url("fundo-natureza.webp") center/cover fixed}}
+@media (prefers-color-scheme:dark){body{background:#15251c}#play,#thPlay,#tunerPlay,#stagePlay,#diaryPlay,#routinePlay{background:linear-gradient(rgba(12,26,20,var(--bg-screen-wash)),rgba(12,26,20,calc(var(--bg-screen-wash) + .08))),url("fundo-natureza.webp") center/cover fixed}}
 @media (max-width:420px){body::before{background-position:center center} .top{box-shadow:0 3px 12px rgba(23,48,27,.18)}}
 @media (prefers-reduced-motion:reduce){.card,.item{backdrop-filter:none;-webkit-backdrop-filter:none}}
 </style>
@@ -380,6 +381,14 @@ nav button.act{color:#ffe18a}
    <div class="srow"><span>Sensibilidade do microfone</span><span><input type="range" id="gate" min="1" max="20" value="3"> <b id="gatev"></b></span></div>
    <div class="srow"><span>Tolerância (cents)</span><span><input type="range" id="tol" min="25" max="70" value="50"> <b id="tolv"></b></span></div>
    <div class="srow"><span>Aceitar nota de outra oitava</span><input type="checkbox" id="oct"></div>
+  </div>
+  <div class="sg">Aparência</div>
+  <div class="card" id="backgroundSettings">
+   <div class="srow"><span>Intensidade do plano de fundo</span><b id="bgIntensityValue">70%</b></div>
+   <input type="range" id="bgIntensity" min="0" max="100" step="5" value="70" style="width:100%">
+   <div class="row" style="justify-content:space-between"><small class="mut">Mais discreto</small><small class="mut">Mais visível</small></div>
+   <p class="mut" style="margin:8px 0 0">Ajuste quanto da imagem do bosque aparece atrás das telas. A escolha fica salva neste aparelho.</p>
+   <button id="bgReset" style="margin-top:8px;padding:7px 12px">Restaurar padrão (70%)</button>
   </div>
   <div class="sg">Treino</div>
   <div class="card">
@@ -465,6 +474,14 @@ let S={xp:0,streak:0,last:'',done:{},key:'C',imp:[],fav:{},recent:[]};
 try{Object.assign(S,JSON.parse(localStorage.getItem('gaita')||'{}'))}catch(e){}
 if(window.GaitaArchitecture) S=window.GaitaArchitecture.migrateState(S);
 const save=()=>{try{S._meta=S._meta||{};S._meta.updatedAt=new Date().toISOString();localStorage.setItem('gaita',JSON.stringify(S))}catch(e){}};
+const applyBackgroundIntensity=(value)=>{
+ const n=Math.max(0,Math.min(100,Number(value)||0));
+ const strength=n/100, wash=Math.max(0.08,0.82-strength*0.74);
+ document.documentElement.style.setProperty('--bg-image-opacity',String(strength));
+ document.documentElement.style.setProperty('--bg-screen-wash',wash.toFixed(2));
+ if($('bgIntensity'))$('bgIntensity').value=String(n);
+ if($('bgIntensityValue'))$('bgIntensityValue').textContent=n+'%';
+};
 const KEY=()=>KEYS[S.key]||0;
 
 const P=s=>s.split(' ').map(x=>{const r=/^(\d+)([bd])(\d?)$/.exec(x);return{h:+r[1],dir:r[2],bd:+(r[3]||0)}});
@@ -1459,7 +1476,7 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 
-$('bkOut').onclick=()=>{const o={xp:S.xp,streak:S.streak,last:S.last,done:S.done,key:S.key,bends:S.bends,cals:S.cals,g:S.g,best:S.best,th:S.th,chk:S.chk,skills:S.skills,dnote:S.dnote,skip:S.skip,lv:S.lv,unl:S.unl,imp:S.imp||[],fav:S.fav||{},recent:S.recent||[]};const c=btoa(unescape(encodeURIComponent(JSON.stringify(o))));$('bk').value=c;$('bk').select();try{navigator.clipboard.writeText(c)}catch(e){}};
+$('bkOut').onclick=()=>{const o={xp:S.xp,streak:S.streak,last:S.last,done:S.done,key:S.key,bgIntensity:S.bgIntensity,bends:S.bends,cals:S.cals,g:S.g,best:S.best,th:S.th,chk:S.chk,skills:S.skills,dnote:S.dnote,skip:S.skip,lv:S.lv,unl:S.unl,imp:S.imp||[],fav:S.fav||{},recent:S.recent||[]};const c=btoa(unescape(encodeURIComponent(JSON.stringify(o))));$('bk').value=c;$('bk').select();try{navigator.clipboard.writeText(c)}catch(e){}};
 $('bkIn').onclick=()=>{try{const o=JSON.parse(decodeURIComponent(escape(atob($('bk').value.trim()))));Object.assign(S,o);save();$('key').value=S.key;$('bends').checked=S.bends!==false;refresh();$('bk').value='';toast('Progresso restaurado!')}catch(e){toast('Código inválido')}};
 async function parseAudio(ab){
  const c=new (window.AudioContext||window.webkitAudioContext)();const au=await c.decodeAudioData(ab);try{c.close()}catch(e){}
@@ -1512,6 +1529,12 @@ $('file').onchange=async e=>{
   $('impMsg').textContent=zip?'Esse arquivo é um .zip. Extraia o zip primeiro e escolha os arquivos .mid.':ok?ok+' música(s) importada(s)! Veja em "Importadas".'+(bad?' ('+bad+' não deu para ler)':''):'Não consegui ler o arquivo. Use MIDI, MP3 ou WAV com melodia clara.';
   if(ok){sf='imp';refresh()}
 };
+
+/* Regulagem do plano de fundo */
+const initialBgIntensity=Number.isFinite(Number(S.bgIntensity))?Number(S.bgIntensity):70;
+applyBackgroundIntensity(initialBgIntensity);
+$('bgIntensity').oninput=()=>{const v=+$('bgIntensity').value;S.bgIntensity=v;applyBackgroundIntensity(v);save()};
+$('bgReset').onclick=()=>{S.bgIntensity=70;applyBackgroundIntensity(70);save();toast('Plano de fundo restaurado para 70%')};
 
 /* início */
 (function(){const h=document.getElementById('harp');h.className='hp';let a='',c='',z='';for(let i=1;i<=10;i++){a+=`<div class="c b" id="b${i}"></div>`;c+=`<div class="hn" id="hn${i}">${i}</div>`;z+=`<div class="c d" id="d${i}"></div>`}

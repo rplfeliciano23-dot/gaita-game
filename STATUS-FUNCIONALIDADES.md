@@ -39,3 +39,7 @@ A interface não deve apresentar como concluído nenhum item que esteja apenas p
 - Tema escuro recebe sobreposição mais escura.
 - Novo asset local `fundo-natureza.webp` incluído no pacote e no cache do service worker (v12-natureza).
 - JavaScript e referências locais verificados estaticamente; aparência e desempenho ainda precisam de validação no Android real.
+
+## Atualização visual
+- Regulagem da intensidade do plano de fundo (0% a 100%), salva localmente e incluída no backup; padrão 70%.
+- Imagem de fundo do bosque incluída localmente em `fundo-natureza.webp` (não depende de URL externa).
