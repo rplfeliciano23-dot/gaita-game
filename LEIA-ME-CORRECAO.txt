@@ -1,0 +1,13 @@
+GAITA GAME 2.0 — CORREÇÃO INICIAL DO AFINADOR
+
+Este pacote mantém os arquivos visuais e de suporte recebidos e atualiza o index.html.
+
+Ajustes:
+- Mapeamento sem escolha arbitrária quando duas posições compartilham a mesma nota.
+- Posição selecionada no mapa passa a contextualizar a leitura quando a altura coincide.
+- Notas naturais têm prioridade sobre possíveis bends na classificação.
+
+O reconhecimento de frequência não foi substituído sem gravações reais para validação. Portanto, esta entrega corrige a classificação ambígua, mas ainda exige teste acústico no celular para confirmar os relatos dos furos aspirados.
+
+Antes de publicar, faça backup da versão atual. Substitua o index.html e preserve os outros arquivos e os dados locais do aplicativo.
+Consulte CORRECAO-AFINADOR-2026-11-24.md para detalhes.

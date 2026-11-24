@@ -586,7 +586,17 @@ const ST=[
 let notes=[],cur=0,hold=0,wrong=0,hits=0,errs=0,mode='wait',running=false,t0=0,lastAct=-1,ctx=null,done=false;
 let actx,an,buf,micOn=false,last=null,cnt=0;
 
-function mapNote(m,prev){const k=KEY(),c=[];BLOW.forEach((x,i)=>x+k==m&&c.push({h:i+1,dir:'b'}));DRAW.forEach((x,i)=>x+k==m&&c.push({h:i+1,dir:'d'}));if(!c.length&&S.bends!==false)bendCands(m,k,c);if(!c.length)return null;if(prev)c.sort((a,b)=>Math.abs(a.h-prev)-Math.abs(b.h-prev));return c[0]}
+function mapNotes(m){
+ const k=KEY(),natural=[];
+ BLOW.forEach((x,i)=>{if(x+k===m)natural.push({h:i+1,dir:'b',bd:0})});
+ DRAW.forEach((x,i)=>{if(x+k===m)natural.push({h:i+1,dir:'d',bd:0})});
+ // Uma nota natural tem prioridade sobre um bend de outro furo. A frequência
+ // sozinha não distingue posições que compartilham a mesma altura.
+ if(natural.length)return natural;
+ if(S.bends!==false){const bends=[];bendCands(m,k,bends);return bends}
+ return [];
+}
+function mapNote(m,prev){const c=mapNotes(m);if(!c.length)return null;if(prev)c.sort((a,b)=>Math.abs(a.h-prev)-Math.abs(b.h-prev));return c[0]}
 const midiOf=(h,d,b)=>(d=='b'?BLOW:DRAW)[h-1]+KEY()-(b||0);
 const BD={d:{1:[1],2:[1,2],3:[1,2,3],4:[1],6:[1]},b:{8:[1],9:[1],10:[1,2]}};
 function bendCands(m,k,c){[['b',BLOW],['d',DRAW]].forEach(([dr,T])=>{const o=BD[dr];for(const h in o)o[h].forEach(b=>{if(T[h-1]+k-b==m)c.push({h:+h,dir:dr,bd:b})})})}
@@ -781,7 +791,17 @@ function tunerTick(){
  $('tNote').textContent=nm(r);$('tHz').textContent=hz+' Hz';
  $('tCents').textContent=(ce>0?'+':'')+ce+' cents '+(Math.abs(ce)<=10?'✔ afinado':ce>0?'(alto)':'(baixo)');
  $('tNeedle').style.left=(50+Math.max(-50,Math.min(50,ce))*0.9)+'%';
- const h=mapNote(r);$('tHole').textContent=h?'Furo '+h.h+(h.dir=='b'?' soprando':' aspirando')+(h.bd?' (bend '+h.bd+')':''):'Nota fora da sua gaita';
+ const candidates=mapNotes(r);
+ let label='Nota fora do mapa da gaita';
+ if(candidates.length){
+  const selected=selectedTunerMidi===r&&selectedTunerHole&&selectedTunerDir?{h:selectedTunerHole,dir:selectedTunerDir,bd:0}:null;
+  const chosen=selected||candidates[0];
+  const pos=x=>'furo '+x.h+(x.dir==='b'?' soprando':' aspirando')+(x.bd?' (bend '+x.bd+')':'');
+  if(selected)label='Correspondência com a posição selecionada: '+pos(chosen);
+  else if(candidates.length===1)label=pos(chosen);
+  else label='Nota compartilhada: '+candidates.map(pos).join(' / ');
+ }
+ $('tHole').textContent=label;
 }
 let selectedTunerMidi=null,selectedTunerHole=null,selectedTunerDir=null;
 function selectTunerNote(hole,dir){selectedTunerHole=hole;selectedTunerDir=dir;selectedTunerMidi=(dir==='b'?BLOW[hole-1]:DRAW[hole-1])+KEY();
