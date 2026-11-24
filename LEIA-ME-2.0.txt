@@ -5,8 +5,8 @@ Este pacote reúne a versão mais recente do aplicativo e os arquivos de suporte
 CONTEÚDO INCLUÍDO
 - index.html: interface mais recente, tema natural, mascote, navegação com histórico, aulas, músicas, importação/exclusão, favoritos, recentes, backup/restauração, afinador com mapa/calibração e central de ajuda.
 - gaita-architecture.js: fundação de dados pedagógicos e migração não destrutiva do progresso.
-- sw.js: cache PWA atualizado para v10.
-- manifest.webmanifest, ícones, textura-tronco.svg e mascote-bem-te-vi.png.
+- sw.js: cache PWA atualizado para v12-natureza.
+- manifest.webmanifest, ícones, textura-tronco.svg, fundo-natureza.webp e mascote-bem-te-vi.png.
 - supabase-schema.sql e cloud-config.example.js: preparação opcional para nuvem.
 - documentação técnica e plano de implementação.
 
@@ -16,7 +16,7 @@ INSTALAÇÃO
 3. Substitua os arquivos correspondentes na raiz do projeto hospedado. Não coloque os arquivos dentro de uma subpasta se o projeto atual publica a partir da raiz.
 4. Mantenha todos os arquivos deste pacote juntos, na mesma raiz.
 5. Publique no mesmo endereço HTTPS usado pelo PWA.
-6. Feche e reabra o app. Se o Android mantiver uma versão antiga, atualize a página e aguarde o service worker v10 assumir o controle.
+6. Feche e reabra o app. Se o Android mantiver uma versão antiga, atualize a página e aguarde o service worker v12-natureza assumir o controle.
 
 DADOS
 - O progresso continua salvo localmente no aparelho. Use o recurso de backup antes de trocar de aparelho ou limpar os dados do navegador.
@@ -37,3 +37,10 @@ VALIDAÇÃO REALIZADA NESTA ENTREGA
 
 
 ÁUDIO: a demonstração musical agora tenta carregar samples reais VCSL/CC0 da gaita Hohner Special 20 em Dó, via internet, e transpõe as notas-âncora. Se os arquivos não carregarem, o sintetizador anterior assume automaticamente. Os samples não distinguem individualmente os 10 furos nem sopro/aspiração; não estão embutidos/offline no pacote.
+
+
+PLANO DE FUNDO NATURAL
+- A interface principal agora usa fundo ilustrado de bosque iluminado, com folhagens, trilha e luz suave.
+- Cartões recebem uma camada clara/translúcida para preservar a leitura; menus superiores e inferiores usam tons de verde-floresta.
+- O arquivo fundo-natureza.webp precisa permanecer na mesma pasta do index.html. Ele também foi incluído no cache do PWA.
+- Em aparelhos com modo escuro, a imagem recebe uma camada escura para manter o contraste.

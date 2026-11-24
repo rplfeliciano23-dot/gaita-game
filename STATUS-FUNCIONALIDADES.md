@@ -30,3 +30,12 @@ A interface não deve apresentar como concluído nenhum item que esteja apenas p
 - As gravações disponíveis não são 20 takes separados por furo e direção. Sopro/aspiração continuam indicados na tablatura, mas compartilham as notas-âncora disponíveis.
 - Ainda depende de conexão para baixar os samples na primeira utilização. Não declarar áudio real offline ou samples incorporados no pacote.
 - Não validado em aparelho Android/WebView real nesta etapa.
+
+
+## Atualização visual: plano de fundo natureza
+- Fundo ilustrado de bosque ensolarado aplicado à interface principal e às telas de prática.
+- Cartões com superfície translúcida e desfoque discreto, preservando contraste e legibilidade.
+- Cabeçalho e navegação inferior harmonizados em tons de verde-floresta.
+- Tema escuro recebe sobreposição mais escura.
+- Novo asset local `fundo-natureza.webp` incluído no pacote e no cache do service worker (v12-natureza).
+- JavaScript e referências locais verificados estaticamente; aparência e desempenho ainda precisam de validação no Android real.
