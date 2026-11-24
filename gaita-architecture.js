@@ -16,7 +16,23 @@
       competencies: {}, reviews: {}, attempts: [], recommendations: [],
       cloud: { status: 'not_configured', lastSyncAt: null }
     }, s.learning || {});
+    s.holeCals = Object.assign({}, s.holeCals || {});
     return s;
+  }
+
+  function calibrationCents(state, target) {
+    if (!target || !Number.isInteger(target.h) || !['b', 'd'].includes(target.dir)) return 0;
+    const specific = state && state.holeCals && state.holeCals[target.h + target.dir];
+    if (specific != null && Number.isFinite(Number(specific))) return Number(specific);
+    const legacy = state && state.cals && state.cals[target.m];
+    return legacy != null && Number.isFinite(Number(legacy)) ? Number(legacy) : 0;
+  }
+
+  function matchesNote(state, target, observedMidi) {
+    if (!target || !Number.isFinite(observedMidi) || !Number.isFinite(target.m)) return false;
+    let difference = observedMidi - calibrationCents(state, target) / 100 - target.m;
+    if (state && state.oct === true) difference = ((difference % 12) + 18) % 12 - 6;
+    return Math.abs(difference * 100) <= ((state && Number(state.tol)) || 50);
   }
 
   function evaluatePlacement(scores) {
@@ -59,5 +75,15 @@
     return s;
   }
 
-  global.GaitaArchitecture = Object.freeze({ VERSION, migrateState, evaluatePlacement, competencyStatus, nextReview, canUnlock, recordAttempt });
+  global.GaitaArchitecture = Object.freeze({
+    VERSION,
+    migrateState,
+    calibrationCents,
+    matchesNote,
+    evaluatePlacement,
+    competencyStatus,
+    nextReview,
+    canUnlock,
+    recordAttempt
+  });
 })(window);

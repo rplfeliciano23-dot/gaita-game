@@ -5,8 +5,8 @@ Este pacote reúne a versão mais recente do aplicativo e os arquivos de suporte
 CONTEÚDO INCLUÍDO
 - index.html: interface mais recente, tema natural, mascote, navegação com histórico, aulas, músicas, importação/exclusão, favoritos, recentes, backup/restauração, afinador com mapa/calibração e central de ajuda.
 - gaita-architecture.js: fundação de dados pedagógicos e migração não destrutiva do progresso.
-- sw.js: cache PWA atualizado para v10.
-- manifest.webmanifest, ícones, textura-tronco.svg e mascote-bem-te-vi.png.
+- sw.js: cache PWA atualizado para v14.
+- manifest.webmanifest, ícones, textura-tronco.svg, artes do mascote e fundo-natureza.jpg.
 - supabase-schema.sql e cloud-config.example.js: preparação opcional para nuvem.
 - documentação técnica e plano de implementação.
 
@@ -16,14 +16,18 @@ INSTALAÇÃO
 3. Substitua os arquivos correspondentes na raiz do projeto hospedado. Não coloque os arquivos dentro de uma subpasta se o projeto atual publica a partir da raiz.
 4. Mantenha todos os arquivos deste pacote juntos, na mesma raiz.
 5. Publique no mesmo endereço HTTPS usado pelo PWA.
-6. Feche e reabra o app. Se o Android mantiver uma versão antiga, atualize a página e aguarde o service worker v10 assumir o controle.
+6. Feche e reabra o app. Se o Android mantiver uma versão antiga, atualize a página e aguarde o service worker v14 assumir o controle.
+
+ANDROID
+- Este pacote é um PWA, não um APK. Publique em HTTPS e abra a URL no Chrome para Android; use “Instalar app” quando aparecer ou o menu do navegador > “Instalar app/Adicionar à tela inicial”.
+- Não há projeto Gradle nem assinatura APK nesta entrega. Instalação, permissão de microfone e comportamento em WebView precisam ser testados no aparelho de destino.
 
 DADOS
 - O progresso continua salvo localmente no aparelho. Use o recurso de backup antes de trocar de aparelho ou limpar os dados do navegador.
 - A nuvem ainda NÃO está ativa. Para ativá-la, é necessário criar um projeto Supabase, executar supabase-schema.sql, copiar cloud-config.example.js para cloud-config.js e inserir URL e chave pública do projeto. Nunca coloque service_role no frontend. O fluxo de autenticação/sincronização precisa ser integrado e testado antes de prometer sincronização entre aparelhos.
 
 ÁUDIO REAL DE GAITA
-- A demonstração musical ainda usa síntese Web Audio, não gravações reais de palhetas. O pacote não inclui samples reais licenciados por nota, sopro/aspiração e técnica. Não seria correto chamar o som atual de gravação real. Para chegar ao timbre autêntico, é preciso incorporar uma biblioteca de samples gravados/licenciados e mapear as notas.
+- A demonstração tenta baixar algumas notas-âncora gravadas da VCSL e transpô-las; se rede/CORS/arquivo falhar, usa síntese Web Audio. Não existem 20 gravações independentes por furo/direção, e o pacote não inclui os samples. Portanto, o áudio autêntico completo/offline ainda não está concluído.
 
 LIMITES IMPORTANTES
 - O afinador e a calibração usam microfone e precisam ser testados em aparelhos reais, com diferentes gaitas e ruído ambiente.
@@ -31,6 +35,6 @@ LIMITES IMPORTANTES
 - Comunidade, rankings online, painel administrativo e sincronização real dependem de backend, regras de privacidade, moderação e credenciais/serviços externos. Não estão ativos só por estarem documentados.
 
 VALIDAÇÃO REALIZADA NESTA ENTREGA
-- JavaScript embutido no index.html validado com node --check.
-- Estrutura do ZIP e presença dos arquivos referenciados verificadas.
+- JavaScript embutido, módulo pedagógico e service worker validados com node --check; testes de calibração e oitavas em `node --test tests/gaita-architecture.test.js`.
+- Manifesto PWA em JSON válido e referências locais do fundo atualizadas.
 - Não foi possível validar o comportamento em WebView/Android real nesta sessão. Faça o teste funcional no aparelho antes de substituir a versão publicada em definitivo.

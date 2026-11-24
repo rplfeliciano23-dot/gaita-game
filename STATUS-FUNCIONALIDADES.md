@@ -2,10 +2,10 @@
 
 ## Incluído no pacote
 - Interface PWA, identidade visual e mascote Bem-te-vi.
-- Navegação por abas e tratamento de voltar via histórico.
+- Navegação por abas e telas modais com histórico; retorno ao estado raiz agora aponta para Início (ainda falta validação em Android real).
 - Aulas, exercícios, músicas e demonstrações.
 - Importação de músicas e remoção de músicas importadas com confirmação.
-- Favoritos, filtro de favoritas, recentes e backup/restauração dos dados compatíveis.
+- Favoritos, filtro de favoritas, recentes (limite 20) e backup/restauração do estado e configurações locais.
 - Afinador com microfone, mapa de 20 posições (10 sopros e 10 aspirações), calibração individual e ajuda.
 - Progresso/XP, rotina e desafios já presentes na aplicação.
 - Fundação JavaScript para estrutura pedagógica versionada e migração não destrutiva.
@@ -23,6 +23,13 @@
 
 A interface não deve apresentar como concluído nenhum item que esteja apenas preparado ou documentado.
 
+## Limitações de plataforma e validação
+- Este repositório entrega um PWA; não contém projeto Android nativo, APK, configuração Gradle ou testes de WebView.
+- Nenhum teste com gaita/microfone reais nem em telefone Android foi executado neste ambiente.
+- A calibração agora possui chave por furo/direção para novas correções. Dados antigos indexados por MIDI são preservados como fallback até uma calibração específica substituir a entrada para aquela posição.
+- A comparação de oitavas é estrita por padrão; a opção permissiva exige ativação explícita.
+- Backup foi ampliado para incluir o estado completo e a restauração exige confirmação; formatos antigos continuam aceitos.
+
 
 ## Áudio de demonstração com samples reais (em integração)
 - Motor preparado para carregar notas-âncora da gaita Hohner Special 20 em Dó, da biblioteca VCSL (CC0), diretamente do repositório público.
@@ -37,9 +44,9 @@ A interface não deve apresentar como concluído nenhum item que esteja apenas p
 - Cartões com superfície translúcida e desfoque discreto, preservando contraste e legibilidade.
 - Cabeçalho e navegação inferior harmonizados em tons de verde-floresta.
 - Tema escuro recebe sobreposição mais escura.
-- Novo asset local `fundo-natureza.webp` incluído no pacote e no cache do service worker (v12-natureza).
+- Asset local `fundo-natureza.jpg` identificado pelo formato JPEG e incluído no cache do service worker v14.
 - JavaScript e referências locais verificados estaticamente; aparência e desempenho ainda precisam de validação no Android real.
 
 ## Atualização visual
 - Regulagem da intensidade do plano de fundo (0% a 100%), salva localmente e incluída no backup; padrão 70%.
-- Imagem de fundo do bosque incluída localmente em `fundo-natureza.webp` (não depende de URL externa).
+- Imagem de fundo do bosque incluída localmente em `fundo-natureza.jpg` (não depende de URL externa).
