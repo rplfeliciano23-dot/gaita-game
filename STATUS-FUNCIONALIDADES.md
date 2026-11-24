@@ -22,3 +22,11 @@
 - Treinamento auditivo avançado e comparação de gravações: precisam de fluxos dedicados e critérios pedagógicos.
 
 A interface não deve apresentar como concluído nenhum item que esteja apenas preparado ou documentado.
+
+
+## Áudio de demonstração com samples reais (em integração)
+- Motor preparado para carregar notas-âncora da gaita Hohner Special 20 em Dó, da biblioteca VCSL (CC0), diretamente do repositório público.
+- A demonstração tenta usar gravações reais transpostas para a altura de cada nota; se a rede, CORS ou o arquivo falhar, usa o sintetizador anterior como fallback.
+- As gravações disponíveis não são 20 takes separados por furo e direção. Sopro/aspiração continuam indicados na tablatura, mas compartilham as notas-âncora disponíveis.
+- Ainda depende de conexão para baixar os samples na primeira utilização. Não declarar áudio real offline ou samples incorporados no pacote.
+- Não validado em aparelho Android/WebView real nesta etapa.

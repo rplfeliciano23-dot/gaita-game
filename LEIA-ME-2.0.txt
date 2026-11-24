@@ -34,3 +34,6 @@ VALIDAÇÃO REALIZADA NESTA ENTREGA
 - JavaScript embutido no index.html validado com node --check.
 - Estrutura do ZIP e presença dos arquivos referenciados verificadas.
 - Não foi possível validar o comportamento em WebView/Android real nesta sessão. Faça o teste funcional no aparelho antes de substituir a versão publicada em definitivo.
+
+
+ÁUDIO: a demonstração musical agora tenta carregar samples reais VCSL/CC0 da gaita Hohner Special 20 em Dó, via internet, e transpõe as notas-âncora. Se os arquivos não carregarem, o sintetizador anterior assume automaticamente. Os samples não distinguem individualmente os 10 furos nem sopro/aspiração; não estão embutidos/offline no pacote.

@@ -770,7 +770,7 @@ $('tKey').onclick=()=>{const R=(performance.now()-tHeldT<4000)?tHeldRaw:null;
  $('tKeyMsg').innerHTML='O furo 4 soprado soou como <b>'+det+'</b>, e o tom escolhido é <b>'+cu+'</b>. O que fazer?<div class="row" style="margin-top:8px"><button class="go" id="kKeep">Manter '+cu+' e ajustar ao som</button><button id="kChg">Mudar para '+det+'</button></div>';
  $('kKeep').onclick=()=>fitKey(R);
  $('kChg').onclick=()=>{S.key=det;S.g=0;S.cals={};save();$('key').value=det;refresh();renderChart();updCal();$('tKeyMsg').textContent='Tom alterado para '+det+'.'}};
-let advT=0,prevN=null,needRel=false,relT=0,lastBeat=-99,demoO=[],demoTO=[];
+let advT=0,prevN=null,needRel=false,relT=0,lastBeat=-99,demoO=[],demoTO=[],demoGeneration=0;
 function waitStep(n,st,dt,now){
  const m=matches(n,st),since=now-advT,need=Math.max(350,Math.min(2000,n.d*60000/$('bpm').value*0.6));
  if(needRel){if(!m)relT+=dt;if(relT>=120){needRel=false;hold=0}else{$('hbar').style.width='0%';return}}
@@ -781,8 +781,37 @@ function waitStep(n,st,dt,now){
  if(hold>=need){setHit(n);prevN=n;cur++;hold=0;wrong=0;advT=now;relT=0;const nx=notes[cur];needRel=!!(nx&&matches(nx,n.m));$('hbar').style.width='0%';update('okf');if(cur>endIdx()){if(isPractice())loopReset();else setTimeout(finish,400)}}
 }
 function tick(acc){if(!actx)return;const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=acc?1500:1000;g.gain.value=.12;o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+.04)}
-function stopDemo(){demoO.forEach(o=>{try{o.stop()}catch(e){}});demoTO.forEach(clearTimeout);demoO=[];demoTO=[]}
-/* ===== voz de gaita (síntese) ===== */
+function stopDemo(){demoGeneration++;demoO.forEach(o=>{try{o.stop()}catch(e){}});demoTO.forEach(clearTimeout);demoO=[];demoTO=[]}
+/* ===== samples reais VCSL (CC0): Hohner Special 20 em Dó =====
+   As gravações disponíveis são notas-âncora, não 20 takes separados por furo/direção.
+   A direção continua indicada pela tablatura; o sample é transposto para a altura pedida. */
+const HARM_SAMPLE_BASE='https://raw.githubusercontent.com/sgossner/VCSL/master/Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Normal/';
+const HARM_SAMPLE_NOTES={
+  48:'Hohner-Special20_Normal_C3.wav', 52:'Hohner-Special20_Normal_E3.wav',
+  60:'Hohner-Special20_Normal_C4.wav', 64:'Hohner-Special20_Normal_E4.wav',
+  67:'Hohner-Special20_Normal_G4.wav', 72:'Hohner-Special20_Normal_C5.wav',
+  76:'Hohner-Special20_Normal_E5.wav', 79:'Hohner-Special20_Normal_G5.wav',
+  84:'Hohner-Special20_Normal_C6.wav'
+};
+const harmSampleBuffers=new Map();let harmSamplesAvailable=null;
+function closestHarmSample(midi){const ks=Object.keys(HARM_SAMPLE_NOTES).map(Number);return ks.reduce((a,b)=>Math.abs(b-midi)<Math.abs(a-midi)?b:a,ks[0])}
+async function loadHarmSample(midi){
+ const a=ac(),anchor=closestHarmSample(midi);if(harmSampleBuffers.has(anchor))return harmSampleBuffers.get(anchor);
+ if(!harmSampleBuffers.has(anchor)){
+  const task=fetch(HARM_SAMPLE_BASE+encodeURIComponent(HARM_SAMPLE_NOTES[anchor])).then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.arrayBuffer()}).then(b=>a.decodeAudioData(b));
+  harmSampleBuffers.set(anchor,task);
+ }
+ try{const b=await harmSampleBuffers.get(anchor);harmSampleBuffers.set(anchor,b);return b}catch(e){harmSampleBuffers.delete(anchor);throw e}
+}
+async function preloadHarmSamples(midiList){const unique=[...new Set(midiList.map(closestHarmSample))];const results=await Promise.allSettled(unique.map(m=>loadHarmSample(m)));harmSamplesAvailable=results.some(x=>x.status==='fulfilled');return harmSamplesAvailable}
+function playRealHarmNote(midi,t,dur,vel){
+ const a=ac(),anchor=closestHarmSample(midi),buffer=harmSampleBuffers.get(anchor);if(!buffer||typeof buffer.then==='function')return false;
+ const src=a.createBufferSource(),gain=a.createGain();src.buffer=buffer;src.playbackRate.setValueAtTime(Math.pow(2,(midi-anchor)/12),t);
+ const peak=(vel||1)*.72,attack=Math.min(.035,dur*.12),release=Math.min(.11,dur*.35),end=t+Math.max(.12,dur);
+ gain.gain.setValueAtTime(.0001,t);gain.gain.linearRampToValueAtTime(peak,t+attack);gain.gain.setValueAtTime(peak,Math.max(t+attack,end-release));gain.gain.linearRampToValueAtTime(.0001,end);
+ src.connect(gain);gain.connect(a.destination);src.start(t);src.stop(end+.02);demoO.push(src);return true;
+}
+/* ===== voz de gaita (síntese de segurança/compatibilidade) ===== */
 let hBus=null;
 function hInit(){
  const a=ac();if(hBus&&hBus.ctx===a)return hBus;
@@ -817,11 +846,14 @@ function harmNote(freq,t,dur,dir,vel,dest){
  ns.connect(bp);bp.connect(ng);ng.connect(to);ns.start(t,Math.random());ns.stop(end+.05);voices.push(ns);
  return voices;
 }
-function playDemo(){
- if(running||!notes.length)return;const a=ac();hInit();
- stopDemo();const spb=60/$('bpm').value,t=a.currentTime+.2;
+async function playDemo(){
+ if(running||!notes.length)return;const a=ac();hInit();stopDemo();const generation=demoGeneration;
+ const spb=60/$('bpm').value,t=a.currentTime+.2;
+ // Carrega as notas-âncora antes de iniciar para evitar atrasos entre notas.
+ await preloadHarmSamples(notes.map(n=>n.m));
+ if(generation!==demoGeneration||!notes.length)return;
  notes.forEach((n,i)=>{const s=t+n.t*spb+(Math.random()-.5)*.016,d=Math.max(.15,n.d*spb*.93);
-  harmNote(440*Math.pow(2,(n.m-69)/12),s,d,n.dir,1).forEach(v=>demoO.push(v));
+  if(!playRealHarmNote(n.m,s,d,1))harmNote(440*Math.pow(2,(n.m-69)/12),s,d,n.dir,1).forEach(v=>demoO.push(v));
   demoTO.push(setTimeout(()=>{if(ctx&&ctx.ear)return;cur=i;update();setBig(n)},Math.max(0,(s-a.currentTime)*1000)))});
  const la=notes[notes.length-1];demoTO.push(setTimeout(()=>{cur=0;update();setBigText('Aperte Começar')},(t+(la.t+la.d)*spb-a.currentTime)*1000+400));
 }
