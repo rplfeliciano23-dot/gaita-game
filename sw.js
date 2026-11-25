@@ -1,7 +1,7 @@
-// Gaita Game | Bem-te-vi interativo v15
+// Gaita Game | Bem-te-vi interativo v16
 // Cache isolado para não apagar nem devolver arquivos de outros aplicativos no mesmo domínio.
 const CACHE_PREFIX = 'gaita-bem-te-vi-';
-const CACHE = CACHE_PREFIX + 'v15';
+const CACHE = CACHE_PREFIX + 'v16';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './fundo-natureza.webp', './mascote-bem-te-vi.png', './mascote-bem-te-vi-tocando.png',

@@ -452,7 +452,10 @@ nav button.act{color:#ffe18a}
  <div class="card"><b>Ajustar ao som da minha gaita</b><p class="mut">Escolha o tom da gaita em Ajustes. Depois sopre o furo 4 com firmeza e toque no botão. O app mantém o tom escolhido e aprende o som da sua gaita.</p><button class="go" id="tKey">🎯 Ajustar ao som da minha gaita</button><div class="mut" id="tKeyMsg" style="margin-top:6px"></div></div>
  <div class="card"><b>1. Toque e escolha no mapa</b><p class="mut">Ligue o microfone, toque uma nota firme na sua gaita e selecione no mapa o furo e a direção que você acabou de tocar. O app compara o som captado com a nota que você informou.</p>
   <div id="tSelected" class="ban" style="background:var(--bg);border:1px solid var(--bd);color:var(--tx)">Nenhuma posição selecionada. Escolha uma no mapa abaixo.</div>
-  <div class="row"><button class="go" id="tCal">🎯 Calibrar nota selecionada</button><button id="tReset1">Zerar esta calibração</button><button id="tReset">Zerar todas</button></div><div class="mut" id="tCalv"></div>
+  <div class="row"><button class="go" id="tCal">🎯 Calibrar nota selecionada</button><button id="tReset1">Zerar esta calibração</button><button id="tReset">Zerar todas</button></div>
+  <div class="row" style="margin-top:10px;align-items:stretch"><button class="go" id="tSaveCal" style="flex:1;min-width:190px">💾 Salvar calibração completa</button><button id="tRestoreCal" style="flex:1;min-width:165px" disabled>↩ Restaurar salva</button></div>
+  <div class="mut" id="tSavedCalStatus" role="status" aria-live="polite" style="margin-top:7px"></div>
+  <div class="mut" id="tCalv"></div>
  </div>
  <div class="card"><b>2. Mapa de notas da sua gaita</b><p class="mut">Toque em qualquer nota do mapa para dizer ao afinador qual furo está tocando. Azul = soprar. Laranja = aspirar. A seleção fica destacada.</p><div id="chart" style="overflow-x:auto;margin-top:8px"></div><div class="legend"><span><b style="background:var(--blow)"></b>Soprar</span><span><b style="background:var(--draw)"></b>Aspirar</span></div></div>
  <div class="card"><b>Como calibrar corretamente</b><ol class="mut" style="padding-left:20px;line-height:1.55"><li>Permita o acesso ao microfone.</li><li>Toque uma nota limpa e estável, sem soprar com força excessiva.</li><li>Toque no furo e na direção correspondentes no mapa.</li><li>Com a nota ainda sendo detectada, pressione “Calibrar nota selecionada”.</li><li>Repita para outras notas que o afinador esteja lendo incorretamente.</li></ol><p class="mut">A calibração individual corrige pequenos desvios de cada nota. Se todas as notas estiverem deslocadas, use também “Ajustar ao som da minha gaita”.</p></div>
@@ -887,9 +890,45 @@ function resetPitchSmoothing(){
 function selectTunerNote(hole,dir){selectedTunerHole=hole;selectedTunerDir=dir;selectedTunerMidi=(dir==='b'?BLOW[hole-1]:DRAW[hole-1])+KEY();
  $('tSelected').textContent='Selecionada: furo '+hole+' · '+(dir==='b'?'soprando ↑':'aspirando ↓')+' · '+nm(selectedTunerMidi)+'. Agora toque essa nota e calibre enquanto o som estiver sendo detectado.';
  document.querySelectorAll('#chart .tMap').forEach(b=>b.classList.toggle('sel',+b.dataset.hole===hole&&b.dataset.dir===dir));}
-function updCal(k,just){const c=S.cals||{},ks=Object.keys(c).sort((a,b)=>a-b);$('tCalv').textContent=(S.g?'Ajuste geral da gaita: '+(S.g>0?'+':'')+S.g+' cents. ':'')+(just&&k!=null?'Nota '+nm(k)+' calibrada. ':'')+(ks.length?ks.length+' nota(s) com calibração individual: '+ks.map(x=>nm(+x)).join(', '):'Nenhuma nota calibrada individualmente ainda.')}
+const CALIBRATION_BACKUP_KEY='gaita.calibration.saved.v1';
+function sanitizeCalibrationSnapshot(value){
+ if(!isRecord(value)||value.app!=='gaita-game-calibration'||value.version!==1||!Object.prototype.hasOwnProperty.call(KEYS,value.key)||!isRecord(value.cals))return null;
+ const cals={};
+ Object.entries(value.cals).forEach(([midi,cents])=>{if(Number.isInteger(Number(midi))&&Number(midi)>=0&&Number(midi)<=127&&Number.isFinite(Number(cents)))cals[midi]=Math.max(-150,Math.min(150,Math.round(Number(cents))))});
+ const globalCents=Number(value.g);
+ return {app:'gaita-game-calibration',version:1,key:value.key,g:Number.isFinite(globalCents)?Math.max(-600,Math.min(600,globalCents)):0,cals,savedAt:typeof value.savedAt==='string'&&Number.isFinite(Date.parse(value.savedAt))?value.savedAt:''};
+}
+function readSavedCalibration(){try{return sanitizeCalibrationSnapshot(JSON.parse(localStorage.getItem(CALIBRATION_BACKUP_KEY)||'null'))}catch(e){return null}}
+function currentCalibrationSnapshot(){
+ const cals={};Object.entries(S.cals||{}).sort((a,b)=>Number(a[0])-Number(b[0])).forEach(([midi,cents])=>{if(Number.isInteger(Number(midi))&&Number(midi)>=0&&Number(midi)<=127&&Number.isFinite(Number(cents)))cals[midi]=Math.max(-150,Math.min(150,Math.round(Number(cents))))});
+ return {app:'gaita-game-calibration',version:1,key:S.key,g:Number.isFinite(Number(S.g))?Math.max(-600,Math.min(600,Number(S.g))):0,cals,savedAt:new Date().toISOString()};
+}
+function calibrationSignature(value){const cals={};Object.entries(value.cals||{}).sort((a,b)=>Number(a[0])-Number(b[0])).forEach(([k,v])=>cals[k]=v);return JSON.stringify({key:value.key,g:value.g,cals})}
+function updateCalibrationSaveUI(){
+ const status=$('tSavedCalStatus'),restore=$('tRestoreCal');if(!status||!restore)return;
+ const saved=readSavedCalibration();restore.disabled=!saved;
+ if(!saved){status.textContent='A calibração ativa é salva automaticamente pelo aplicativo. Use este botão para criar uma cópia de segurança separada, que poderá ser restaurada mesmo depois de zerar a calibração atual.';return}
+ const date=new Date(saved.savedAt),when=saved.savedAt?new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'short'}).format(date):'data não informada';
+ const count=Object.keys(saved.cals).length,changed=calibrationSignature(currentCalibrationSnapshot())!==calibrationSignature(saved);
+ status.textContent='Cópia salva neste aparelho: '+when+' · tom '+saved.key+' · '+count+' nota(s) individuais'+(saved.g?' · ajuste geral '+(saved.g>0?'+':'')+saved.g+' cents':'')+'.'+(changed?' A calibração atual tem alterações posteriores.':' A calibração atual corresponde à cópia salva.');
+}
+function saveCalibrationSnapshot(){
+ const snapshot=currentCalibrationSnapshot();
+ if(!Object.keys(snapshot.cals).length&&snapshot.g===0){$('tSavedCalStatus').textContent='Ainda não há correções de afinação para salvar. Calibre as notas ou ajuste ao som da sua gaita primeiro.';return}
+ try{localStorage.setItem(CALIBRATION_BACKUP_KEY,JSON.stringify(snapshot));updateCalibrationSaveUI();toast('Cópia da calibração salva neste aparelho!')}
+ catch(e){$('tSavedCalStatus').textContent='Não foi possível salvar a cópia. Verifique o espaço disponível no armazenamento do navegador.'}
+}
+function restoreSavedCalibration(){
+ const saved=readSavedCalibration();if(!saved){toast('Ainda não existe uma calibração salva.');updateCalibrationSaveUI();return}
+ const count=Object.keys(saved.cals).length;
+ if(!confirm('Restaurar a calibração salva de '+saved.key+' com '+count+' nota(s) individuais? A calibração atual será substituída.'))return;
+ S.key=saved.key;S.g=saved.g;S.cals=Object.assign({},saved.cals);save();resetPitchSmoothing();$('key').value=S.key;renderChart();updCal();refresh();toast('Calibração salva restaurada!');
+}
+function updCal(k,just){const c=S.cals||{},ks=Object.keys(c).sort((a,b)=>a-b);$('tCalv').textContent=(S.g?'Ajuste geral da gaita: '+(S.g>0?'+':'')+S.g+' cents. ':'')+(just&&k!=null?'Nota '+nm(k)+' calibrada. ':'')+(ks.length?ks.length+' nota(s) com calibração individual: '+ks.map(x=>nm(+x)).join(', '):'Nenhuma nota calibrada individualmente ainda.');updateCalibrationSaveUI()}
 $('tCal').onclick=()=>{if(selectedTunerMidi==null){$('tCalv').textContent='Primeiro selecione no mapa o furo e a direção que está tocando.';return}const raw=(performance.now()-tHeldT<4000)?tHeldRaw:null;if(raw==null){$('tCalv').textContent='Não estou detectando uma nota estável. Toque a nota selecionada e pressione calibrar logo em seguida.';return}const cents=(raw-(S.g||0)/100-selectedTunerMidi)*100;if(Math.abs(cents)>150){$('tCalv').textContent='A nota detectada está muito distante da nota selecionada ('+Math.round(cents)+' cents). Confira o furo e se está soprando ou aspirando corretamente.';return}S.cals=S.cals||{};S.cals[selectedTunerMidi]=Math.max(-150,Math.min(150,Math.round(cents)));resetPitchSmoothing();save();updCal(selectedTunerMidi,true);$('tSelected').textContent='Calibração aplicada em '+nm(selectedTunerMidi)+' ('+(cents>0?'+':'')+Math.round(cents)+' cents medidos).';};
-$('tReset').onclick=()=>{S.cals={};S.cal=0;S.g=0;resetPitchSmoothing();save();updCal()};
+$('tSaveCal').onclick=saveCalibrationSnapshot;
+$('tRestoreCal').onclick=restoreSavedCalibration;
+$('tReset').onclick=()=>{S.cals={};S.cal=0;S.g=0;resetPitchSmoothing();save();updCal();$('tCalv').textContent='Calibração atual zerada. A cópia salva permanece disponível para restauração.'};
 $('tReset1').onclick=()=>{if(selectedTunerMidi==null){$('tCalv').textContent='Selecione primeiro uma nota no mapa.';return}if(S.cals)delete S.cals[selectedTunerMidi];resetPitchSmoothing();save();updCal();$('tSelected').textContent='Calibração individual removida de '+nm(selectedTunerMidi)+'.'};
 $('oct').checked=S.oct!==false;$('oct').onchange=()=>{S.oct=$('oct').checked;save()};
 $('tol').value=S.tol||50;$('tolv').textContent=S.tol||50;$('tol').oninput=()=>{S.tol=+$('tol').value;$('tolv').textContent=S.tol;save()};

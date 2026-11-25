@@ -1,0 +1,65 @@
+GAITA GAME 2.0 | BEM-TE-VI INTERATIVO v15
+Pacote de correções e estabilidade baseado no pacote v13 mais recente enviado.
+
+O QUE FOI CORRIGIDO / MELHORADO
+- Correção do cálculo da calibração individual para não acumular o mesmo desvio toda vez que a nota é recalibrada.
+- A calibração da nota selecionada pode ser reaproveitada nas atividades práticas quando a nota detectada corresponde à nota esperada do exercício.
+- Limpeza dos filtros de detecção ao iniciar/encerrar exercícios e ao remover calibrações.
+- Ajuste do retorno de navegação para voltar à tela inicial quando o histórico chega à raiz.
+- Backup versionado com mais campos de progresso, rotina, preferências, áudio e calibração; restauração também aceita o formato antigo.
+- Proteção dos títulos de músicas importadas antes de inseri-los na interface.
+- Limite de 20 MB por arquivo e nome de música limitado a 80 caracteres na importação.
+- Validação mais rígida do cabeçalho, divisão temporal e limites de blocos dos arquivos MIDI.
+- Fechamento do AudioContext mesmo quando a decodificação de áudio falha.
+- Datas da sequência e da rotina diária calculadas no calendário local do aparelho.
+- Histórico local das últimas tentativas práticas e teóricas no boletim de progresso.
+- Encerramento das faixas do microfone quando a página é fechada.
+- Service worker com cache v15 isolado, sem excluir caches de outros aplicativos no mesmo domínio.
+- Mantidas as imagens oficiais do Bem-te-vi e o fundo fornecido. As artes do mascote não foram redesenhadas nesta atualização.
+
+CONTEÚDO DO PACOTE
+- index.html: aplicativo principal.
+- gaita-architecture.js: migração de estado e registro local de tentativas.
+- sw.js: cache/offline v15.
+- manifest.webmanifest: metadados PWA.
+- mascote-bem-te-vi.png e mascote-bem-te-vi-tocando.png: poses do Bem-te-vi.
+- fundo-natureza.webp, textura-tronco.svg e ícones 192/512.
+- cloud-config.example.js: somente exemplo de configuração Supabase, não é uma conexão ativa.
+- ATUALIZACOES-AFINADOR-AJUDA.md: notas técnicas da atualização.
+- RELATORIO-ANALISE-E-CORRECOES-v15.md: auditoria, limites conhecidos e testes.
+
+COMO ATUALIZAR O PWA EXISTENTE
+1. Faça uma cópia de segurança da pasta atual publicada.
+2. Extraia todos os arquivos deste ZIP.
+3. Envie/substitua os arquivos na mesma raiz do projeto publicado, preservando os nomes e pastas.
+4. Não apague os dados do navegador nem limpe o localStorage: o aplicativo mantém e migra o progresso existente.
+5. Publique no mesmo endereço HTTPS utilizado pelo aplicativo.
+6. Feche o aplicativo instalado, abra novamente e aguarde a atualização do service worker. Se a tela antiga continuar, feche todas as abas do endereço e abra novamente.
+7. Gere um backup pelo menu Ajustes antes de testar a restauração.
+
+IMPORTANTE SOBRE O FORMATO
+O material recebido é um PWA (aplicativo web instalável), não um projeto Android nativo. Este ZIP atualiza os arquivos do PWA no servidor. Ele não é um APK e não contém projeto Gradle/Android Studio para gerar APK diretamente.
+
+TESTES E LIMITAÇÕES
+- JavaScript embutido, gaita-architecture.js e sw.js verificados com node --check.
+- manifest.webmanifest validado como JSON.
+- Leitor MIDI testado com MIDI mínimo válido e cabeçalho inválido.
+- Integridade do ZIP verificada.
+- A validação acústica e de navegação precisa ser concluída em aparelho Android real. O microfone, ruído ambiente, modelo da gaita e histórico de navegação do navegador não podem ser simulados com fidelidade suficiente aqui.
+- O arquivo cloud-config.example.js continua sendo um modelo com valores fictícios. Não há sincronização em nuvem ativa, comunidade/ranking online ou professor de IA conectado nesta versão.
+
+
+CORREÇÃO ESPECÍFICA v15 — SINCRONIZAÇÃO AFINADOR/ATIVIDADES
+- O afinador foi preservado: não foram alterados o método de leitura, a tela, os controles, nem a rotina de calibração do afinador.
+- O motor de atividades agora informa explicitamente ao detector qual nota está sendo solicitada naquele instante.
+- O detector consulta as mesmas configurações persistidas pelo afinador (S.g e S.cals) para aplicar primeiro o ajuste geral e depois a calibração individual da nota-alvo.
+- A seleção de calibração na atividade respeita a configuração de oitavas e só usa o ajuste individual quando a nota detectada está dentro da faixa plausível da calibração. Isso evita que a calibração de uma nota seja aplicada a outra nota diferente.
+- Os modos Aprender (espera) e Ritmo (acompanhar) foram ligados ao respectivo alvo musical do exercício.
+
+
+CORREÇÃO ESPECÍFICA v15 — SINCRONIZAÇÃO AFINADOR/ATIVIDADES
+- O afinador foi preservado: não foram alterados o método de leitura, a tela, os controles, nem a rotina de calibração do afinador.
+- O motor de atividades agora informa explicitamente ao detector qual nota está sendo solicitada naquele instante.
+- O detector consulta as mesmas configurações persistidas pelo afinador (S.g e S.cals) para aplicar primeiro o ajuste geral e depois a calibração individual da nota-alvo.
+- A seleção da calibração individual respeita a configuração de oitavas e só usa a correção quando a leitura está dentro da faixa plausível de até 175 cents da nota solicitada. Isso evita aplicar a calibração de uma nota a outra nota diferente.
+- Os modos Aprender (espera) e Ritmo (acompanhar) foram ligados ao alvo musical correspondente do exercício.
