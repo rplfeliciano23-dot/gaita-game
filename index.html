@@ -471,12 +471,46 @@ nav button.act{color:#ffe18a}
 <script src="./gaita-architecture.js"></script>
 <script>
 const $=id=>document.getElementById(id);
+const escapeHTML=value=>String(value??'').replace(/[&<>\"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch]));
+const isRecord=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const BLOW=[60,64,67,72,76,79,84,88,91,96],DRAW=[62,67,71,74,77,81,83,86,89,93];
 const NN=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],nm=m=>NN[m%12]+(Math.floor(m/12)-1);
 const KEYS={C:0,Db:1,D:2,Eb:3,E:4,F:5,'F#':6,G:7,Ab:8,A:9,Bb:10,B:11};
 let S={xp:0,streak:0,last:'',done:{},key:'C',imp:[],fav:{},recent:[]};
-try{Object.assign(S,JSON.parse(localStorage.getItem('gaita')||'{}'))}catch(e){}
-if(window.GaitaArchitecture) S=window.GaitaArchitecture.migrateState(S);
+function normalizeState(value){
+ const source=isRecord(value)?value:{};
+ const state=Object.assign({xp:0,streak:0,last:'',done:{},key:'C',imp:[],fav:{},recent:[]},source);
+ if(!Object.prototype.hasOwnProperty.call(KEYS,state.key))state.key='C';
+ if(!isRecord(state.done))state.done={};
+ if(!isRecord(state.best))state.best={};
+ if(!isRecord(state.fav))state.fav={};
+ if(!isRecord(state.cals))state.cals={};
+ if(!isRecord(state.th))state.th={};
+ if(!isRecord(state.chk))state.chk={};
+ if(!isRecord(state.skills))state.skills={};
+ if(!isRecord(state.cals))state.cals={};
+ state.cals=Object.fromEntries(Object.entries(state.cals).filter(([k,v])=>Number.isInteger(Number(k))&&Number(k)>=0&&Number(k)<=127&&Number.isFinite(Number(v))).map(([k,v])=>[k,Math.max(-150,Math.min(150,Math.round(Number(v))))]));
+ if(!Array.isArray(state.imp))state.imp=[];
+ state.imp=state.imp.filter(x=>isRecord(x)&&typeof x.t==='string'&&Array.isArray(x.raw)).map(x=>({
+  t:x.t.replace(/\s+/g,' ').trim().slice(0,80)||'Música importada',
+  bpm:Math.max(40,Math.min(140,Math.round(Number(x.bpm)||90))),
+  raw:x.raw.filter(n=>isRecord(n)&&Number.isFinite(Number(n.m))&&Number(n.m)>=0&&Number(n.m)<=127&&Number.isFinite(Number(n.t))&&Number(n.t)>=0&&Number.isFinite(Number(n.d))&&Number(n.d)>0).slice(0,300).map(n=>({m:Math.round(Number(n.m)),t:Number(n.t),d:Number(n.d)}))
+ })).filter(x=>x.raw.length>=3).slice(-40);
+ if(!Array.isArray(state.recent))state.recent=[];
+ state.recent=[...new Set(state.recent.filter(x=>typeof x==='string').map(x=>x.slice(0,80)))].slice(0,20);
+ if(!isRecord(state.rt))state.rt={day:'',done:{},tot:40};
+ if(!isRecord(state.rt.done))state.rt.done={};
+ if(![15,30,40,60].includes(Number(state.rt.tot)))state.rt.tot=40;
+ state.xp=Math.max(0,Number(state.xp)||0);
+ state.streak=Math.max(0,Number(state.streak)||0);
+ state.g=Number.isFinite(Number(state.g))?Math.max(-600,Math.min(600,Number(state.g))):0;
+ state.tol=Number.isFinite(Number(state.tol))?Math.max(25,Math.min(70,Number(state.tol))):50;
+ state.gate=Number.isFinite(Number(state.gate))?Math.max(.001,Math.min(.02,Number(state.gate))):.003;
+ state.bgIntensity=Number.isFinite(Number(state.bgIntensity))?Math.max(0,Math.min(100,Number(state.bgIntensity))):70;
+ if(window.GaitaArchitecture&&typeof window.GaitaArchitecture.migrateState==='function')return window.GaitaArchitecture.migrateState(state);
+ return state;
+}
+try{S=normalizeState(JSON.parse(localStorage.getItem('gaita')||'{}'))}catch(e){S=normalizeState(S)}
 const save=()=>{try{S._meta=S._meta||{};S._meta.updatedAt=new Date().toISOString();localStorage.setItem('gaita',JSON.stringify(S))}catch(e){}};
 const applyBackgroundIntensity=(value)=>{
  const n=Math.max(0,Math.min(100,Number(value)||0));
@@ -609,6 +643,13 @@ function bendCands(m,k,c){[['b',BLOW],['d',DRAW]].forEach(([dr,T])=>{const o=BD[
 const TABS=['home','theory','act','songs','settings'];let curTab='home';
 let navBusy=false,tabTrail=['home'];
 function navPush(kind,extra={}){try{history.pushState({gaita:true,kind,...extra},'')}catch(e){}}
+function setTabFromHistory(t){
+ if(!TABS.includes(t))t='home';
+ const old=TABS.indexOf(curTab),next=TABS.indexOf(t);
+ TABS.forEach(x=>{const el=$('s-'+x);el.classList.remove('inR','inL');el.classList.toggle('act',x===t);$('n-'+x).classList.toggle('act',x===t)});
+ $('s-'+t).classList.add(next>=old?'inR':'inL');curTab=t;
+ $('navInd').style.transform='translateX('+(next*100)+'%)';window.scrollTo(0,0);refresh();
+}
 function show(t,fromPop=false){if(!TABS.includes(t)||t===curTab)return;
  const di=TABS.indexOf(t)-TABS.indexOf(curTab);
  TABS.forEach(x=>{const e=$('s-'+x);e.classList.remove('inR','inL');e.classList.toggle('act',x==t);$('n-'+x).classList.toggle('act',x==t)});
@@ -618,15 +659,16 @@ function show(t,fromPop=false){if(!TABS.includes(t)||t===curTab)return;
 TABS.forEach(x=>$('n-'+x).onclick=()=>show(x));
 history.replaceState({gaita:true,kind:'root',tab:'home'},'');
 window.addEventListener('popstate',e=>{
- const overlays=['res','mh','play','thPlay','tunerPlay','stagePlay','diaryPlay','routinePlay'];
+ const overlays=['mh','res','play','thPlay','tunerPlay','stagePlay','diaryPlay','routinePlay'];
  const active=overlays.find(id=>{const el=$(id);return el&&getComputedStyle(el).display!=='none'});
  if(active){
   if(active==='res'||active==='mh')$(active).style.display='none';
-  else if(active==='play'){stopDemo();running=false;$(active).style.display='none';refresh()}
+  else if(active==='play'){stopDemo();running=false;$('start').textContent='▶ Começar';$(active).style.display='none';refresh()}
   else{$(active).style.display='none';if(active==='thPlay'||active==='stagePlay'||active==='diaryPlay'||active==='routinePlay')refresh()}
   return;
  }
- if(e.state&&e.state.gaita&&e.state.kind==='tab'&&e.state.tab){curTab=e.state.tab;TABS.forEach(x=>{$('s-'+x).classList.toggle('act',x===curTab);$('n-'+x).classList.toggle('act',x===curTab)});$('navInd').style.transform='translateX('+(TABS.indexOf(curTab)*100)+'%)';refresh();return}
+ if(e.state&&e.state.gaita&&e.state.kind==='tab'&&e.state.tab){setTabFromHistory(e.state.tab);return}
+ if(!e.state||!e.state.gaita||e.state.kind==='root'){setTabFromHistory('home');return}
 });
 const unlocked=i=>i==0||i<=(S.unl||0)||S.done[LES[i-1].id];
 function refresh(){
@@ -641,7 +683,7 @@ function refresh(){
    const bs=(S.best||{})['s:'+x.t],row=document.createElement('div');row.className='songrow';
    const b=document.createElement('button');b.className='item songopen';
    const meta=({easy:'Fácil',mid:'Médio',imp:'Importada'})[x.lv]||'';
-   b.innerHTML=`<span class="ic" style="background:var(--blow)">♪</span><span class="stxt"><b>${x.t}</b><small>${meta} · ${x.raw.length} notas${bs?' · '+'★'.repeat(bs.st)+'☆'.repeat(3-bs.st)+' '+Math.round(bs.acc*100)+'%':''}</small></span>`;
+   b.innerHTML=`<span class="ic" style="background:var(--blow)">♪</span><span class="stxt"><b>${escapeHTML(x.t)}</b><small>${meta} · ${x.raw.length} notas${bs?' · '+'★'.repeat(bs.st)+'☆'.repeat(3-bs.st)+' '+Math.round(bs.acc*100)+'%':''}</small></span>`;
    b.onclick=()=>{$('pmode').value='play';openSong(x)};row.appendChild(b);
    const fav=document.createElement('button');fav.className='songtool';fav.type='button';fav.title=S.fav&&S.fav[x.t]?'Remover dos favoritos':'Adicionar aos favoritos';fav.setAttribute('aria-label',fav.title);fav.textContent=S.fav&&S.fav[x.t]?'♥':'♡';fav.style.color=S.fav&&S.fav[x.t]?'var(--bad)':'';
    fav.onclick=()=>{S.fav=S.fav||{};if(S.fav[x.t])delete S.fav[x.t];else S.fav[x.t]=true;save();refresh()};row.appendChild(fav);
@@ -657,7 +699,7 @@ $('cont').onclick=()=>{const na=nextAct();if(na){$('pmode').value='play';na.open
 
 /* mic */
 async function ensureMic(){
-  if(micOn){if(actx.state=='suspended')actx.resume();return true}
+  if(micOn){if(actx.state==='suspended')try{await actx.resume()}catch(e){}return true}
   try{
     actx=actx||new (window.AudioContext||window.webkitAudioContext)();
     const st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
@@ -732,6 +774,7 @@ const setHit=n=>{if(n.s!='bad'){n.s='ok';hits++;vib(20);mHit()}},setBad=n=>{if(n
 $('start').onclick=async()=>{
   if(running){running=false;$('start').textContent='▶ Começar';return}
   if(!(await ensureMic()))return;
+  resetPitchSmoothing();
   if(done||notes.some(n=>n.s!='p')){reopen()}
   mode=$('mode').value;running=true;t0=performance.now()-(isPractice()?notes[loopA()].t*60000/$('bpm').value:0);stopDemo();if(isPractice())cur=loopA();hold=0;wrong=0;lastAct=-1;advT=performance.now();prevN=null;needRel=false;relT=0;lastBeat=-99;$('start').textContent='■ Parar';update();
 };
@@ -743,11 +786,16 @@ function finish(){
   running=false;done=true;$('start').textContent='↻ Repetir';
   const tot=hits+errs,acc=tot?hits/tot:0,st=acc>=.9?3:acc>=.75?2:acc>=.6?1:0;
   const gain=hits*10+(st?20:0);S.xp+=gain;
+  if(window.GaitaArchitecture&&typeof window.GaitaArchitecture.recordAttempt==='function'){
+    const title=ctx.type==='lesson'?LES[ctx.i].t:ctx.type==='work'?WORK[ctx.i].t:ctx.type==='act'?ctx.a.t:ctx.s.t;
+    const activityId=ctx.type==='lesson'?LES[ctx.i].id:ctx.type==='work'?WORK[ctx.i].id:ctx.type==='act'?ctx.id:ctx.s.t;
+    try{S=window.GaitaArchitecture.recordAttempt(S,{activityType:ctx.type,activityId,title,accuracy:acc,stars:st,hits,errors:errs,mode,practice:isPractice()})}catch(e){console.warn('Não foi possível registrar a tentativa de aprendizagem',e)}
+  }
   const bk=ctx.type=='lesson'?'l:'+LES[ctx.i].id:ctx.type=='work'?'w:'+WORK[ctx.i].id:ctx.type=='act'?'a:'+ctx.id:'s:'+ctx.s.t;S.best=S.best||{};const pb=S.best[bk];let rec=false;
   if(!pb||acc>pb.acc){S.best[bk]={acc,st:Math.max(st,pb?pb.st:0)};rec=!!pb}else if(st>pb.st)pb.st=st;
   let bonus=0;if(ctx.type=='song'){const k=wkSong();if(st==3&&S.wkDone!==k.w&&ctx.s.t==k.s.t){S.wkDone=k.w;bonus=100;S.xp+=100}}
-  const today=new Date().toISOString().slice(0,10);
-  if(S.last!=today){S.streak=S.last==new Date(Date.now()-864e5).toISOString().slice(0,10)?S.streak+1:1;S.last=today}
+  const today=dayKey();
+  if(S.last!=today){S.streak=S.last==dayKey(-1)?S.streak+1:1;S.last=today}
   let nxt=-1;
   if(ctx.type=='lesson'&&st){S.done[LES[ctx.i].id]=Math.max(S.done[LES[ctx.i].id]||0,st);if(ctx.i+1<LES.length)nxt=ctx.i+1}
   save();refresh();
@@ -760,7 +808,7 @@ function finish(){
   $('res').style.display='flex';if(st){sfx('win');confetti()}else sfx('bad');mFinish(st);
 }
 
-function detectF(){lastRaw=null;
+function detectF(expectedMidi=null){lastRaw=null;
  an.getFloatTimeDomainData(buf);const sr=actx.sampleRate,W=2048;
  let e=0;for(let i=0;i<W;i++)e+=buf[i]*buf[i];if(Math.sqrt(e/W)<(S.gate||0.003))return null;
  const t0=Math.floor(sr/2500),t1=Math.floor(sr/190),d=new Float32Array(t1+2),c=new Float32Array(t1+2);
@@ -773,7 +821,9 @@ function detectF(){lastRaw=null;
  const raw=69+12*Math.log2(f/440);lastRaw=raw;const r0=raw-(S.g||0)/100;
  // Durante a calibração, use a nota escolhida no mapa como chave.
  // Assim um desvio maior que meio semitom não impede a própria correção.
- const calKey=($('tunerPlay')&&$('tunerPlay').style.display==='block'&&selectedTunerMidi!=null)?selectedTunerMidi:Math.round(r0);
+ const calKey=calibrationKeyFor(r0,expectedMidi);
+ // O ajuste geral e a calibração individual são lidos do mesmo estado salvo
+ // pelo afinador. O valor individual é aplicado uma única vez, em cents.
  return r0-((S.cals&&S.cals[calKey])||0)/100;
 }
 function detectOld(){
@@ -812,13 +862,35 @@ function tunerTick(){
  $('tHole').textContent=label;
 }
 let selectedTunerMidi=null,selectedTunerHole=null,selectedTunerDir=null;
+function calibrationKeyFor(rawMidi,expectedMidi=null){
+ // No afinador, a nota escolhida no mapa continua sendo a referência exata.
+ if($('tunerPlay')&&$('tunerPlay').style.display==='block'&&selectedTunerMidi!=null)return selectedTunerMidi;
+ // Nas atividades, o alvo é informado explicitamente pelo motor da atividade.
+ // Isso evita depender de estado global (cur/mode/relógio) dentro do detector.
+ if(Number.isFinite(expectedMidi)){
+  const comparedMidi=S.oct!==false
+   ? rawMidi-12*Math.round((rawMidi-expectedMidi)/12)
+   : rawMidi;
+  // As calibrações individuais aceitam até +/-150 cents. A margem de 175
+  // cents permite localizar a nota calibrada sem aplicar sua correção a outra nota.
+  if(Math.abs(comparedMidi-expectedMidi)<=1.75)return Math.round(expectedMidi);
+ }
+ return Math.round(rawMidi);
+}
+function resetPitchSmoothing(){
+ if(typeof fbuf!=='undefined')fbuf.length=0;
+ if(typeof tb!=='undefined')tb.length=0;
+ if(typeof tbr!=='undefined')tbr.length=0;
+ if(typeof tHeldRaw!=='undefined')tHeldRaw=null;
+ if(typeof tHeldT!=='undefined')tHeldT=0;
+}
 function selectTunerNote(hole,dir){selectedTunerHole=hole;selectedTunerDir=dir;selectedTunerMidi=(dir==='b'?BLOW[hole-1]:DRAW[hole-1])+KEY();
  $('tSelected').textContent='Selecionada: furo '+hole+' · '+(dir==='b'?'soprando ↑':'aspirando ↓')+' · '+nm(selectedTunerMidi)+'. Agora toque essa nota e calibre enquanto o som estiver sendo detectado.';
  document.querySelectorAll('#chart .tMap').forEach(b=>b.classList.toggle('sel',+b.dataset.hole===hole&&b.dataset.dir===dir));}
 function updCal(k,just){const c=S.cals||{},ks=Object.keys(c).sort((a,b)=>a-b);$('tCalv').textContent=(S.g?'Ajuste geral da gaita: '+(S.g>0?'+':'')+S.g+' cents. ':'')+(just&&k!=null?'Nota '+nm(k)+' calibrada. ':'')+(ks.length?ks.length+' nota(s) com calibração individual: '+ks.map(x=>nm(+x)).join(', '):'Nenhuma nota calibrada individualmente ainda.')}
-$('tCal').onclick=()=>{if(selectedTunerMidi==null){$('tCalv').textContent='Primeiro selecione no mapa o furo e a direção que está tocando.';return}const raw=(performance.now()-tHeldT<4000)?tHeldRaw:null;if(raw==null){$('tCalv').textContent='Não estou detectando uma nota estável. Toque a nota selecionada e pressione calibrar logo em seguida.';return}const cents=(raw-(S.g||0)/100-selectedTunerMidi)*100;if(Math.abs(cents)>150){$('tCalv').textContent='A nota detectada está muito distante da nota selecionada ('+Math.round(cents)+' cents). Confira o furo e se está soprando ou aspirando corretamente.';return}S.cals=S.cals||{};S.cals[selectedTunerMidi]=Math.max(-150,Math.min(150,Math.round((S.cals[selectedTunerMidi]||0)+cents)));save();updCal(selectedTunerMidi,true);$('tSelected').textContent='Calibração aplicada em '+nm(selectedTunerMidi)+' ('+(cents>0?'+':'')+Math.round(cents)+' cents medidos).';};
-$('tReset').onclick=()=>{S.cals={};S.cal=0;S.g=0;save();updCal()};
-$('tReset1').onclick=()=>{if(selectedTunerMidi==null){$('tCalv').textContent='Selecione primeiro uma nota no mapa.';return}if(S.cals)delete S.cals[selectedTunerMidi];save();updCal();$('tSelected').textContent='Calibração individual removida de '+nm(selectedTunerMidi)+'.'};
+$('tCal').onclick=()=>{if(selectedTunerMidi==null){$('tCalv').textContent='Primeiro selecione no mapa o furo e a direção que está tocando.';return}const raw=(performance.now()-tHeldT<4000)?tHeldRaw:null;if(raw==null){$('tCalv').textContent='Não estou detectando uma nota estável. Toque a nota selecionada e pressione calibrar logo em seguida.';return}const cents=(raw-(S.g||0)/100-selectedTunerMidi)*100;if(Math.abs(cents)>150){$('tCalv').textContent='A nota detectada está muito distante da nota selecionada ('+Math.round(cents)+' cents). Confira o furo e se está soprando ou aspirando corretamente.';return}S.cals=S.cals||{};S.cals[selectedTunerMidi]=Math.max(-150,Math.min(150,Math.round(cents)));resetPitchSmoothing();save();updCal(selectedTunerMidi,true);$('tSelected').textContent='Calibração aplicada em '+nm(selectedTunerMidi)+' ('+(cents>0?'+':'')+Math.round(cents)+' cents medidos).';};
+$('tReset').onclick=()=>{S.cals={};S.cal=0;S.g=0;resetPitchSmoothing();save();updCal()};
+$('tReset1').onclick=()=>{if(selectedTunerMidi==null){$('tCalv').textContent='Selecione primeiro uma nota no mapa.';return}if(S.cals)delete S.cals[selectedTunerMidi];resetPitchSmoothing();save();updCal();$('tSelected').textContent='Calibração individual removida de '+nm(selectedTunerMidi)+'.'};
 $('oct').checked=S.oct!==false;$('oct').onchange=()=>{S.oct=$('oct').checked;save()};
 $('tol').value=S.tol||50;$('tolv').textContent=S.tol||50;$('tol').oninput=()=>{S.tol=+$('tol').value;$('tolv').textContent=S.tol;save()};
 $('tMic').onclick=ensureMic;renderChart();updCal();
@@ -960,7 +1032,7 @@ $('loopA').oninput=()=>{if(loopA()>loopB())$('loopB').value=loopA();loopChanged(
 $('loopB').oninput=()=>{if(loopB()<loopA())$('loopA').value=loopB();loopChanged()};
 $('pmode').onchange=()=>{reopen()};
 $('view').value=S.view||'both';$('view').onchange=()=>{S.view=$('view').value;save();notes.forEach((n,i)=>{const c=$('ch'+i);if(c)c.innerHTML=chipHtml(n)})};
-function dayKey(){return new Date().toISOString().slice(0,10)}
+function dayKey(offset=0){const d=new Date();if(offset)d.setDate(d.getDate()+offset);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function wkSong(){const w=Math.floor(Date.now()/6048e5);return{w,s:SONGS[w%SONGS.length]}}
 let tAcc=0;function addTime(dt){const td=dayKey();if(S.day!==td){S.day=td;S.todaySecs=0}S.todaySecs=(S.todaySecs||0)+dt/1000;tAcc+=dt;if(tAcc>5000){tAcc=0;save()}}
 function renderWorks(){const w=$('works');w.innerHTML='';WORK.forEach((l,i)=>{const bs=(S.best||{})['w:'+l.id],b=document.createElement('button');b.className='item';
@@ -981,7 +1053,8 @@ $('instBtn').onclick=async()=>{if(!dip)return;dip.prompt();try{await dip.userCho
 window.addEventListener('appinstalled',()=>{$('instCard').style.display='none'});
 try{if('serviceWorker' in navigator&&location.protocol==='https:'&&window.self===window.top)navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{})}catch(e){}
 var micStream=null,micSrc=null;
-function stopMic(){try{micStream&&micStream.getTracks().forEach(t=>t.stop())}catch(e){}try{micSrc&&micSrc.disconnect()}catch(e){}micStream=null;micSrc=null;micOn=false;if(running){running=false;$('start').textContent='▶ Começar'}refresh();toast('Microfone desligado')}
+function stopMic(){try{micStream&&micStream.getTracks().forEach(t=>t.stop())}catch(e){}try{micSrc&&micSrc.disconnect()}catch(e){}micStream=null;micSrc=null;micOn=false;resetPitchSmoothing();if(running){running=false;$('start').textContent='▶ Começar'}refresh();toast('Microfone desligado')}
+window.addEventListener('pagehide',()=>{try{micStream&&micStream.getTracks().forEach(t=>t.stop())}catch(e){}});
 let toastT=0;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1800)}
 function closeSplash(){const sp=$('splash');if(!sp||sp.classList.contains('out'))return;sp.classList.add('out');setTimeout(()=>sp.remove(),600)}
 $('splash').onclick=closeSplash;setTimeout(closeSplash,3600);
@@ -1347,7 +1420,12 @@ function thRender(){mood('mTh','idle');
 function thFinish(){
  const w=TQ.wrong,stars=w==0?3:w<=1?2:1,isL=TQ.kind=='lesson',first=isL&&!(S.th&&S.th[TQ.id]);
  const gain=isL?(first?30:10)+stars*5:10;S.xp+=gain;if(isL){S.th=S.th||{};S.th[TQ.id]=Math.max(S.th[TQ.id]||0,stars)}
- const td=dayKey();if(S.last!=td){S.streak=S.last==new Date(Date.now()-864e5).toISOString().slice(0,10)?S.streak+1:1;S.last=td}
+ const td=dayKey();if(S.last!=td){S.streak=S.last==dayKey(-1)?S.streak+1:1;S.last=td}
+ const theoryQuestions=TQ.steps.filter(x=>x.k==='q'&&!x.r).length;
+ const theoryAccuracy=theoryQuestions?Math.max(0,Math.min(1,(theoryQuestions-w)/theoryQuestions)):1;
+ if(window.GaitaArchitecture&&typeof window.GaitaArchitecture.recordAttempt==='function'){
+  try{S=window.GaitaArchitecture.recordAttempt(S,{activityType:TQ.kind==='lesson'?'theory':'review',activityId:TQ.id||'quick-review',title:TQ.kind==='lesson'?(TH.find(x=>x.id===TQ.id)?.t||'Aula teórica'):'Revisão rápida',accuracy:theoryAccuracy,stars,errors:w,hits:Math.max(0,theoryQuestions-w),mode:'theory',practice:false})}catch(e){console.warn('Não foi possível registrar a revisão teórica',e)}
+ }
  save();$('thProg').style.width='100%';
  $('thBody').innerHTML=`<div class="card" style="text-align:center"><h2>${w==0?'Perfeito! 🎉':'Concluído!'}</h2>${isL?`<div style="font-size:38px;color:#ffc800">${'★'.repeat(stars)}<span style="color:var(--bd)">${'★'.repeat(3-stars)}</span></div>`:''}<p>${w} erro(s) · +${gain} XP</p></div>`;
  $('thBanner').innerHTML='';$('thBtn').style.display='';$('thBtn').textContent='Voltar';$('thBtn').onclick=()=>{if(history.state&&history.state.kind==='overlay'&&history.state.overlay==='thPlay')history.back();else{$('thPlay').style.display='none';refresh()}};
@@ -1417,9 +1495,11 @@ function renderDiary(){const b=$('diaryBody'),dn=ST.filter(stageDone).length,cs=
  let h=`<div class="card"><b>Etapa atual: ${cs.id} · ${cs.t}</b><div class="xp"><i style="width:${dn/8*100}%"></i></div><span class="mut">${dn} de 8 etapas concluídas · ${S.xp} XP · sequência de ${S.streak} dia(s)</span></div><div class="sg">Habilidades (critérios do guia)</div><div class="card">`;
  SKL.forEach((k,i)=>{const v=(S.skills&&S.skills[i])||0;h+=`<div class="srow"><span><b>${k[0]}</b><br><small class="mut">${k[1]}</small></span><select data-sk="${i}"><option value="0"${v==0?' selected':''}>Ainda não</option><option value="1"${v==1?' selected':''}>Em treino</option><option value="2"${v==2?' selected':''}>Domino</option></select></div>`});
  const ss=SONGS.concat(S.imp).filter(x=>(S.best||{})['s:'+x.t]);
- h+='</div><div class="sg">Músicas estudadas</div><div class="card">'+(ss.length?ss.map(x=>{const q=S.best['s:'+x.t];return `<div class="srow"><span>${x.t}</span><span>${dots(q.st)} ${Math.round(q.acc*100)}%</span></div>`}).join(''):'<span class="mut">Nenhuma ainda. Toque uma música na aba Músicas.</span>')+'</div>';
- h+=`<div class="sg">Dificuldades pendentes</div><div class="card"><textarea id="dnote" rows="4" style="width:100%;border-radius:10px;border:2px solid var(--bd);background:var(--card);color:var(--tx)" placeholder="Ex.: bend do furo 3 ainda desafina; troca 4↔6 lenta...">${(S.dnote||'').replace(/</g,'&lt;')}</textarea></div>`;
+ h+='</div><div class="sg">Músicas estudadas</div><div class="card">'+(ss.length?ss.map(x=>{const q=S.best['s:'+x.t];return `<div class="srow"><span>${escapeHTML(x.t)}</span><span>${dots(q.st)} ${Math.round(q.acc*100)}%</span></div>`}).join(''):'<span class="mut">Nenhuma ainda. Toque uma música na aba Músicas.</span>')+'</div>';
+ h+=`<div class="sg">Dificuldades pendentes</div><div class="card"><textarea id="dnote" rows="4" style="width:100%;border-radius:10px;border:2px solid var(--bd);background:var(--card);color:var(--tx)" placeholder="Ex.: bend do furo 3 ainda desafina; troca 4↔6 lenta...">${escapeHTML(S.dnote||'')}</textarea></div>`;
  h+='<div class="sg">Prazos de referência</div><div class="card mut" style="line-height:1.6">1 a 3 meses: fundamentos e melodias · 3 a 6 meses: controle técnico · 6 a 12 meses: repertório e improvisação inicial · 1 a 2 anos: nível intermediário sólido · 2 a 4 anos: avançado · 4 anos ou mais: identidade e performance. São referências, não garantias.</div>';
+ const attempts=(S.learning&&Array.isArray(S.learning.attempts)?S.learning.attempts:[]).slice(-8).reverse();
+ h+=`<div class="sg">Últimas tentativas</div><div class="card">${attempts.length?attempts.map(a=>{const pct=Math.round(Math.max(0,Math.min(1,Number(a.accuracy)||0))*100);const when=a.at?new Date(a.at).toLocaleString('pt-BR'):'Data não informada';return `<div class="srow"><span><b>${escapeHTML(a.title||'Atividade')}</b><br><small class="mut">${escapeHTML(when)}</small></span><span>${pct}% · ${'★'.repeat(Math.max(0,Math.min(3,Number(a.stars)||0)))}</span></div>`}).join(''):'<span class="mut">Seu histórico de desempenho aparecerá aqui depois das próximas atividades concluídas.</span>'}</div>`;
  b.innerHTML=h;b.querySelectorAll('select[data-sk]').forEach(sel=>sel.onchange=()=>{S.skills=S.skills||{};S.skills[sel.dataset.sk]=+sel.value;save()});$('dnote').oninput=()=>{S.dnote=$('dnote').value;save()}}
 $('diaBtn').onclick=()=>{renderDiary();navPush('overlay',{overlay:'diaryPlay'});$('diaryPlay').style.display='block'};
 $('diaryClose').onclick=()=>{if(history.state&&history.state.kind==='overlay'&&history.state.overlay==='diaryPlay')history.back();else $('diaryPlay').style.display='none'};
@@ -1481,12 +1561,26 @@ setInterval(()=>{if(document.hidden)return;mIdle++;const home=$('s-home').classL
  ['mHome','mPlay'].forEach(id=>{const e=$(id);if(e&&!mT[id]){const b=mBase(id);if(e.dataset.m!=b)e.dataset.m=b}})},1000);
 setTimeout(()=>mSay(greet(),1),3900);
 /* laço */
+// Retorna o alvo musical exato usado pelo exercício neste quadro.
+// O detector usa esse MIDI para procurar a calibração que o usuário gravou
+// no Afinador, mantendo o mesmo estado S.cals/S.g e sem recalibrar o Afinador.
+function activityExpectedMidi(now){
+ if(!running||!Array.isArray(notes)||!notes.length)return null;
+ if(mode==='wait'){
+  const target=notes[cur];
+  return target&&Number.isFinite(target.m)?target.m:null;
+ }
+ const spb=60/(+$('bpm').value||70);
+ const beat=((now-t0)/1000)/spb-2;
+ const active=notes.find(n=>beat>=n.t&&beat<n.t+n.d);
+ return active&&Number.isFinite(active.m)?active.m:null;
+}
 let prevT=performance.now();
 function loop(now){
   const dt=now-prevT;prevT=now;
   if(micOn&&!running&&$('tunerPlay').style.display=='block')tunerTick();
   if(micOn&&running){
-    addTime(dt);const fr=smooth(detectF());
+    addTime(dt);const expectedMidi=activityExpectedMidi(now);const fr=smooth(detectF(expectedMidi));
     const st=fr;if(st!=null){const r=Math.round(st),ce=Math.round((st-r)*100);$('sub').textContent='Você toca: '+nm(r)+' ('+(ce>0?'+':'')+ce+' cents)'}
     if(mode=='wait'){
       const n=notes[cur];
@@ -1508,10 +1602,35 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 
-$('bkOut').onclick=()=>{const o={xp:S.xp,streak:S.streak,last:S.last,done:S.done,key:S.key,bgIntensity:S.bgIntensity,bends:S.bends,cals:S.cals,g:S.g,best:S.best,th:S.th,chk:S.chk,skills:S.skills,dnote:S.dnote,skip:S.skip,lv:S.lv,unl:S.unl,imp:S.imp||[],fav:S.fav||{},recent:S.recent||[]};const c=btoa(unescape(encodeURIComponent(JSON.stringify(o))));$('bk').value=c;$('bk').select();try{navigator.clipboard.writeText(c)}catch(e){}};
-$('bkIn').onclick=()=>{try{const o=JSON.parse(decodeURIComponent(escape(atob($('bk').value.trim()))));Object.assign(S,o);save();$('key').value=S.key;$('bends').checked=S.bends!==false;refresh();$('bk').value='';toast('Progresso restaurado!')}catch(e){toast('Código inválido')}};
+const BACKUP_FIELDS=['xp','streak','last','done','key','bgIntensity','bends','cals','g','best','th','chk','skills','dnote','skip','lv','unl','imp','fav','recent','rt','day','todaySecs','goal','sfx','gate','tol','oct','view','cal','wkDone','learning','_meta','_schemaVersion'];
+function syncSettingsFromState(){
+ $('key').value=S.key;$('bends').checked=S.bends!==false;$('view').value=S.view||'both';
+ $('gate').value=Math.round((S.gate||.003)*1000);$('gatev').textContent=$('gate').value;
+ $('tol').value=S.tol||50;$('tolv').textContent=S.tol||50;$('oct').checked=S.oct!==false;
+ $('sfxChk').checked=S.sfx!==false;$('goal').value=S.goal||10;
+ applyBackgroundIntensity(S.bgIntensity);renderChart();updCal();
+}
+$('bkOut').onclick=async()=>{
+ try{
+  const state={};BACKUP_FIELDS.forEach(k=>{if(Object.prototype.hasOwnProperty.call(S,k))state[k]=S[k]});
+  const payload={app:'gaita-game',version:2,exportedAt:new Date().toISOString(),state};
+  const c=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));$('bk').value=c;$('bk').select();
+  try{await navigator.clipboard.writeText(c);toast('Backup completo copiado!')}catch(e){toast('Backup gerado. Copie o código exibido.')} 
+ }catch(e){toast('Não foi possível gerar o backup')}
+};
+$('bkIn').onclick=()=>{
+ try{
+  const encoded=$('bk').value.trim();if(!encoded||encoded.length>5_000_000)throw new Error('Tamanho de backup inválido');
+  const parsed=JSON.parse(decodeURIComponent(escape(atob(encoded))));
+  if(!isRecord(parsed))throw new Error('Formato inválido');
+  if(parsed.state!==undefined&&parsed.app!=='gaita-game')throw new Error('Origem de backup desconhecida');
+  const source=isRecord(parsed.state)?parsed.state:parsed,allowed={};
+  BACKUP_FIELDS.forEach(k=>{if(Object.prototype.hasOwnProperty.call(source,k))allowed[k]=source[k]});
+  S=normalizeState(Object.assign({},S,allowed));save();syncSettingsFromState();refresh();$('bk').value='';toast('Backup restaurado com as configurações e o progresso!');
+ }catch(e){toast('Backup inválido ou incompatível. Nenhum dado foi alterado.');}
+};
 async function parseAudio(ab){
- const c=new (window.AudioContext||window.webkitAudioContext)();const au=await c.decodeAudioData(ab);try{c.close()}catch(e){}
+ const c=new (window.AudioContext||window.webkitAudioContext)();let au;try{au=await c.decodeAudioData(ab)}finally{try{await c.close()}catch(e){}}
  const sr=au.sampleRate,x=au.getChannelData(0),H=2048,N=1024,lo=Math.floor(sr/2300),hi=Math.floor(sr/200);
  const mf=Math.min(Math.floor((x.length-N-hi)/H),Math.floor(90*sr/H)),seq=[];
  for(let f=0;f<mf;f++){
@@ -1528,10 +1647,10 @@ async function parseAudio(ab){
 /* MIDI */
 function parseMidi(ab){
   const d=new DataView(ab);let p=0;const u32=()=>{const v=d.getUint32(p);p+=4;return v},u16=()=>{const v=d.getUint16(p);p+=2;return v};
-  if(u32()!==0x4d546864)throw 0;u32();u16();const n=u16(),ppq=u16();let tempo=500000,best=[];
-  const vl=()=>{let v=0,b;do{b=d.getUint8(p++);v=(v<<7)|(b&127)}while(b&128);return v};
+  if(ab.byteLength<14||u32()!==0x4d546864)throw 0;const headerLen=u32();if(headerLen<6||p+headerLen>ab.byteLength)throw 0;const format=u16(),n=u16(),division=u16();p=8+headerLen;const ppq=division&0x7fff;if(!ppq||(division&0x8000)||!n||n>64||format>2)throw 0;let tempo=500000,best=[];
+  const vl=()=>{let v=0,b,count=0;do{if(p>=d.byteLength||count++>=4)throw 0;b=d.getUint8(p++);v=(v<<7)|(b&127)}while(b&128);return v};
   for(let k=0;k<n;k++){
-    if(u32()!==0x4d54726b)break;const len=u32(),end=p+len;let t=0,run=0,on={},ev=[];
+    if(p+8>d.byteLength||u32()!==0x4d54726b)break;const len=u32(),end=p+len;if(len<0||end>d.byteLength)throw 0;let t=0,run=0,on={},ev=[];
     while(p<end){
       t+=vl();let s=d.getUint8(p);if(s&128){p++;if(s<0xf0)run=s}else s=run;
       if(s===0xff){const ty=d.getUint8(p++),l=vl();if(ty===0x51&&l===3)tempo=(d.getUint8(p)<<16)|d.getUint16(p+1);p+=l}
@@ -1550,11 +1669,11 @@ $('file').onchange=async e=>{
   const fs=[...e.target.files];if(!fs.length)return;let ok=0,bad=0,zip=false;
   for(const f of fs){
    $('impMsg').textContent='Importando '+(ok+bad+1)+' de '+fs.length+'… pode levar alguns segundos.';
-   try{const ab=await f.arrayBuffer(),mg=String.fromCharCode(...new Uint8Array(ab,0,4));
+   try{if(f.size>20*1024*1024)throw new Error('Arquivo maior que 20 MB');const ab=await f.arrayBuffer();if(ab.byteLength<4)throw 0;const mg=String.fromCharCode(...new Uint8Array(ab,0,4));
     if(mg.slice(0,2)=='PK'){zip=true;throw 0}
     const r=mg=='MThd'?parseMidi(ab):await parseAudio(ab);
-    const t=f.name.replace(/\.\w+$/,'').replace(/^\d+[_ ]/,'').replace(/_/g,' ');
-    S.imp=S.imp.filter(x=>x.t!=t).concat({t,bpm:r.bpm,raw:r.raw.slice(0,300)}).slice(-40);ok++}
+    const t=(f.name||'Música importada').replace(/\.\w+$/,'').replace(/^\d+[_ ]/,'').replace(/_/g,' ').replace(/[<>]/g,'').replace(/\s+/g,' ').trim().slice(0,80)||'Música importada';
+    if(!Array.isArray(S.imp))S.imp=[];S.imp=S.imp.filter(x=>x.t!=t).concat({t,bpm:r.bpm,raw:r.raw.slice(0,300)}).slice(-40);ok++}
    catch(x){bad++}
   }
   e.target.value='';save();refresh();
