@@ -1,14 +1,19 @@
-/* Gaita Game | fundação pedagógica v1
- * Módulo aditivo: não substitui nem altera o formato legado de S.
- * A integração das regras acontece gradualmente nas próximas fases.
+/* Gaita Game | fundação pedagógica v1.1
+ * Módulo aditivo: mantém compatibilidade com o formato legado de S.
+ * Registra tentativas reais do aluno sem exigir serviço externo.
  */
 (function (global) {
   'use strict';
   const VERSION = 1;
   const DAY = 86400000;
 
+  function cloneState(value) {
+    if (typeof global.structuredClone === 'function') return global.structuredClone(value);
+    return JSON.parse(JSON.stringify(value == null ? {} : value));
+  }
+
   function migrateState(input) {
-    const s = input && typeof input === 'object' ? structuredClone(input) : {};
+    const s = input && typeof input === 'object' ? cloneState(input) : {};
     s._schemaVersion = Math.max(Number(s._schemaVersion) || 0, VERSION);
     s._meta = Object.assign({ updatedAt: new Date().toISOString(), deviceId: null }, s._meta || {});
     s.learning = Object.assign({
@@ -16,6 +21,8 @@
       competencies: {}, reviews: {}, attempts: [], recommendations: [],
       cloud: { status: 'not_configured', lastSyncAt: null }
     }, s.learning || {});
+    if (!Array.isArray(s.learning.attempts)) s.learning.attempts = [];
+    if (!Array.isArray(s.learning.recommendations)) s.learning.recommendations = [];
     return s;
   }
 
@@ -39,7 +46,6 @@
   }
 
   function nextReview({ score = 0, repetitions = 0, now = Date.now() } = {}) {
-    // Repetição espaçada inicial. A agenda será refinada com dados reais de uso.
     const days = score < 0.6 ? 0 : score < 0.8 ? 1 : repetitions < 2 ? 3 : repetitions < 4 ? 7 : repetitions < 6 ? 15 : 30;
     return new Date(now + days * DAY).toISOString();
   }
@@ -52,7 +58,11 @@
 
   function recordAttempt(state, attempt) {
     const s = migrateState(state);
-    const item = Object.assign({ id: (global.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()), at: new Date().toISOString() }, attempt || {});
+    const cryptoApi = global.crypto;
+    const generatedId = cryptoApi && typeof cryptoApi.randomUUID === 'function'
+      ? cryptoApi.randomUUID()
+      : 'att-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
+    const item = Object.assign({ id: generatedId, at: new Date().toISOString() }, attempt || {});
     s.learning.attempts.push(item);
     if (s.learning.attempts.length > 500) s.learning.attempts.splice(0, s.learning.attempts.length - 500);
     s._meta.updatedAt = item.at;
